@@ -5,19 +5,24 @@ import type {
   Exit,
   ExitDirection,
   Rect,
+  Room,
   Water,
 } from "./dungeon";
+
+export const facingDirection = (door:Door):ExitDirection => {
+  if (door.dir.x === -1) return "west"
+  if (door.dir.y === 1) return "south"
+  if (door.dir.x === 1) return "east"
+  if (door.dir.y === -1) return "north"
+  return "UNKNOWN"
+}
 
 const describeDoor = (
   door: Door,
   direction: ExitDirection,
   destination: Rect | "outside"
 ): string | number => {
-  const isFacing =
-    (direction === "west" && door.dir.x === -1) ||
-    (direction === "south" && door.dir.y === 1) ||
-    (direction === "east" && door.dir.x === 1) ||
-    (direction === "north" && door.dir.y === -1);
+  const isFacing = facingDirection(door) === direction
   switch (door.type) {
     case 0:
       // These are open entrances where the area beyond is clearly visible
@@ -28,7 +33,7 @@ const describeDoor = (
     case 2:
       return "narrow entrance to a " + getRoomNoun(destination, []);
     case 3:
-      return "exit from the dungeon";
+      return "way out of the dungeon";
     case 4:
       return "portcullis";
     case 5:
@@ -44,8 +49,7 @@ const describeDoor = (
 
     default:
       console.warn(`Unknown door type ${door.type}`);
-      return "use your imagination";
-    // return door.type;
+      return "portal";
   }
 };
 const describeRoom = (
@@ -184,7 +188,8 @@ const getAdjacent = <T extends Rect>(a: T, rects: T[]) =>
 export const parseDungeon = (dungeon: Dungeon): Dungeon => {
   const { rects, notes, doors } = dungeon;
 
-  const getDoor = doorFunc(doors);
+  const doorsWithId = doors.map((d, id) => ({ ...d, id }))
+  const getDoor = doorFunc(doorsWithId)
 
   const rectsWithId: (Rect & { id: number })[] = rects.map((r, id) => ({
     id,
@@ -203,9 +208,13 @@ export const parseDungeon = (dungeon: Dungeon): Dungeon => {
             (x) => isAdjacent(x, exit) && x.id !== fullRoom.id
           );
           const to = destination?.id ?? "outside";
+          const isFacing = facingDirection(door) === direction
           return {
             towards: direction,
+            isFacing,
             to,
+            type:door.type,
+            door,
             description: destination
               ? describeDoor(door, direction, destination)
               : "exit from dungeon",
@@ -226,7 +235,7 @@ export const parseDungeon = (dungeon: Dungeon): Dungeon => {
 
       const description = describeRoom(fullRoom, exits, columns, water);
 
-      const room = {
+      const room:Room = {
         id: fullRoom.id,
         description,
         area: fullRoom.rotunda
@@ -245,5 +254,5 @@ export const parseDungeon = (dungeon: Dungeon): Dungeon => {
       return room;
     });
 
-  return { ...dungeon, rooms };
+  return { ...dungeon, rooms, doors:doorsWithId };
 };

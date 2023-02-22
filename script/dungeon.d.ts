@@ -3,6 +3,8 @@ export type Exit = {
   towards: ExitDirection;
   to: number | "outside";
   description: string;
+  isFacing: boolean; // some doors have directions, secret doors for example
+  door: Door;
   type?: number;
 };
 
@@ -24,6 +26,7 @@ export type Door = {
   y: number;
   dir: Direction;
   type: number;
+  id: number;
 };
 
 export type Note = {
@@ -59,4 +62,5 @@ export type Room = Rect & {
   description: string;
   area: string;
   exits: Exit[];
+  contains?: string;
 }

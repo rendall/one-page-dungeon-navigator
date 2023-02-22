@@ -11,12 +11,21 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 exports.__esModule = true;
-exports.parseDungeon = void 0;
+exports.parseDungeon = exports.facingDirection = void 0;
+var facingDirection = function (door) {
+    if (door.dir.x === -1)
+        return "west";
+    if (door.dir.y === 1)
+        return "south";
+    if (door.dir.x === 1)
+        return "east";
+    if (door.dir.y === -1)
+        return "north";
+    return "UNKNOWN";
+};
+exports.facingDirection = facingDirection;
 var describeDoor = function (door, direction, destination) {
-    var isFacing = (direction === "west" && door.dir.x === -1) ||
-        (direction === "south" && door.dir.y === 1) ||
-        (direction === "east" && door.dir.x === 1) ||
-        (direction === "north" && door.dir.y === -1);
+    var isFacing = (0, exports.facingDirection)(door) === direction;
     switch (door.type) {
         case 0:
             // These are open entrances where the area beyond is clearly visible
@@ -27,7 +36,7 @@ var describeDoor = function (door, direction, destination) {
         case 2:
             return "narrow entrance to a " + getRoomNoun(destination, []);
         case 3:
-            return "exit from the dungeon";
+            return "way out of the dungeon";
         case 4:
             return "portcullis";
         case 5:
@@ -162,7 +171,8 @@ var getAdjacent = function (a, rects) {
 };
 var parseDungeon = function (dungeon) {
     var rects = dungeon.rects, notes = dungeon.notes, doors = dungeon.doors;
-    var getDoor = doorFunc(doors);
+    var doorsWithId = doors.map(function (d, id) { return (__assign(__assign({}, d), { id: id })); });
+    var getDoor = doorFunc(doorsWithId);
     var rectsWithId = rects.map(function (r, id) { return (__assign({ id: id }, r)); });
     var rooms = rectsWithId
         .filter(function (r) { return !getDoor(r); })
@@ -176,9 +186,13 @@ var parseDungeon = function (dungeon) {
                 // If the exit is a door, include the to
                 var destination = rectsWithId.find(function (x) { return isAdjacent(x, exit) && x.id !== fullRoom.id; });
                 var to = (_a = destination === null || destination === void 0 ? void 0 : destination.id) !== null && _a !== void 0 ? _a : "outside";
+                var isFacing = (0, exports.facingDirection)(door) === direction;
                 return {
                     towards: direction,
+                    isFacing: isFacing,
                     to: to,
+                    type: door.type,
+                    door: door,
                     description: destination
                         ? describeDoor(door, direction, destination)
                         : "exit from dungeon"
@@ -201,6 +215,6 @@ var parseDungeon = function (dungeon) {
                 : "".concat(fullRoom.w, "m x ").concat(fullRoom.h, "m") }, (contains ? { contains: contains } : {})), (fullRoom.ending ? { ending: true } : {})), (door ? { door: door } : {})), { exits: exits, x: fullRoom.x, y: fullRoom.y, w: fullRoom.w, h: fullRoom.h });
         return room;
     });
-    return __assign(__assign({}, dungeon), { rooms: rooms });
+    return __assign(__assign({}, dungeon), { rooms: rooms, doors: doorsWithId });
 };
 exports.parseDungeon = parseDungeon;

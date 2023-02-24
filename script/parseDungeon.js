@@ -45,14 +45,13 @@ var describeDoor = function (door, direction, destination) {
             return isFacing ? "secret door" : "door";
         }
         case 8:
-            return "broad stairs down";
+            return "broad staircase down";
         case 9: {
-            return "stairs ".concat(isFacing ? "down" : "up");
+            return "stairwell ".concat(isFacing ? "down" : "up");
         }
         default:
             console.warn("Unknown door type ".concat(door.type));
-            return "use your imagination";
-        // return door.type;
+            return "portal";
     }
 };
 var describeRoom = function (room, exits, columns, water) {
@@ -171,9 +170,10 @@ var getAdjacent = function (a, rects) {
 };
 var parseDungeon = function (dungeon) {
     var rects = dungeon.rects, notes = dungeon.notes, doors = dungeon.doors;
-    var doorsWithId = doors.map(function (d, id) { return (__assign(__assign({}, d), { id: id })); });
-    var getDoor = doorFunc(doorsWithId);
     var rectsWithId = rects.map(function (r, id) { return (__assign({ id: id }, r)); });
+    var isDoor = function (rect) { return rect.h === 1 && rect.w === 1 && doors.some(function (door) { return door.x === rect.x && door.y === rect.y; }); };
+    var doorsWithId = rectsWithId.filter(function (rect) { return isDoor(rect); }).map(function (rect) { return (__assign({ id: rect.id }, (doors.find(function (door) { return door.x === rect.x && door.y === rect.y; })))); });
+    var getDoor = doorFunc(doorsWithId);
     var rooms = rectsWithId
         .filter(function (r) { return !getDoor(r); })
         .map(function (fullRoom) {
@@ -195,7 +195,7 @@ var parseDungeon = function (dungeon) {
                     door: door,
                     description: destination
                         ? describeDoor(door, direction, destination)
-                        : "exit from dungeon"
+                        : "way out of the dungeon"
                 };
             }
             else
@@ -215,6 +215,6 @@ var parseDungeon = function (dungeon) {
                 : "".concat(fullRoom.w, "m x ").concat(fullRoom.h, "m") }, (contains ? { contains: contains } : {})), (fullRoom.ending ? { ending: true } : {})), (door ? { door: door } : {})), { exits: exits, x: fullRoom.x, y: fullRoom.y, w: fullRoom.w, h: fullRoom.h });
         return room;
     });
-    return __assign(__assign({}, dungeon), { rooms: rooms, doors: doorsWithId });
+    return __assign(__assign({}, dungeon), { rooms: rooms, doors: doorsWithId, rects: rectsWithId });
 };
 exports.parseDungeon = parseDungeon;

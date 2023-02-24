@@ -42,9 +42,9 @@ const describeDoor = (
       return isFacing ? "secret door" : "door";
     }
     case 8:
-      return "broad stairs down";
+      return "broad staircase down";
     case 9: {
-      return `stairs ${isFacing ? "down" : "up"}`;
+      return `stairwell ${isFacing ? "down" : "up"}`;
     }
 
     default:
@@ -128,7 +128,7 @@ const getRoomNoun = (room: Rect | "outside", exits: Exit[]): string => {
 /** 1 x 1 rooms are connectors between different rooms */
 const is1x1 = (a: Rect) => a.w === 1 && a.h === 1;
 
-const isAdjacent = (a: Rect, b: Rect) => {
+const isAdjacent = (a: Rect, b: Rect):boolean => {
   if (!is1x1(a) && !is1x1(b)) return false; // in this format, if rects are adjacent, one of them must by 1 x 1
   if (!is1x1(b)) return isAdjacent(b, a); // makes things easier if the 2nd is always the 1 x 1
 
@@ -188,13 +188,14 @@ const getAdjacent = <T extends Rect>(a: T, rects: T[]) =>
 export const parseDungeon = (dungeon: Dungeon): Dungeon => {
   const { rects, notes, doors } = dungeon;
 
-  const doorsWithId = doors.map((d, id) => ({ ...d, id }))
-  const getDoor = doorFunc(doorsWithId)
-
   const rectsWithId: (Rect & { id: number })[] = rects.map((r, id) => ({
     id,
     ...r,
   }));
+
+  const isDoor = (rect: Rect) => rect.h === 1 && rect.w === 1 && doors.some(door => door.x === rect.x && door.y === rect.y)
+  const doorsWithId = rectsWithId.filter(rect => isDoor(rect)).map(rect => ({ id: rect.id, ...(doors.find(door => door.x === rect.x && door.y === rect.y)) }))
+  const getDoor = doorFunc(doorsWithId)
 
   const rooms = rectsWithId
     .filter((r) => !getDoor(r))
@@ -217,7 +218,7 @@ export const parseDungeon = (dungeon: Dungeon): Dungeon => {
             door,
             description: destination
               ? describeDoor(door, direction, destination)
-              : "exit from dungeon",
+              : "way out of the dungeon",
           } as Exit;
         } else return { towards: direction, to: exit.id } as Exit;
       });
@@ -254,5 +255,5 @@ export const parseDungeon = (dungeon: Dungeon): Dungeon => {
       return room;
     });
 
-  return { ...dungeon, rooms, doors:doorsWithId };
+  return { ...dungeon, rooms, doors:doorsWithId, rects:rectsWithId };
 };

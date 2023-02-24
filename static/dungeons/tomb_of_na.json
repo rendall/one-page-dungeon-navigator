@@ -1,0 +1,58 @@
+{
+  "version": "1.2.4b",
+  "title": "Tomb of Na",
+  "story": "For a millenium the tomb of Na was considered lost. Recently it was squatted by a party of ogres. Word is that Bhar, a legendary staff, is still hidden here.",
+  "rects": [
+    { "x": -2, "y": -4, "w": 5, "h": 4 },
+    { "x": 1, "y": -6, "w": 1, "h": 1 },
+    { "x": 1, "y": -10, "w": 1, "h": 3 },
+    { "x": 0, "y": -17, "w": 3, "h": 6 },
+    { "x": 0, "y": -25, "w": 3, "h": 7 },
+    { "x": 1, "y": -27, "w": 1, "h": 1 },
+    { "x": 3, "y": -27, "w": 1, "h": 1 },
+    { "x": 5, "y": -29, "w": 3, "h": 5 },
+    { "x": 9, "y": -29, "w": 2, "h": 5 },
+    { "x": 12, "y": -29, "w": 5, "h": 5, "ending": true },
+    { "x": 0, "y": 0, "w": 1, "h": 1 },
+    { "x": 1, "y": -5, "w": 1, "h": 1 },
+    { "x": 1, "y": -7, "w": 1, "h": 1 },
+    { "x": 1, "y": -11, "w": 1, "h": 1 },
+    { "x": 1, "y": -18, "w": 1, "h": 1 },
+    { "x": 1, "y": -26, "w": 1, "h": 1 },
+    { "x": 2, "y": -27, "w": 1, "h": 1 },
+    { "x": 4, "y": -27, "w": 1, "h": 1 },
+    { "x": 8, "y": -27, "w": 1, "h": 1 },
+    { "x": 11, "y": -27, "w": 1, "h": 1 }
+  ],
+  "doors": [
+    { "x": 0, "y": 0, "dir": { "x": 0, "y": -1 }, "type": 3 },
+    { "x": 1, "y": -5, "dir": { "x": 0, "y": -1 }, "type": 1 },
+    { "x": 1, "y": -7, "dir": { "x": 0, "y": -1 }, "type": 0 },
+    { "x": 1, "y": -11, "dir": { "x": 0, "y": -1 }, "type": 1 },
+    { "x": 1, "y": -18, "dir": { "x": 0, "y": -1 }, "type": 1 },
+    { "x": 1, "y": -26, "dir": { "x": 0, "y": -1 }, "type": 9 },
+    { "x": 2, "y": -27, "dir": { "x": 1, "y": 0 }, "type": 9 },
+    { "x": 4, "y": -27, "dir": { "x": 1, "y": 0 }, "type": 9 },
+    { "x": 8, "y": -27, "dir": { "x": 1, "y": 0 }, "type": 5 },
+    { "x": 11, "y": -27, "dir": { "x": 1, "y": 0 }, "type": 9 }
+  ],
+  "notes": [
+    {
+      "text": "A corpse of an ogre, gems close to it.",
+      "ref": "1",
+      "pos": { "x": 1.5, "y": -14 }
+    },
+    {
+      "text": "A halberd among rubble on the ground.",
+      "ref": "2",
+      "pos": { "x": 1.5, "y": -21.5 }
+    },
+    {
+      "text": "A round gate to the east.",
+      "ref": "3",
+      "pos": { "x": 6.5, "y": -26.5 }
+    }
+  ],
+  "columns": [],
+  "water": []
+}

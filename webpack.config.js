@@ -12,12 +12,12 @@ const stylesHandler = MiniCssExtractPlugin.loader;
 const config = {
   entry: "./src/index.ts",
   output: {
-    path: path.resolve(__dirname, "dist"),
+    path: path.resolve(__dirname, ""),
   },
   devServer: {
     open: true,
     static: {
-      directory: path.join(__dirname, 'dist'),
+      directory: path.join(__dirname, ''),
     },
     host: "localhost",
   },

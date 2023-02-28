@@ -1,0 +1,113 @@
+{
+  "version": "1.2.4b",
+  "title": "Twilight Sanctum of the Amber Savant",
+  "story": "After the fall of the Amber Savant the sanctum has changed hands many times. Currently it is badly infested by cats. The sanctum of the Amber Savant is a place of growth of a rare specie of berries.",
+  "rects": [
+    { "x": 0, "y": -2, "w": 1, "h": 2 },
+    { "x": -2, "y": -6, "w": 5, "h": 3 },
+    { "x": -7, "y": -6, "w": 4, "h": 5 },
+    { "x": 4, "y": -6, "w": 4, "h": 5 },
+    { "x": -7, "y": -11, "w": 3, "h": 4 },
+    { "x": -6, "y": 0, "w": 1, "h": 3 },
+    { "x": -12, "y": -6, "w": 4, "h": 3, "ending": true },
+    { "x": 4, "y": 0, "w": 1, "h": 1 },
+    { "x": 4, "y": -8, "w": 1, "h": 1 },
+    { "x": 9, "y": -5, "w": 4, "h": 3 },
+    { "x": -6, "y": 4, "w": 1, "h": 1 },
+    { "x": 6, "y": 0, "w": 1, "h": 1 },
+    { "x": 6, "y": -8, "w": 1, "h": 1 },
+    { "x": -3, "y": -8, "w": 6, "h": 1 },
+    { "x": -9, "y": 2, "w": 2, "h": 5 },
+    { "x": -4, "y": 2, "w": 2, "h": 5 },
+    { "x": 5, "y": 2, "w": 3, "h": 3 },
+    { "x": 5, "y": -12, "w": 3, "h": 3 },
+    { "x": -4, "y": 0, "w": 1, "h": 1 },
+    { "x": 0, "y": 0, "w": 1, "h": 1 },
+    { "x": 0, "y": -3, "w": 1, "h": 1 },
+    { "x": -3, "y": -4, "w": 1, "h": 1 },
+    { "x": 3, "y": -4, "w": 1, "h": 1 },
+    { "x": -6, "y": -7, "w": 1, "h": 1 },
+    { "x": -6, "y": -1, "w": 1, "h": 1 },
+    { "x": -8, "y": -5, "w": 1, "h": 1 },
+    { "x": 4, "y": -1, "w": 1, "h": 1 },
+    { "x": 4, "y": -7, "w": 1, "h": 1 },
+    { "x": 8, "y": -4, "w": 1, "h": 1 },
+    { "x": -6, "y": 3, "w": 1, "h": 1 },
+    { "x": 5, "y": 0, "w": 1, "h": 1 },
+    { "x": 5, "y": -8, "w": 1, "h": 1 },
+    { "x": 3, "y": -8, "w": 1, "h": 1 },
+    { "x": -7, "y": 4, "w": 1, "h": 1 },
+    { "x": -5, "y": 4, "w": 1, "h": 1 },
+    { "x": 6, "y": 1, "w": 1, "h": 1 },
+    { "x": 6, "y": -9, "w": 1, "h": 1 },
+    { "x": -4, "y": 1, "w": 1, "h": 1 },
+    { "x": -13, "y": -5, "w": 1, "h": 1 },
+    { "x": -4, "y": -8, "w": 1, "h": 1 },
+    { "x": -4, "y": -1, "w": 1, "h": 1 },
+    { "x": 0, "y": -7, "w": 1, "h": 1 }
+  ],
+  "doors": [
+    { "x": 0, "y": 0, "dir": { "x": 0, "y": -1 }, "type": 3 },
+    { "x": 0, "y": -3, "dir": { "x": 0, "y": -1 }, "type": 0 },
+    { "x": -3, "y": -4, "dir": { "x": -1, "y": 0 }, "type": 1 },
+    { "x": 3, "y": -4, "dir": { "x": 1, "y": 0 }, "type": 1 },
+    { "x": -6, "y": -7, "dir": { "x": 0, "y": -1 }, "type": 2 },
+    { "x": -6, "y": -1, "dir": { "x": 0, "y": 1 }, "type": 1 },
+    { "x": -8, "y": -5, "dir": { "x": -1, "y": 0 }, "type": 5 },
+    { "x": 4, "y": -1, "dir": { "x": 0, "y": 1 }, "type": 1 },
+    { "x": 4, "y": -7, "dir": { "x": 0, "y": -1 }, "type": 1 },
+    { "x": 8, "y": -4, "dir": { "x": 1, "y": 0 }, "type": 6 },
+    { "x": -6, "y": 3, "dir": { "x": 0, "y": 1 }, "type": 0 },
+    { "x": 5, "y": 0, "dir": { "x": 1, "y": 0 }, "type": 0 },
+    { "x": 5, "y": -8, "dir": { "x": 1, "y": 0 }, "type": 6 },
+    { "x": 3, "y": -8, "dir": { "x": -1, "y": 0 }, "type": 0 },
+    { "x": -7, "y": 4, "dir": { "x": -1, "y": 0 }, "type": 9 },
+    { "x": -5, "y": 4, "dir": { "x": 1, "y": 0 }, "type": 1 },
+    { "x": 6, "y": 1, "dir": { "x": 0, "y": 1 }, "type": 0 },
+    { "x": 6, "y": -9, "dir": { "x": 0, "y": -1 }, "type": 0 },
+    { "x": -4, "y": 1, "dir": { "x": 0, "y": -1 }, "type": 9 },
+    { "x": -13, "y": -5, "dir": { "x": -1, "y": 0 }, "type": 8 },
+    { "x": -4, "y": -8, "dir": { "x": 1, "y": 0 }, "type": 1 },
+    { "x": -4, "y": -1, "dir": { "x": 0, "y": 1 }, "type": 1 },
+    { "x": 0, "y": -7, "dir": { "x": 0, "y": -1 }, "type": 1 }
+  ],
+  "notes": [
+    {
+      "text": "An intricate puzzle, allows a person to speak to the spirits when solved.",
+      "ref": "1",
+      "pos": { "x": 0.5, "y": -4.5 }
+    },
+    {
+      "text": "A battered double door to the west.",
+      "ref": "2",
+      "pos": { "x": -5, "y": -3.5 }
+    },
+    {
+      "text": "A mysterious, unnaturally heavy bow in a crate.",
+      "ref": "3",
+      "pos": { "x": -5.5, "y": -9 }
+    },
+    {
+      "text": "A halfling. Desperately needs help.",
+      "ref": "5",
+      "pos": { "x": 11, "y": -3.5 }
+    },
+    {
+      "text": "A rod of invisibility in the middle of a circle of runes on the ground.",
+      "ref": "7",
+      "pos": { "x": -3, "y": 4.5 }
+    },
+    {
+      "text": "A medium chest containing a cloak and a sword.",
+      "ref": "6",
+      "pos": { "x": 6.5, "y": 3.5 }
+    },
+    {
+      "text": "Some gold among rubble on the ground.",
+      "ref": "4",
+      "pos": { "x": 6.5, "y": -10.5 }
+    }
+  ],
+  "columns": [],
+  "water": []
+}

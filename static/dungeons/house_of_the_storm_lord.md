@@ -1,6 +1,6 @@
-# House of the Storm Lord 
+# House of the Storm Lord
 
-*For decades the house of the Storm Lord was considered lost. Recently a fearsome intelligent goat has made its lair here.*
+_For decades the house of the Storm Lord was considered lost. Recently a fearsome intelligent goat has made its lair here._
 
 1. A strange, made of an unknown material long sword tucked under some debris.
 2. A large door with a keyhole to the west.

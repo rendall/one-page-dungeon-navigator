@@ -1,6 +1,6 @@
-# Chapel of Shandjit-Jheskemus 
+# Chapel of Shandjit-Jheskemus
 
-*The chapel of Shandjit-Jheskemus is situated at the center of a lake. These days it is badly infested by rabbits, indifferent to the past of the place. The chapel of Shandjit-Jheskemus is a place of growth of a rare specie of herbs.*
+_The chapel of Shandjit-Jheskemus is situated at the center of a lake. These days it is badly infested by rabbits, indifferent to the past of the place. The chapel of Shandjit-Jheskemus is a place of growth of a rare specie of herbs._
 
 1. A large door on the western wall.
 2. A ticking gearwork apparatus, wails loudly when the lever is pulled.

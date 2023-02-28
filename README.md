@@ -8,11 +8,10 @@ Seeing that the developer Oleg Dolya released a JSON exporter for these dungeons
 
 ### Webpage
 
-* `npm run build`
-* `npm run serve`
+- `npm run build`
+- `npm run serve`
 
 ### Node app
 
-* `npm run build:node`
-* `npm run run:node` or `node ./script/node.js`
-
+- `npm run build:node`
+- `npm run run:node` or `node ./script/node.js`

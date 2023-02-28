@@ -240,11 +240,11 @@ const normalizeMapSvg = (svg: SVGElement) => {
 
   const widthHeights = Array.from(svg.querySelectorAll("[width], [height]"))
 
-  ;[...widthHeights, svg].forEach((g) => {
-    g.removeAttribute("width")
-    g.removeAttribute("height")
-    g.setAttribute("viewBox", viewBox)
-  })
+    ;[...widthHeights, svg].forEach((g) => {
+      g.removeAttribute("width")
+      g.removeAttribute("height")
+      g.setAttribute("viewBox", viewBox)
+    })
 
   const mapContainer = document.getElementById("map-container")
   const width = mapContainer.getBoundingClientRect().width
@@ -279,18 +279,25 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
       new Promise<string>((resolve) => {
         onKeyDownListener = (event: KeyboardEvent) => {
           const key = event.key.toLowerCase()
-          const mapping: { [key: string]: string } = {
-            a: "w",
-            w: "n",
-            d: "e",
-            s: "s",
-            arrowup: "n",
-            arrowdown: "s",
-            arrowleft: "w",
-            arrowright: "e",
+          const isValidKey = /^[a-z#0-9]$/.test(key) || key.startsWith("arrow")
+
+          if (!isValidKey) {
+            event.preventDefault()
+            getNextInput().then(resolve)
+          } else {
+            const mapping: { [key: string]: string } = {
+              a: "w",
+              w: "n",
+              d: "e",
+              s: "s",
+              arrowup: "n",
+              arrowdown: "s",
+              arrowleft: "w",
+              arrowright: "e",
+            }
+            const mappedKey = mapping[key] ?? key
+            resolve(mappedKey)
           }
-          const mappedKey = mapping[key] ?? key
-          resolve(mappedKey)
         }
         document.addEventListener("keydown", onKeyDownListener, { once: true })
       })

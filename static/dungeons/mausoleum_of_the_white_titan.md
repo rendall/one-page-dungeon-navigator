@@ -1,6 +1,6 @@
-# Mausoleum of the White Titan 
+# Mausoleum of the White Titan
 
-*After the death of the White Titan the mausoleum has changed hands many times. Now it is controlled by a gang of bandits. Word is that a legendary censer Argarhun is hidden here.*
+_After the death of the White Titan the mausoleum has changed hands many times. Now it is controlled by a gang of bandits. Word is that a legendary censer Argarhun is hidden here._
 
 1. A notable gate to the south.
 2. A polite shaman, resting on the ground.

@@ -1,6 +1,6 @@
-# Pyramid of the White Dragon 
+# Pyramid of the White Dragon
 
-*For years the pyramid of the White Dragon remained sealed. Currently it is badly infested by pigeons.*
+_For years the pyramid of the White Dragon remained sealed. Currently it is badly infested by pigeons._
 
 1. A mosaic of a star pattern on the ceiling
 2. A battered double door with two keyholes to the west.

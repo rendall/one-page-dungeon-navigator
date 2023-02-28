@@ -1,0 +1,50 @@
+{
+  "version": "1.2.4b",
+  "title": "Shattered Castle of the Serpent Queen",
+  "story": "Long after the Serpent Queen's fall the castle remained uninhabited. These days it is infested by cats. It is rumored that untold treasures of gold and jewels are stored here.",
+  "rects": [
+    { "x": -2, "y": -3, "w": 5, "h": 3 },
+    { "x": 4, "y": -4, "w": 6, "h": 5 },
+    { "x": -9, "y": -4, "w": 6, "h": 5 },
+    { "x": 5, "y": -12, "w": 5, "h": 7 },
+    { "x": 5, "y": 2, "w": 5, "h": 7 },
+    { "x": -9, "y": -12, "w": 5, "h": 7 },
+    { "x": -9, "y": 2, "w": 5, "h": 7, "ending": true },
+    { "x": 0, "y": 0, "w": 1, "h": 1 },
+    { "x": 3, "y": -2, "w": 1, "h": 1 },
+    { "x": -3, "y": -2, "w": 1, "h": 1 },
+    { "x": 7, "y": -5, "w": 1, "h": 1 },
+    { "x": 7, "y": 1, "w": 1, "h": 1 },
+    { "x": -7, "y": -5, "w": 1, "h": 1 },
+    { "x": -7, "y": 1, "w": 1, "h": 1 }
+  ],
+  "doors": [
+    { "x": 0, "y": 0, "dir": { "x": 0, "y": -1 }, "type": 3 },
+    { "x": 3, "y": -2, "dir": { "x": 1, "y": 0 }, "type": 2 },
+    { "x": -3, "y": -2, "dir": { "x": -1, "y": 0 }, "type": 5 },
+    { "x": 7, "y": -5, "dir": { "x": 0, "y": -1 }, "type": 9 },
+    { "x": 7, "y": 1, "dir": { "x": 0, "y": 1 }, "type": 1 },
+    { "x": -7, "y": -5, "dir": { "x": 0, "y": -1 }, "type": 1 },
+    { "x": -7, "y": 1, "dir": { "x": 0, "y": 1 }, "type": 1 }
+  ],
+  "notes": [
+    {
+      "text": "A round double door on the western wall.",
+      "ref": "1",
+      "pos": { "x": 0.5, "y": -1.5 }
+    },
+    {
+      "text": "A rotten basket with lockpicks.",
+      "ref": "2",
+      "pos": { "x": 7, "y": -1.5 }
+    }
+  ],
+  "columns": [],
+  "water": [
+    { "x": 4, "y": -8 },
+    { "x": 5, "y": -8 },
+    { "x": 4, "y": -6 },
+    { "x": 5, "y": -6 },
+    { "x": 5, "y": -5 }
+  ]
+}

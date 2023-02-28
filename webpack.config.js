@@ -1,13 +1,13 @@
 // Generated using webpack-cli https://github.com/webpack/webpack-cli
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const WorkboxWebpackPlugin = require("workbox-webpack-plugin");
-const path = require("path");
+const CopyWebpackPlugin = require("copy-webpack-plugin")
+const HtmlWebpackPlugin = require("html-webpack-plugin")
+const MiniCssExtractPlugin = require("mini-css-extract-plugin")
+const WorkboxWebpackPlugin = require("workbox-webpack-plugin")
+const path = require("path")
 
-const isProduction = process.env.NODE_ENV == "production";
+const isProduction = process.env.NODE_ENV == "production"
 
-const stylesHandler = MiniCssExtractPlugin.loader;
+const stylesHandler = MiniCssExtractPlugin.loader
 
 const config = {
   entry: "./src/index.ts",
@@ -16,9 +16,9 @@ const config = {
   },
   devServer: {
     open: true,
-    watchFiles: ['./RAW/**/*'], // local one-page
+    watchFiles: ["./RAW/**/*"], // local one-page
     static: {
-      directory: path.join(__dirname, 'dist'),
+      directory: path.join(__dirname, "dist"),
     },
     host: "localhost",
   },
@@ -27,10 +27,7 @@ const config = {
       template: "./src/index.html",
     }),
     new CopyWebpackPlugin({
-      patterns: [
-        { from: 'static', },
-        { from: 'RAW', to: 'RAW', noErrorOnMissing: true }
-      ],
+      patterns: [{ from: "static" }, { from: "RAW", to: "RAW", noErrorOnMissing: true }],
     }),
     new MiniCssExtractPlugin(),
   ],
@@ -57,15 +54,15 @@ const config = {
   resolve: {
     extensions: [".tsx", ".ts", ".jsx", ".js", "..."],
   },
-};
+}
 
 module.exports = () => {
   if (isProduction) {
-    config.mode = "production";
+    config.mode = "production"
 
-    config.plugins.push(new WorkboxWebpackPlugin.GenerateSW());
+    config.plugins.push(new WorkboxWebpackPlugin.GenerateSW())
   } else {
-    config.mode = "development";
+    config.mode = "development"
   }
-  return config;
-};
+  return config
+}

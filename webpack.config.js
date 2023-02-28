@@ -12,12 +12,13 @@ const stylesHandler = MiniCssExtractPlugin.loader;
 const config = {
   entry: "./src/index.ts",
   output: {
-    path: path.resolve(__dirname, ""),
+    path: path.resolve(__dirname, "dist"),
   },
   devServer: {
     open: true,
+    watchFiles:['./RAW/**/*'], // local one-page
     static: {
-      directory: path.join(__dirname, ''),
+      directory: path.join(__dirname, 'dist'),
     },
     host: "localhost",
   },

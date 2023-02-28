@@ -5,13 +5,26 @@ export type Exit = {
   description: string;
   isFacing: boolean; // some doors have directions, secret doors for example
   door: Door;
-  type?: number;
+  type?: DoorType;
 };
+
+export enum DoorType {
+  open,
+  door,
+  narrow,
+  out,
+  portcullis,
+  double,
+  secret,
+  down,
+  stairwell
+}
 
 export type Direction = {
   x: 1 | 0 | -1;
   y: 1 | 0 | -1;
 };
+
 export type Rect = {
   x: number;
   y: number;

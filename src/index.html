@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>One Page Dungeon Navigator</title>
+  <link rel="stylesheet" href="./dungeon.css">
   <style>
     * {
       box-sizing: border-box;
@@ -73,23 +74,34 @@
       </svg>
     </div>
   </section>
-  <section id="menu">
-    <select id="dungeon-select" size="20">
-      <option value="blightfist_chapel" selected>Blightfist Chapel</option>
-      <option value="deathblade_temple">Deathblade Temple</option>
-      <option value="dreadsun_abbey">Dreadsun Abbey</option>
-      <option value="frostscar_shrine">Frostscar Shrine</option>
-      <option value="infected_sepulcher_of_tordai-makrax">Infected Sepulcher of Tordai-Makrax</option>
-      <option value="labyrinth_of_the_leper_oracle">Labyrinth of the Leper Oracle</option>
-      <option value="manor_of_the_scarlet_king">Manor of the Scarlet King</option>
-      <option value="mountain_keep_of_the_scarlet_emperor">Mountain Keep of the Scarlet Emperor</option>
-      <option value="pyramid_of_the_white_dragon">Pyramid of the White Dragon</option>
-      <option value="subterranean_monastery_of_the_lich_lord">Subterranean Monastery of the Lich Lord</option>
-      <option value="tomb_of_na">Tomb of Na</option>
-    </select>
-    <button id="start-button">Start</button>
-    <progress id="progress-bar" value="0"></progress>
-  </section>
+  <main>
+    <section id="menu">
+      <h1>One Page Dungeon Navigator</h1>
+      <p>Welcome to the One Page Dungeon Navigator, your guide to exploring the depths of <a
+          href="https://watabou.github.io/dungeon.html">Watabou's One Page Dungeon</a>! With the click of a button,
+        watabou's algorithm will create a unique dungeon for you to navigate, filled with treasure, traps, and deadly
+        monsters. Can you find your way to the end and claim the ultimate reward? But beware - every step you take could
+        be your last. Good luck, adventurer!</p>
+      <section id="select">
+        <p>Select a dungeon here and press START</p>
+        <select id="dungeon-select" size="20">
+          <option value="blightfist_chapel" selected>Blightfist Chapel</option>
+          <option value="deathblade_temple">Deathblade Temple</option>
+          <option value="dreadsun_abbey">Dreadsun Abbey</option>
+          <option value="frostscar_shrine">Frostscar Shrine</option>
+          <option value="mausoleum_of_the_white_titan">Mausoleum of the White Titan</option>
+          <option value="infected_sepulcher_of_tordai-makrax">Infected Sepulcher of Tordai-Makrax</option>
+          <option value="labyrinth_of_the_leper_oracle">Labyrinth of the Leper Oracle</option>
+          <option value="manor_of_the_scarlet_king">Manor of the Scarlet King</option>
+          <option value="mountain_keep_of_the_scarlet_emperor">Mountain Keep of the Scarlet Emperor</option>
+          <option value="pyramid_of_the_white_dragon">Pyramid of the White Dragon</option>
+          <option value="subterranean_monastery_of_the_lich_lord">Subterranean Monastery of the Lich Lord</option>
+          <option value="tomb_of_na">Tomb of Na</option>
+        </select>
+        <button id="start-button">Start</button>
+      </section>
+    </section>
+  </main>
 </body>
 
 </html>

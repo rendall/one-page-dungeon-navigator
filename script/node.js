@@ -112,6 +112,7 @@ var gameLoop = function (dungeon) { return __awaiter(void 0, void 0, void 0, fun
                 });
                 prompt = questionFunc(rl);
                 out = {
+                    action: "init",
                     message: "",
                     room: 0,
                     description: "",

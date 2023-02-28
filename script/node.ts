@@ -78,6 +78,7 @@ const gameLoop = async (dungeon: Dungeon): Promise<void> => {
   const prompt = questionFunc(rl)
 
   let out: StructuredOut = {
+    action: "init",
     message: "",
     room: 0,
     description: "",

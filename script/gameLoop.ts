@@ -1,10 +1,8 @@
+/** This is the game engine. The Dungeon object is immutable.
+ * GameState holds all of the changes or status updates. On user
+ * input, the GameState is merged or compared with data from
+ * Dungeon data and used to determine the result of the player action. */
 import { Door, DoorType, Dungeon, Exit, ExitDirection, Room } from "./dungeon";
-
-type Action = ExitDirection | "quit" | "unknown" | "search" | "init" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
-
-type DoorStatus = "unlocked" | "discovered"
-
-type DoorState = Door & { status?: DoorStatus[] }
 
 type GameState = {
   id: number;
@@ -16,6 +14,21 @@ type GameState = {
   doors: DoorState[];
 }
 
+type Action = ExitDirection | "quit" | "unknown" | "search" | "init" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+
+export type GameOutput = {
+  action: Action; // This is the last action of the user
+  message: string;
+  room: number;
+  description: string;
+  exits: Exit[];
+  end: boolean;
+  error?: string;
+}
+
+type DoorStatus = "unlocked" | "discovered"
+type DoorState = Door & { status?: DoorStatus[] }
+
 const initState: GameState = {
   id: 0,
   message: "",
@@ -24,44 +37,56 @@ const initState: GameState = {
   doors: []
 }
 
-/** Returns a function that accepts old game state and returns new game state.
+const handleExit = (exit: Exit, dungeon: Dungeon, gameState: GameState): GameState => {
+  if (!exit) return { ...gameState, message: "You cannot go that way" }
+  if (exit.to === "outside") return { ...gameState, message: "You leave the dungeon", end: true }
+  // portcullises can only be opened from one direction
+  if (exit.door.type === DoorType.portcullis) {
+    const exitDoor = gameState.doors?.find(door => door.id === exit.door.id)
+    const isOpen = exitDoor?.status?.find(s => s === "unlocked")
+    if (exit.isFacing) {
+      if (!isOpen) return { ...gameState, message: "The portcullis bars your way." }
+    }
+    else {
+      if (!isOpen) {
+        const exitDoor = dungeon.doors.find(door => door.id === exit.door.id)
+        const openDoor: DoorState = { ...exitDoor, status: ["unlocked"] }
+        const newGameState = {
+          ...gameState,
+          doors: [...gameState.doors, openDoor],
+          message: `You pull the lever. The portcullis opens. You go ${exit.towards}.`,
+          id: exit.to
+        }
+        return newGameState
+      }
+    }
+  }
+  return { ...gameState, id: exit.to, message: `You go ${exit.towards}.` }
+
+}
+
+/** inputFunc is a higher order function that accepts a Dungeon and
+ * returns a function that accepts a GameState and returns a new
+ * GameState.
+ * 
+ * `message` should make no assumptions about how it will be presented.
+ * Ideally, in future, all text descriptions will be constructed by the
+ * client from output data.
  * @param dungeon
  * @returns (gameState) => gameState
  */
 const inputFunc = (dungeon: Dungeon) => (oldGameState: GameState): GameState => {
   const gameState: GameState = { ...oldGameState, error: undefined, end: undefined }
   const currentRoom = dungeon.rooms?.find(room => room.id === gameState.id)!
+  const isVisible = isVisibleExitFunc(gameState)
 
   switch (gameState.action) {
     case "east":
     case "west":
     case "north":
     case "south":
-      const isVisible = isVisibleExitFunc(gameState)
       const exit = currentRoom.exits.filter(isVisible).find(e => e.towards === gameState.action)
-      if (!exit) return { ...gameState, message: "You cannot go that way" }
-      if (exit.to === "outside") return { ...gameState, message: "You leave the dungeon", end: true }
-      // portcullis special handling...
-      if (exit.door.type === DoorType.portcullis) {
-        const exitDoor = gameState.doors?.find(door => door.id === exit.door.id)
-        const isOpen = exitDoor?.status?.find(s => s === "unlocked")
-        if (exit.isFacing) {
-          if (!isOpen) return { ...gameState, message: "The portcullis bars your way." }
-        }
-        else {
-          if (!isOpen) {
-            const exitDoor = dungeon.doors.find(door => door.id === exit.door.id)
-            const openDoor: DoorState = { ...exitDoor, status: ["unlocked"] }
-            const newGameState = {
-              ...gameState,
-              doors: [ ...gameState.doors, openDoor ],
-              message: `You pull the lever. The portcullis opens.`
-            }
-            return newGameState
-          }
-        }
-      }
-      return { ...gameState, id: exit.to, message: `You go ${gameState.action}.` }
+      return handleExit(exit, dungeon, gameState)
     case "search": {
       const secret = currentRoom.exits.find(e => e.door.type === 6)
       if (secret) {
@@ -74,12 +99,8 @@ const inputFunc = (dungeon: Dungeon) => (oldGameState: GameState): GameState => 
       return { ...gameState, message: "You quit.", end: true }
     default:
       if (/\d/.test(gameState.action)) {
-        const isVisible = isVisibleExitFunc(gameState)
         const exit = currentRoom.exits.filter(isVisible).slice(0).sort((a, b) => b.door.id - a.door.id)[parseInt(gameState.action) - 1]
-        if (!exit) return { ...gameState, message: "You cannot go that way" }
-        if (exit.to === "outside") return { ...gameState, message: "You leave the dungeon", end: true }
-        return { ...gameState, id: exit.to, message: `You go ${gameState.action}` }
-
+        return handleExit(exit, dungeon, gameState)
       }
       else return { ...gameState, message: "Not understood.", error: "syntax" }
   }
@@ -117,15 +138,7 @@ const parseInput = (input: string): Action => {
   }
 }
 
-export type StructuredOut = {
-  action: Action; // This is the last action of the user
-  message: string;
-  room: number;
-  description: string;
-  exits: Exit[];
-  end: boolean;
-  error?: string;
-}
+
 
 const getCurrentRoomFunc = (dungeon: Dungeon) => (id: number): Room => {
   const room = dungeon.rooms?.find(room => room.id === id)
@@ -145,15 +158,23 @@ const describeRoomFunc = (getCurrentRoom: (id: number) => Room) => (gameState: G
   return { description, exits }
 }
 
-type GameInterface = (input: string) => StructuredOut
+type GameInterface = (input: string) => GameOutput
 
+/** `game` is a higher-order function that accepts a Dungeon and 
+ * returns a GameInterface. GameInterface is responsible for
+ * accepting raw user input and returning GameOutput. It does
+ * this by parsing user input into an Action, which is sent to
+ * the game engine as part of the current GameStage, and then
+ * mapping the resulting GameState state into a GameOutput.
+  */
 export const game = (dungeon: Dungeon): GameInterface => {
+  // init game interface
   const interpretInput = inputFunc(dungeon)
   let gameState = initState
   const getCurrentRoom = getCurrentRoomFunc(dungeon)
   const describeRoom = describeRoomFunc(getCurrentRoom)
 
-  const initMessage: StructuredOut = {
+  const initMessage: GameOutput = {
     message: dungeon.title + "\n" + dungeon.story,
     room: gameState.id,
     ...describeRoom(gameState),

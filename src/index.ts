@@ -1,6 +1,6 @@
 import { Dungeon } from "../script/dungeon";
 import { parseDungeon } from "../script/parseDungeon"
-import { game, StructuredOut } from "../script/gameLoop";
+import { game, GameOutput } from "../script/gameLoop";
 
 const INSTRUCTIONS = "Press 'q' to quit. Press 'x' to search. Press the arrow keys or 'w' 'a' 's' or 'd' to move around."
 
@@ -40,15 +40,16 @@ const displayMap = (svgData: string): SVGElement => {
   const mapContainer = document.querySelector("div#map-container") as HTMLDivElement;
   mapContainer.innerHTML = svgData;
   const svg = mapContainer.querySelector("svg")
-  svg.querySelector("rect").setAttribute("fill", "#000000")
+  svg.setAttribute("id", "dungeon-svg")
+  svg.querySelector("rect").removeAttribute("fill") // the background of the dungeon should be controlled by the page
   return svg
 }
 
 const getBaseMapLayer = () => {
   const baseMapLayer = document.querySelector("#dungeon-map")
   if (baseMapLayer) return baseMapLayer
-  const svgEl = document.querySelector('#map-container svg');
-  const gTransform = svgEl.querySelector(`g[transform]`)
+  const svgEl = document.querySelector('#dungeon-svg');
+  const gTransform = svgEl.querySelector("#dungeon-layer") ?? svgEl.querySelector(`g[transform]`)
   const gDungeon = gTransform.querySelector('g:nth-of-type(2)')
   gDungeon.setAttribute("id", "dungeon-map")
   return gDungeon
@@ -64,7 +65,7 @@ const getSVGPaths = () => {
 }
 
 const addMaskLayerToMap = (svg: SVGElement): void => {
-  const dungeonMap = svg.querySelector("g[transform]")
+  const dungeonMap = svg.querySelector("#dungeon-layer")
   dungeonMap.setAttribute("mask", "url(#map-mask)")
   const mapMask = document.createElementNS('http://www.w3.org/2000/svg', "mask")
   mapMask.setAttribute("id", "map-mask")
@@ -73,10 +74,8 @@ const addMaskLayerToMap = (svg: SVGElement): void => {
 }
 
 const addAvatarLayer = (svg: SVGElement): void => {
-  const dungeonLayer = svg.querySelector("g[transform]")
-  const dungeonTransform = dungeonLayer.getAttribute("transform")
+  const dungeonLayer = svg.querySelector("#dungeon-layer")
   const avatarLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  avatarLayer.setAttribute("transform", dungeonTransform)
   avatarLayer.setAttribute("id", "avatar-layer")
   dungeonLayer.insertAdjacentElement('afterend', avatarLayer)
   const avatar = document.getElementById("avatar-icon").cloneNode(true) as SVGElement
@@ -102,19 +101,35 @@ const revealPathFunc = (paths: SVGPathElement[]) => (id: number) => {
 
 const moveAvatar = (d: string) => {
   const [cx, cy] = getMidPoint(d)
-  const xOffset = -50
-  const yOffset = -40
   const avatar = document.getElementById("avatar") as unknown as SVGCircleElement
+  const xOffset = -parseInt(avatar.getAttribute("width")) / 2
+  const yOffset = -parseInt(avatar.getAttribute("height")) / 2
   avatar.setAttribute('x', `${cx + xOffset}`);
   avatar.setAttribute('y', `${cy + yOffset}`)
-  const a = avatar.getBoundingClientRect();
-
-  const { bottom, height, left, right, top, width, x, y } = a
-  console.log({ bottom, height, left, right, top, width, x, y })
+  centerAvatar()
 }
 
 const centerAvatar = () => {
+  const avatar = document.getElementById("avatar")
+  const mapContainer = document.querySelector("#map-container")
+  const svg = mapContainer.querySelector("svg")
 
+  const mapBound = mapContainer.getBoundingClientRect();
+  const avatarBound = avatar.getBoundingClientRect();
+  const svgBound = svg.getBoundingClientRect();
+
+  const targetX = mapBound.width / 2 // this is the midpoint of the map-container
+  const avatarX = avatarBound.width /2 + avatarBound.left // this is the midpoint of the avatar which should move to targetX
+  const xOffset = targetX - avatarX
+  const svgLeft = `${svgBound.left + xOffset}px`
+
+  const targetY = mapBound.height / 2 + mapBound.top // this is the midpoint of the map-container
+  const avatarY = avatarBound.height /2 + avatarBound.top // this is the midpoint of the avatar which should move to targetY
+  const yOffset = targetY - avatarY
+  const svgTop = `${svgBound.top + yOffset}px`
+
+  svg.style.left = svgLeft
+  svg.style.top = svgTop
 }
 
 const unique = (uq: string[], c: string) => uq.some(u => u === c) ? uq : [...uq, c]
@@ -123,6 +138,10 @@ const getMidPoint = (d: string) => getCoords(d).reduce(([sumX, sumY]: [number, n
 
 const printMessage = (message: string, type: string = "message") => {
   const messageScroll = document.getElementById("message-scroll")
+  if (type === "clear") {
+    messageScroll.innerHTML = message
+    return
+  }
   const messageP = document.createElement("p") as HTMLParagraphElement
   messageP.classList.add(type)
   messageP.innerHTML = message
@@ -130,11 +149,20 @@ const printMessage = (message: string, type: string = "message") => {
   messageScroll.scrollTop = messageScroll.scrollHeight
 }
 
-const presentResultFunc = (revealPath: (id: number) => SVGPathElement) => (result: StructuredOut) => {
-  if (result.action !== "init" && result.action !== "unknown") printMessage(result.action, "action")
-  const message = result.message.replace(/\n/g, "<br>")
-  printMessage(message)
-
+const presentResultFunc = (revealPath: (id: number) => SVGPathElement) => (result: GameOutput) => {
+  switch (result.action) {
+    case "init":
+      const [title, subtitle] = result.message.split("\n")
+      printMessage(`<h1 class="title">${title}</h1><p class="story">${subtitle}</p>`, "clear")
+      break;
+    case "quit":
+    case "unknown": break; // Do not print these messages. They will be handled below.
+    default:
+      const message = result.message.replace(/\n/g, "<br>")
+      printMessage(result.action, "action")
+      printMessage(message)
+      break;
+  }
   if (result.error) {
     switch (result.error) {
       case "syntax":
@@ -156,27 +184,77 @@ const presentResultFunc = (revealPath: (id: number) => SVGPathElement) => (resul
   moveAvatar(path.getAttribute("d"))
   result.exits.forEach(exit => revealPath(exit.door.id))
 }
-const modifyMapSvg = (svg: SVGElement) => {
-  const gTransform = svg.querySelector(`g[transform]`)
 
-  // unrotate map
-  const transform = gTransform.getAttribute("transform")
-  const unRotatedTransform = transform.replace(/rotate\(.*\)/, "rotate(0 0 0)")
-  gTransform.setAttribute("transform", unRotatedTransform)
-
-  const siblingLayer = gTransform.nextElementSibling
-  // Remove non-map layers
-  if (siblingLayer) {
-    siblingLayer.remove()
-    modifyMapSvg(svg)
+const getSvgViewBox = (svg: SVGElement) => {
+  const paths = svg.querySelectorAll("path")
+  type Bound = {
+    left?: number,
+    right?: number,
+    top?: number,
+    bottom?: number
   }
+
+  const reduceToBound = (bound: Bound, [x, y]: [number, number]): Bound => {
+
+    const boundleft = (bound.left ?? x)
+    const boundright = (bound.right ?? x)
+    const boundtop = (bound.top ?? y)
+    const boundbottom = (bound.bottom ?? y)
+
+    const left = boundleft > x ? x : boundleft
+    const right = boundright < x ? x : boundright
+    const top = boundtop > y ? y : boundtop
+    const bottom = boundbottom < y ? y : boundbottom
+
+    return { left, right, top, bottom }
+
+  }
+
+  const bounds = Array.from(paths).map(path => path.getAttribute("d")).flatMap(d => d.match(/[\d.-]*,[\d.-]*/g)).map(point => point.split(",").map(p => parseFloat(p))).reduce(reduceToBound, {})
+
+  const viewBox = `${bounds.left} ${bounds.top} ${bounds.right - bounds.left} ${bounds.bottom - bounds.top}`
+
+  return viewBox
+
+}
+
+const normalizeMapSvg = (svg: SVGElement) => {
+  const gTransform = svg.querySelector(`g[transform]`)
+  gTransform.setAttribute("id", "dungeon-layer")
+
+  let siblingLayer
+
+  do {
+    siblingLayer = gTransform.nextElementSibling
+    if (siblingLayer) {
+      siblingLayer.remove()
+    }
+  } while (siblingLayer);
+
+  const viewBox = getSvgViewBox(svg);
+
+  const widthHeights = Array.from(svg.querySelectorAll("[width], [height]"));
+
+  [...widthHeights, svg].forEach(g => {
+    g.removeAttribute("width")
+    g.removeAttribute("height")
+    g.setAttribute("viewBox", viewBox)
+  })
+
+  const mapContainer = document.getElementById("map-container")
+  const width = mapContainer.getBoundingClientRect().width
+
+  svg.style.width = `${width}px`
+
+  Array.from(svg.querySelectorAll("[transform]")).forEach(e => e.removeAttribute("transform"))
+
 }
 
 const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
   // init ui
   const svg = displayMap(mapSvgData)
+  normalizeMapSvg(svg);
   addMaskLayerToMap(svg);
-  modifyMapSvg(svg);
   addAvatarLayer(svg)
 
   // init dungeon
@@ -193,11 +271,8 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
   printMessage(INSTRUCTIONS)
 
 
-  const getNextResult = async (): Promise<StructuredOut> => {
-
+  const getNextResult = async (): Promise<GameOutput> => {
     let onKeyDownListener
-
-
     const getNextInput = () => new Promise<string>(resolve => {
       onKeyDownListener = (event: KeyboardEvent) => {
         const key = event.key.toLowerCase()
@@ -240,7 +315,7 @@ const startGame = async () => {
 
 
 
-const gameEnd = (result: StructuredOut) => {
+const gameEnd = (result: GameOutput) => {
   const gameSection = document.querySelector("section#game")
   gameSection.classList.add("hide")
 
@@ -250,3 +325,4 @@ const gameEnd = (result: StructuredOut) => {
 
 
 startButton.addEventListener('click', startGame)
+startGame()

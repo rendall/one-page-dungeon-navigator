@@ -16,7 +16,7 @@ const config = {
   },
   devServer: {
     open: true,
-    watchFiles:['./RAW/**/*'], // local one-page
+    watchFiles: ['./RAW/**/*'], // local one-page
     static: {
       directory: path.join(__dirname, 'dist'),
     },
@@ -28,15 +28,11 @@ const config = {
     }),
     new CopyWebpackPlugin({
       patterns: [
-        {
-          from: 'static',
-        },
+        { from: 'static', },
+        { from: 'RAW', to: 'RAW', noErrorOnMissing: true }
       ],
     }),
     new MiniCssExtractPlugin(),
-
-    // Add your plugins here
-    // Learn more about plugins from https://webpack.js.org/configuration/plugins/
   ],
   module: {
     rules: [

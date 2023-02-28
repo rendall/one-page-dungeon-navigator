@@ -1,3 +1,4 @@
+/** This file takes a One Page Dungeon json file and parses it for navigation */
 import type {
   Column,
   Door,
@@ -35,7 +36,7 @@ const describeDoor = (
     case 3:
       return "way out of the dungeon";
     case 4:
-      return "portcullis";
+      return isFacing ? "portcullis" : "portcullis with a lever on the wall next to it";
     case 5:
       return "double doors";
     case 6: {
@@ -62,18 +63,18 @@ const describeRoom = (
   const columnDesc =
     columns && columns.length > 0
       ? room.rotunda
-        ? `- ${columns.length} columns ring the center of the room `
-        : `- two rows of ${Math.floor(
+        ? `\n${columns.length} columns ring the center of the room.`
+        : `\ntwo rows of ${Math.floor(
             columns.length / 2
-          )} columns support the ceiling `
+          )} columns support the ceiling.`
       : "";
   const waterDesc =
     water && water.length > 0
       ? water.length === room.h * room.w
-        ? `- water entirely covers the floor`
-        : `- water covers part of the floor (${Math.floor(
+        ? `\nWater entirely covers the floor.`
+        : `\nWater covers part of the floor (${Math.floor(
             100 * (water.length / (room.h * room.w))
-          )}%)`
+          )}%).`
       : "";
   const description = `${noun} ${columnDesc}${waterDesc}`.trim();
   return description;
@@ -114,9 +115,9 @@ const getRoomNoun = (room: Rect | "outside", exits: Exit[]): string => {
         return "dim passage";
     }
   }
-  if (room.h === 1) {
-    if (room.w === 2) return "short hallway";
-    if (room.w > 5) return "long hallway";
+  if (room.h === 1 || room.w === 1) {
+    if (room.w === 2 || room.h === 2) return "short hallway";
+    if (room.w > 5 || room.h > 5) return "long hallway";
     return "hallway";
   }
 

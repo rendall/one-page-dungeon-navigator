@@ -38,7 +38,7 @@ var describeDoor = function (door, direction, destination) {
         case 3:
             return "way out of the dungeon";
         case 4:
-            return "portcullis";
+            return isFacing ? "portcullis" : "portcullis with a lever on the wall next to it";
         case 5:
             return "double doors";
         case 6: {
@@ -100,10 +100,10 @@ var getRoomNoun = function (room, exits) {
                 return "dim passage";
         }
     }
-    if (room.h === 1) {
-        if (room.w === 2)
+    if (room.h === 1 || room.w === 1) {
+        if (room.w === 2 || room.h === 2)
             return "short hallway";
-        if (room.w > 5)
+        if (room.w > 5 || room.h > 5)
             return "long hallway";
         return "hallway";
     }

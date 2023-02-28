@@ -1,0 +1,163 @@
+@font-face {
+  font-family: 'Cinzel Decorative';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/cinzeldecorative/v14/daaCSScvJGqLYhG8nNt8KPPswUAPni7TTMw.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Grenze';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/grenze/v14/O4ZQFGb7hR12BxqPC0EzlS0X.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Mu4mxP.ttf') format('truetype');
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  font-size: 1rem;
+  background-color: #f5f5f5;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+main {
+  padding: 1rem;
+  width: 50rem;
+}
+
+section.hide {
+  display: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: bold;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+h1.title {
+  text-align: center;
+  font-family: 'Grenze';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 2.9rem;
+  line-height: 2.6rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+}
+
+a {
+  color: #0077cc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  border: 1px solid #0077cc;
+  border-radius: 4px;
+  color: #0077cc;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+}
+
+button:hover {
+  background-color: #0077cc;
+  color: #fff;
+}
+
+p.story {
+  font-weight: bold;
+}
+
+p.error {
+  color: red;
+}
+
+p.message {
+  font-weight: bold;
+}
+
+#game {
+  display: flex;
+}
+
+#game.hide {
+  display: none;
+}
+
+#dungeon-svg {
+  max-width: 100rem;
+  position: absolute;
+  will-change: top, left;
+  transform: translateZ(0);
+  transition: left 0.5s ease, top 0.5s ease;
+}
+
+#avatar {
+  filter: drop-shadow(0 1px 1px rgba(13, 28, 51, 0.7));
+}
+
+#map-container {
+  background-color: rgb(13, 28, 51);
+  flex-grow: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+#message-container {
+  background-color: white;
+  width: 25rem;
+  height: 100vh;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+#message-scroll {
+  padding: 0 1rem;
+  width: 100%;
+  height: 100vh;
+  overflow-y: scroll;
+}
+
+#message-scroll p:last-child {
+  margin-bottom: 3rem;
+}

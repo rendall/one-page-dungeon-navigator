@@ -6,6 +6,16 @@ Seeing that the developer Oleg Dolya released a JSON exporter for these dungeons
 
 Give it a try! [one-map.netlify.app](https://one-map.netlify.app/)
 
+## [Credits](https://one-map.netlify.app/credits.html)
+
+###  Oleg Dolya
+
+[Oleg Dolya of Watabou's Procgen Arcana](https://watabou.github.io/) is the almighty creator of the One Page Dungeon Generator, which this website is entirely based on. You can support Oleg on Patreon and be cool like me!
+
+### Daniel DaLoia from Noun Project
+
+The barbarian helmet icon is used as the avatar for the adventurer.
+
 ## Development
 
 ### Webpage

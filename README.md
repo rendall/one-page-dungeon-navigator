@@ -4,6 +4,8 @@ This project lets you navigate a procedurally generated [One Page Dungeon](https
 
 Seeing that the developer Oleg Dolya released a JSON exporter for these dungeons, I thought it'd be fun to actually navigate around them.
 
+Give it a try! [one-map.netlify.app](https://one-map.netlify.app/)
+
 ## Development
 
 ### Webpage

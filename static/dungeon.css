@@ -125,6 +125,7 @@ p.message {
 }
 
 #dungeon-svg {
+  max-width: 100rem;
   position: absolute;
   will-change: top, left;
   transform: translateZ(0);

@@ -154,7 +154,7 @@ const describeRoomFunc = (getCurrentRoom: (id: number) => Room) => (gameState: G
   const areExitsSame = exits.some((exit, i, all) => [...all.slice(0, i), ...all.slice(i + 1)].find(e => e.towards === exit.towards))
   const exitNumber = (doShow: boolean, index: number) => doShow ? ` #(${index + 1})` : ''
   const exitsDescription = exits.reduce((description, exit, i) => description + `To the ${exit.towards} is a ${exit.description}${exitNumber(areExitsSame, i)}` + "\n", "")
-  const description = `A ${room.area} ${room.description}` + "\n" + `${room.contains ?? ''} ` + "\n" + exitsDescription
+  const description = `You are in a ${room.area} ${room.description}` + "\n" + `${room.contains ?? ''} ` + "\n" + exitsDescription
   return { description, exits }
 }
 

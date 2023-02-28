@@ -160,7 +160,8 @@ const presentResultFunc = (revealPath: (id: number) => SVGPathElement) => (resul
     default:
       const message = result.message.replace(/\n/g, "<br>")
       printMessage(result.action, "action")
-      printMessage(message)
+      if (message.startsWith("You leave the dungeon") ) printMessage("You consider leaving.")
+      else printMessage(message)
       break;
   }
   if (result.error) {

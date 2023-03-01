@@ -48,7 +48,7 @@ const describeRoom = (room: Rect, exits: Exit[], columns?: Column[], water?: Wat
     columns && columns.length > 0
       ? room.rotunda
         ? `\n${columns.length} columns ring the center of the room.`
-        : `\ntwo rows of ${Math.floor(columns.length / 2)} columns support the ceiling.`
+        : `\n${Math.floor(columns.length)} columns in two rows support the ceiling.`
       : ""
   const waterDesc =
     water && water.length > 0

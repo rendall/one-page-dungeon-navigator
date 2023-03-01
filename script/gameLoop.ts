@@ -106,7 +106,11 @@ const inputFunc =
         const exit = currentRoom.exits.filter(isVisible).find((e) => e.towards === gameState.action)
         return handleExit(exit, dungeon, gameState)
       case "search": {
-        const secret = currentRoom.exits.find((e) => e.door.type === 6)
+        const secret = currentRoom.exits.find(
+          (exit) =>
+            exit.door.type === 6 &&
+            !gameState.doors.find((door) => door.id === exit.door.id)?.status.includes("discovered")
+        )
         if (secret) {
           const doors: DoorState[] = [...gameState.doors, { ...secret.door, status: ["discovered"] }]
           return {

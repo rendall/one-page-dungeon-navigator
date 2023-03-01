@@ -148,6 +148,10 @@ const updateMessageScroll = () => {
   messageScroll.scrollTop = messageScroll.scrollHeight
 }
 
+const clearInput = () => {
+  const messageInput = document.getElementById("message-input") as HTMLInputElement
+  messageInput.value=''
+}
 const printMessage = (message: string, type: string = "message") => {
   const messageScroll = document.getElementById("message-scroll")
   if (type === "clear") {
@@ -160,11 +164,11 @@ const printMessage = (message: string, type: string = "message") => {
   messageScroll.appendChild(messageP)
   updateMessageScroll()
 
-  if (type==="toggle") {
+  if (type === "toggle") {
     messageP.addEventListener("click", () => {
-    const messageContainer = document.getElementById("message-container")
+      const messageContainer = document.getElementById("message-container")
       messageContainer.classList.toggle("toggle")
-      if ( messageContainer.classList.contains("toggle")) {
+      if (messageContainer.classList.contains("toggle")) {
         const input = document.getElementById("message-input")
         input.focus()
       }
@@ -209,8 +213,6 @@ const presentResultFunc = (revealPath: (id: number) => SVGPathElement) => (resul
   moveAvatar(path.getAttribute("d"))
   result.exits.forEach((exit) => revealPath(exit.door.id))
 
-  const messageInput = document.getElementById("message-input") as HTMLInputElement
-  messageInput.value = result.action
 }
 
 const getSvgBounds = (svg: SVGElement) => {
@@ -302,7 +304,7 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
   const getNextResult = async (): Promise<GameOutput> => {
     const getNextInput = () =>
       new Promise<string>((resolve) => {
-        const onKeyDownListener = (event: KeyboardEvent) => {
+        const onInputListener = (event: KeyboardEvent) => {
           const key = event.key.toLowerCase()
           const isValidKey = /^[a-z#0-9]$/.test(key) || key.startsWith("arrow")
 
@@ -320,11 +322,14 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
               arrowleft: "w",
               arrowright: "e",
             }
+            requestAnimationFrame(clearInput)
             const mappedKey = mapping[key] ?? key
             resolve(mappedKey)
           }
         }
-        document.addEventListener("keydown", onKeyDownListener, { once: true })
+        const messageInput = document.getElementById("message-input") as HTMLInputElement
+        messageInput.addEventListener("input", onInputListener, { once: true })
+        document.addEventListener("keydown", onInputListener, { once: true })
       })
 
     const key = await getNextInput()

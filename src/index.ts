@@ -159,6 +159,18 @@ const printMessage = (message: string, type: string = "message") => {
   messageP.innerHTML = message
   messageScroll.appendChild(messageP)
   updateMessageScroll()
+
+  if (type==="toggle") {
+    messageP.addEventListener("click", () => {
+    const messageContainer = document.getElementById("message-container")
+      messageContainer.classList.toggle("toggle")
+      if ( messageContainer.classList.contains("toggle")) {
+        const input = document.getElementById("message-input")
+        input.focus()
+      }
+    })
+
+  }
 }
 
 const presentResultFunc = (revealPath: (id: number) => SVGPathElement) => (result: GameOutput) => {
@@ -285,6 +297,7 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
   const initResult = inputToGame("INIT")
   presentResult(initResult)
   printMessage(INSTRUCTIONS)
+  printMessage("Press here to toggle input.", "toggle")
 
   const getNextResult = async (): Promise<GameOutput> => {
     const getNextInput = () =>

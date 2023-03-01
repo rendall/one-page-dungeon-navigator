@@ -131,6 +131,11 @@ p.message {
   font-weight: bold;
 }
 
+p.toggle {
+  cursor: pointer;
+  font-weight: bold;
+}
+
 section#game {
   display: flex;
 }
@@ -280,14 +285,12 @@ body.credits {
 }
 
 /* a touchscreen implies a virtual keyboard */
-@media (pointer: course), (max-width: 1028px) {
-  #message-input {
+  .toggle #message-input {
     display: unset;
     height: 2rem;
     width: 100%;
   }
 
-  #message-scroll {
+  .toggle #message-scroll {
     height: calc(100vh - 2rem);
   }
-}

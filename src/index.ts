@@ -269,6 +269,9 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
 
   const inputToGame = game(dungeon)
 
+  const resizeEventListener = (event:Event) => centerAvatar()
+  window.addEventListener("resize", resizeEventListener)
+
   const initResult = inputToGame("INIT")
   presentResult(initResult)
   printMessage(INSTRUCTIONS)
@@ -314,6 +317,7 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
 
     if (result.end && result.action === "quit") {
       document.removeEventListener("keydown", onKeyDownListener)
+      window.removeEventListener("resize", resizeEventListener)
       return result
     } else {
       return getNextResult()

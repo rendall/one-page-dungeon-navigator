@@ -139,6 +139,11 @@ const getMidPoint = (d: string) =>
     .reduce(([sumX, sumY]: [number, number], [x, y]: [number, number]) => [sumX + x, sumY + y], [0, 0])
     .map((avg) => avg / getCoords(d).length)
 
+const updateMessageScroll = () => {
+  const messageScroll = document.getElementById("message-scroll")
+  messageScroll.scrollTop = messageScroll.scrollHeight
+}
+
 const printMessage = (message: string, type: string = "message") => {
   const messageScroll = document.getElementById("message-scroll")
   if (type === "clear") {
@@ -149,7 +154,7 @@ const printMessage = (message: string, type: string = "message") => {
   messageP.classList.add(type)
   messageP.innerHTML = message
   messageScroll.appendChild(messageP)
-  messageScroll.scrollTop = messageScroll.scrollHeight
+  updateMessageScroll()
 }
 
 const presentResultFunc = (revealPath: (id: number) => SVGPathElement) => (result: GameOutput) => {
@@ -187,6 +192,9 @@ const presentResultFunc = (revealPath: (id: number) => SVGPathElement) => (resul
   const path: SVGPathElement = revealPath(roomId)
   moveAvatar(path.getAttribute("d"))
   result.exits.forEach((exit) => revealPath(exit.door.id))
+
+  const messageInput = document.getElementById("message-input") as HTMLInputElement
+  messageInput.value = result.action
 }
 
 const getSvgBounds = (svg: SVGElement) => {
@@ -218,16 +226,15 @@ const getSvgBounds = (svg: SVGElement) => {
     .map((point) => point.split(",").map((p) => parseFloat(p)))
     .reduce(reduceToBound, {})
 
-  return bounds;
-
+  return bounds
 }
 
 const normalizeMapSvg = (svg: SVGElement) => {
   const gTransform = svg.querySelector(`g[transform]`)
   gTransform.setAttribute("id", "dungeon-layer")
 
+  // remove non-map layers (notes, title, legends, etc)
   let siblingLayer
-
   do {
     siblingLayer = gTransform.nextElementSibling
     if (siblingLayer) {
@@ -235,22 +242,24 @@ const normalizeMapSvg = (svg: SVGElement) => {
     }
   } while (siblingLayer)
 
+  // the svg should only be contained within itself
   const bounds = getSvgBounds(svg)
   const viewBox = `${bounds.left} ${bounds.top} ${bounds.right - bounds.left} ${bounds.bottom - bounds.top}`
 
-  const widthHeights = Array.from(svg.querySelectorAll("[width], [height]"))
-
-    ;[...widthHeights, svg].forEach((g) => {
-      g.removeAttribute("width")
-      g.removeAttribute("height")
-      g.setAttribute("viewBox", viewBox)
-    })
+  // replace width, height properties with viewBox for all elements that have them
+  const widthHeights = [...Array.from(svg.querySelectorAll("[width], [height]")), svg]
+  widthHeights.forEach((g) => {
+    g.removeAttribute("width")
+    g.removeAttribute("height")
+    g.setAttribute("viewBox", viewBox)
+  })
 
   const width = bounds.right - bounds.left
 
   // This normalizes the apparent size of the rooms no matter the size of the map
   svg.style.width = `${width}px`
 
+  // remove transformations
   Array.from(svg.querySelectorAll("[transform]")).forEach((e) => e.removeAttribute("transform"))
 }
 
@@ -261,8 +270,7 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
   addMaskLayerToMap(svg)
   addAvatarLayer(svg)
 
-  const messageInput:HTMLInputElement = document.querySelector('#message-input')
-  messageInput.addEventListener("change", () => { messageInput.value = "" })
+ 
 
   // init dungeon
   const dungeon = parseDungeon(dungeonData)
@@ -272,7 +280,9 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
 
   const inputToGame = game(dungeon)
 
-  const resizeEventListener = (event:Event) => centerAvatar()
+  const resizeEventListener = () => centerAvatar()
+  
+
   window.addEventListener("resize", resizeEventListener)
 
   const initResult = inputToGame("INIT")
@@ -323,6 +333,7 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
       window.removeEventListener("resize", resizeEventListener)
       return result
     } else {
+      requestAnimationFrame(updateMessageScroll)
       return getNextResult()
     }
   }
@@ -338,6 +349,16 @@ const getSelectedDungeon = (selectId: string) => {
   return randomOption.value
 }
 
+const resizeDungeonSelect = () => {
+  const select = document.getElementById("dungeon-select") as HTMLSelectElement
+  const footer = document.querySelector("#menu footer") as HTMLElement
+  const maxSize = select.size
+  const rowHeight = Math.ceil(select.clientHeight / select.size)
+  const maxHeight = window.innerHeight - footer.clientHeight
+  const numRows = Math.floor(maxHeight / rowHeight) - 4
+  select.size = Math.min( numRows, maxSize )
+}
+
 const startGame = async () => {
   const selectedDungeon = getSelectedDungeon("dungeon-select")
   const gameDataFiles = await loadFiles(selectedDungeon, onProgress)
@@ -351,6 +372,8 @@ const gameEnd = (result: GameOutput) => {
 
   const menuSection = document.querySelector("section#menu")
   menuSection.classList.remove("hide")
+
+  requestAnimationFrame(resizeDungeonSelect)
 }
 
 startButton.addEventListener("click", startGame)

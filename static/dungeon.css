@@ -118,7 +118,7 @@ p.message {
   font-weight: bold;
 }
 
-#game {
+section#game {
   display: flex;
 }
 
@@ -160,6 +160,56 @@ p.message {
   overflow-y: scroll;
 }
 
-#message-scroll p:last-child {
-  margin-bottom: 3rem;
+#message-input {
+  display: none;
+  color: transparent;
+}
+
+#menu {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+#menu.hide {
+  display: none;
+}
+
+#menu header {
+  flex: 1;
+}
+
+#menu section#select {
+  order: -1;
+  margin-right: 2rem;
+  height: calc(100vh - 2rem);
+  display:flex;
+  flex-direction: column;
+  padding: 0 1rem;
+  width: 25rem;
+  background-color: lightgray;
+}
+
+#menu #dungeon-select option {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+#menu footer {
+  flex-shrink: 0;
+  width: 100%;
+  height: 2rem;
+}
+
+/* a touchscreen implies a virtual keyboard */
+@media (pointer: course), (max-width: 1028px) {
+  #message-input {
+    display: unset;
+    height: 2rem;
+    width: 100%;
+  }
+
+  #message-scroll {
+    height: calc(100vh - 2rem);
+  }
 }

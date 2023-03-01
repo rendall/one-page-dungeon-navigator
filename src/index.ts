@@ -269,31 +269,23 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
   normalizeMapSvg(svg)
   addMaskLayerToMap(svg)
   addAvatarLayer(svg)
-
- 
+  const resizeEventListener = () => centerAvatar()
+  window.addEventListener("resize", resizeEventListener)
 
   // init dungeon
   const dungeon = parseDungeon(dungeonData)
   const paths = getSVGPaths()
   const revealPath = revealPathFunc(paths)
   const presentResult = presentResultFunc(revealPath)
-
   const inputToGame = game(dungeon)
-
-  const resizeEventListener = () => centerAvatar()
-  
-
-  window.addEventListener("resize", resizeEventListener)
-
   const initResult = inputToGame("INIT")
   presentResult(initResult)
   printMessage(INSTRUCTIONS)
 
   const getNextResult = async (): Promise<GameOutput> => {
-    let onKeyDownListener
     const getNextInput = () =>
       new Promise<string>((resolve) => {
-        onKeyDownListener = (event: KeyboardEvent) => {
+        const onKeyDownListener = (event: KeyboardEvent) => {
           const key = event.key.toLowerCase()
           const isValidKey = /^[a-z#0-9]$/.test(key) || key.startsWith("arrow")
 
@@ -329,7 +321,6 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
     }
 
     if (result.end && result.action === "quit") {
-      document.removeEventListener("keydown", onKeyDownListener)
       window.removeEventListener("resize", resizeEventListener)
       return result
     } else {
@@ -349,16 +340,6 @@ const getSelectedDungeon = (selectId: string) => {
   return randomOption.value
 }
 
-const resizeDungeonSelect = () => {
-  const select = document.getElementById("dungeon-select") as HTMLSelectElement
-  const footer = document.querySelector("#menu footer") as HTMLElement
-  const maxSize = select.size
-  const rowHeight = Math.ceil(select.clientHeight / select.size)
-  const maxHeight = window.innerHeight - footer.clientHeight
-  const numRows = Math.floor(maxHeight / rowHeight) - 4
-  select.size = Math.min( numRows, maxSize )
-}
-
 const startGame = async () => {
   const selectedDungeon = getSelectedDungeon("dungeon-select")
   const gameDataFiles = await loadFiles(selectedDungeon, onProgress)
@@ -372,8 +353,6 @@ const gameEnd = (result: GameOutput) => {
 
   const menuSection = document.querySelector("section#menu")
   menuSection.classList.remove("hide")
-
-  requestAnimationFrame(resizeDungeonSelect)
 }
 
 startButton.addEventListener("click", startGame)

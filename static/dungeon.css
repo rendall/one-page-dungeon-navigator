@@ -199,6 +199,9 @@ section#game {
   flex-shrink: 0;
   width: 100%;
   height: 2rem;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
 }
 
 /* a touchscreen implies a virtual keyboard */

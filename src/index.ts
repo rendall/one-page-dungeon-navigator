@@ -261,6 +261,9 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
   addMaskLayerToMap(svg)
   addAvatarLayer(svg)
 
+  const messageInput:HTMLInputElement = document.querySelector('#message-input')
+  messageInput.addEventListener("change", () => { messageInput.value = "" })
+
   // init dungeon
   const dungeon = parseDungeon(dungeonData)
   const paths = getSVGPaths()

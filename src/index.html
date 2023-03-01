@@ -13,6 +13,7 @@
     <section id="game">
       <div id="message-container">
         <div id="message-scroll"></div>
+        <input id="message-input" />
       </div>
       <div id="map-container"></div>
       <div style="display: none">
@@ -44,48 +45,52 @@
         </svg>
       </div>
     </section>
-    <main>
-      <section id="menu" class="hide">
+    <section id="menu" class="hide">
+      <header>
         <h1>One Page Dungeon Navigator</h1>
         <p>
           Welcome to the One Page Dungeon Navigator, your guide to exploring the depths of
           <a href="https://watabou.github.io/dungeon.html">Watabou's One Page Dungeon</a>! With the click of a button,
-          watabou's algorithm will create a unique dungeon for you to navigate, filled with treasure, traps, and deadly
+          Watabou's algorithm will create a unique dungeon for you to navigate, filled with treasure, traps, and deadly
           monsters. Can you find your way to the end and claim the ultimate reward? But beware - every step you take
           could be your last. Good luck, adventurer!
         </p>
-        <section id="select">
-          <p>Select a dungeon here and press START</p>
-          <select id="dungeon-select" size="24" autofocus>
-            <option value="abbey_of_the_blood_lady">Abbey Of The Blood Lady</option>
-            <option value="blightfist_chapel">Blightfist Chapel</option>
-            <option value="chapel_of_shandjit-jheskemus">Chapel Of Shandjit-jheskemus</option>
-            <option value="deathblade_temple">Deathblade Temple</option>
-            <option value="dreadring_maze">Dreadring Maze</option>
-            <option value="dreadsun_abbey">Dreadsun Abbey</option>
-            <option value="eternal_halls_of_the_golden_lady">Eternal Halls Of The Golden Lady</option>
-            <option value="frostscar_shrine">Frostscar Shrine</option>
-            <option value="house_of_the_storm_lord">House Of The Storm Lord</option>
-            <option value="infected_sepulcher_of_tordai-makrax">Infected Sepulcher Of Tordai-makrax</option>
-            <option value="labyrinth_of_the_leper_oracle">Labyrinth Of The Leper Oracle</option>
-            <option value="lost_abbey_of_ardai">Lost Abbey Of Ardai</option>
-            <option value="lower_chapel_of_ash">Lower Chapel Of Ash</option>
-            <option value="manor_of_the_scarlet_king">Manor Of The Scarlet King</option>
-            <option value="mausoleum_of_the_white_titan">Mausoleum Of The White Titan</option>
-            <option value="maze_of_the_lich_king">Maze Of The Lich King</option>
-            <option value="mountain_keep_of_the_scarlet_emperor">Mountain Keep Of The Scarlet Emperor</option>
-            <option value="pyramid_of_the_white_dragon">Pyramid Of The White Dragon</option>
-            <option value="shattered_castle_of_the_serpent_queen">Shattered Castle Of The Serpent Queen</option>
-            <option value="subterranean_monastery_of_the_lich_lord">Subterranean Monastery Of The Lich Lord</option>
-            <option value="tomb_of_na">Tomb Of Na</option>
-            <option value="twilight_sanctum_of_the_amber_savant">Twilight Sanctum Of The Amber Savant</option>
-            <option value="undeground_maze_of_the_scarlet_priest">Undeground Maze Of The Scarlet Priest</option>
-            <option value="vault_of_the_obsidian_titan">Vault Of The Obsidian Titan</option>
-          </select>
-          <button id="start-button">Start</button>
-        </section>
+        <ul>
+          <li><a href="./credits.html">Credits</a></li>
+          <li><a href="./credits.html">Github repository</a></li>
+          <li><a href="https://watabou.github.io/dungeon.html">One Page Dungeon Generator</a></li>
+        </ul>
+      </header>
+      <section id="select">
+        <p>Select a dungeon here and press <button id="start-button">START</button></p>
+        <select id="dungeon-select" size="24" autofocus>
+          <option value="abbey_of_the_blood_lady">Abbey Of The Blood Lady</option>
+          <option value="blightfist_chapel">Blightfist Chapel</option>
+          <option value="chapel_of_shandjit-jheskemus">Chapel Of Shandjit-jheskemus</option>
+          <option value="deathblade_temple">Deathblade Temple</option>
+          <option value="dreadring_maze">Dreadring Maze</option>
+          <option value="dreadsun_abbey">Dreadsun Abbey</option>
+          <option value="eternal_halls_of_the_golden_lady">Eternal Halls Of The Golden Lady</option>
+          <option value="frostscar_shrine">Frostscar Shrine</option>
+          <option value="house_of_the_storm_lord">House Of The Storm Lord</option>
+          <option value="infected_sepulcher_of_tordai-makrax">Infected Sepulcher Of Tordai-makrax</option>
+          <option value="labyrinth_of_the_leper_oracle">Labyrinth Of The Leper Oracle</option>
+          <option value="lost_abbey_of_ardai">Lost Abbey Of Ardai</option>
+          <option value="lower_chapel_of_ash">Lower Chapel Of Ash</option>
+          <option value="manor_of_the_scarlet_king">Manor Of The Scarlet King</option>
+          <option value="mausoleum_of_the_white_titan">Mausoleum Of The White Titan</option>
+          <option value="maze_of_the_lich_king">Maze Of The Lich King</option>
+          <option value="mountain_keep_of_the_scarlet_emperor">Mountain Keep Of The Scarlet Emperor</option>
+          <option value="pyramid_of_the_white_dragon">Pyramid Of The White Dragon</option>
+          <option value="shattered_castle_of_the_serpent_queen">Shattered Castle Of The Serpent Queen</option>
+          <option value="subterranean_monastery_of_the_lich_lord">Subterranean Monastery Of The Lich Lord</option>
+          <option value="tomb_of_na">Tomb Of Na</option>
+          <option value="twilight_sanctum_of_the_amber_savant">Twilight Sanctum Of The Amber Savant</option>
+          <option value="undeground_maze_of_the_scarlet_priest">Undeground Maze Of The Scarlet Priest</option>
+          <option value="vault_of_the_obsidian_titan">Vault Of The Obsidian Titan</option>
+        </select>
       </section>
       <footer><a href="./credits.html">Credits</a></footer>
-    </main>
+    </section>
   </body>
 </html>

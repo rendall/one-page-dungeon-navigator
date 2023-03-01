@@ -1,6 +1,7 @@
 // Generated using webpack-cli https://github.com/webpack/webpack-cli
 const CopyWebpackPlugin = require("copy-webpack-plugin")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
+const { CleanWebpackPlugin } = require("clean-webpack-plugin")
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 const WorkboxWebpackPlugin = require("workbox-webpack-plugin")
 const path = require("path")
@@ -30,6 +31,7 @@ const config = {
       patterns: [{ from: "static" }, { from: "RAW", to: "RAW", noErrorOnMissing: true }],
     }),
     new MiniCssExtractPlugin(),
+    new CleanWebpackPlugin(),
   ],
   module: {
     rules: [

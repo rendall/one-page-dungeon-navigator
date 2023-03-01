@@ -15,8 +15,13 @@ const getMatchingFilenames = (dirPath) => {
   return filenames.filter((filename) => {
     const svgPath = `${dirPath}/${filename}.svg`
     const jsonPath = `${dirPath}/${filename}.json`
+    const mdPath = `${dirPath}/${filename}.md`
 
-    return fs.existsSync(svgPath) && fs.existsSync(jsonPath)
+    const allExists = fs.existsSync(svgPath) && fs.existsSync(jsonPath) && fs.existsSync(mdPath)
+
+    if (!allExists) console.warn(`${filename} does not have all related files`)
+
+    return allExists
   })
 }
 // Array to store filenames

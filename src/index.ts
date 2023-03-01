@@ -31,13 +31,17 @@ const loadFiles = (dungeonName: string, onProgress?: (progress: number) => void)
 const startButton = document.getElementById("start-button")
 const onProgress = (value: number) => console.info(`progress: ${value}`)
 
-const displayMap = (svgData: string): SVGElement => {
+const displayMap = (svgData: string, title: string): SVGElement => {
   const mapContainer = document.querySelector("div#map-container") as HTMLDivElement
   mapContainer.innerHTML = svgData
   const svg = mapContainer.querySelector("svg")
-  svg.setAttribute("id", "dungeon-svg")
-  svg.querySelector("rect").removeAttribute("fill") // the background of the dungeon should be controlled by the page
-  return svg
+  try {
+    svg.setAttribute("id", "dungeon-svg")
+    svg.querySelector("rect").removeAttribute("fill") // the background of the dungeon should be controlled by the page
+    return svg
+  } catch (error) {
+    console.error("SVG data is corrupted", { title, error, svgData })
+  }
 }
 
 const getBaseMapLayer = () => {
@@ -265,7 +269,7 @@ const normalizeMapSvg = (svg: SVGElement) => {
 
 const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
   // init ui
-  const svg = displayMap(mapSvgData)
+  const svg = displayMap(mapSvgData, dungeonData.title)
   normalizeMapSvg(svg)
   addMaskLayerToMap(svg)
   addAvatarLayer(svg)
@@ -342,9 +346,14 @@ const getSelectedDungeon = (selectId: string) => {
 
 const startGame = async () => {
   const selectedDungeon = getSelectedDungeon("dungeon-select")
-  const gameDataFiles = await loadFiles(selectedDungeon, onProgress)
-  const result = await gameLoop(gameDataFiles)
-  return gameEnd(result)
+  try {
+    const gameDataFiles = await loadFiles(selectedDungeon, onProgress)
+    console.log({ selectedDungeon, gameDataFiles })
+    const result = await gameLoop(gameDataFiles)
+    return gameEnd(result)
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 const gameEnd = (result: GameOutput) => {

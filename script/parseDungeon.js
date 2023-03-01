@@ -43,6 +43,8 @@ var describeDoor = function (door, direction, destination) {
     case 6: {
       return isFacing ? "secret door" : "door"
     }
+    case 7:
+      return "steel door"
     case 8:
       return "broad staircase down"
     case 9: {
@@ -58,14 +60,14 @@ var describeRoom = function (room, exits, columns, water) {
   var columnDesc =
     columns && columns.length > 0
       ? room.rotunda
-        ? "- ".concat(columns.length, " columns ring the center of the room ")
-        : "- two rows of ".concat(Math.floor(columns.length / 2), " columns support the ceiling ")
+        ? "\n".concat(columns.length, " columns ring the center of the room.")
+        : "\ntwo rows of ".concat(Math.floor(columns.length / 2), " columns support the ceiling.")
       : ""
   var waterDesc =
     water && water.length > 0
       ? water.length === room.h * room.w
-        ? "- water entirely covers the floor"
-        : "- water covers part of the floor (".concat(Math.floor(100 * (water.length / (room.h * room.w))), "%)")
+        ? "\nWater entirely covers the floor."
+        : "\nWater covers part of the floor (".concat(Math.floor(100 * (water.length / (room.h * room.w))), "%).")
       : ""
   var description = "".concat(noun, " ").concat(columnDesc).concat(waterDesc).trim()
   return description
@@ -262,20 +264,10 @@ var parseDungeon = function (dungeon) {
           ),
           door ? { door: door } : {}
         ),
-        {
-          exits: exits,
-          x: fullRoom.x,
-          y: fullRoom.y,
-          w: fullRoom.w,
-          h: fullRoom.h,
-        }
+        { exits: exits, x: fullRoom.x, y: fullRoom.y, w: fullRoom.w, h: fullRoom.h }
       )
       return room
     })
-  return __assign(__assign({}, dungeon), {
-    rooms: rooms,
-    doors: doorsWithId,
-    rects: rectsWithId,
-  })
+  return __assign(__assign({}, dungeon), { rooms: rooms, doors: doorsWithId, rects: rectsWithId })
 }
 exports.parseDungeon = parseDungeon

@@ -187,11 +187,11 @@ section#game {
   display: none;
 }
 
-#menu header {
+#menu main {
   flex: 1;
 }
 
-#menu section#select {
+#menu aside#select {
   order: -1;
   margin-right: 2rem;
   height: calc(100vh - 2rem);
@@ -204,7 +204,7 @@ section#game {
   background-color: var(--dark-background-color);
 }
 
-#menu section#select > h3 {
+#menu aside#select > h3 {
   display: flex;
   justify-content: space-between;
   align-items: center;

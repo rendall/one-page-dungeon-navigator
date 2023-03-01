@@ -29,6 +29,8 @@ const describeDoor = (door: Door, direction: ExitDirection, destination: Rect | 
     case 6: {
       return isFacing ? "secret door" : "door"
     }
+    case 7:
+      return "steel door"
     case 8:
       return "broad staircase down"
     case 9: {

@@ -189,7 +189,7 @@ const presentResultFunc = (revealPath: (id: number) => SVGPathElement) => (resul
   result.exits.forEach((exit) => revealPath(exit.door.id))
 }
 
-const getSvgViewBox = (svg: SVGElement) => {
+const getSvgBounds = (svg: SVGElement) => {
   const paths = svg.querySelectorAll("path")
   type Bound = {
     left?: number
@@ -218,9 +218,8 @@ const getSvgViewBox = (svg: SVGElement) => {
     .map((point) => point.split(",").map((p) => parseFloat(p)))
     .reduce(reduceToBound, {})
 
-  const viewBox = `${bounds.left} ${bounds.top} ${bounds.right - bounds.left} ${bounds.bottom - bounds.top}`
+  return bounds;
 
-  return viewBox
 }
 
 const normalizeMapSvg = (svg: SVGElement) => {
@@ -236,7 +235,8 @@ const normalizeMapSvg = (svg: SVGElement) => {
     }
   } while (siblingLayer)
 
-  const viewBox = getSvgViewBox(svg)
+  const bounds = getSvgBounds(svg)
+  const viewBox = `${bounds.left} ${bounds.top} ${bounds.right - bounds.left} ${bounds.bottom - bounds.top}`
 
   const widthHeights = Array.from(svg.querySelectorAll("[width], [height]"))
 
@@ -246,9 +246,9 @@ const normalizeMapSvg = (svg: SVGElement) => {
       g.setAttribute("viewBox", viewBox)
     })
 
-  const mapContainer = document.getElementById("map-container")
-  const width = mapContainer.getBoundingClientRect().width
+  const width = bounds.right - bounds.left
 
+  // This normalizes the apparent size of the rooms no matter the size of the map
   svg.style.width = `${width}px`
 
   Array.from(svg.querySelectorAll("[transform]")).forEach((e) => e.removeAttribute("transform"))

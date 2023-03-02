@@ -157,6 +157,10 @@ p.instructions+ul li span {
   font-weight: bold;
 }
 
+p.description + ul {
+  margin-bottom: 3rem;
+}
+
 li.control {
   cursor: pointer;
   border: solid var(--dark-background-color) 1px;

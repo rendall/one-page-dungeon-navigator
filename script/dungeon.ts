@@ -1,4 +1,7 @@
-export type ExitDirection = "north" | "east" | "south" | "west" | "UNKNOWN"
+export const exitDirections = ["north", "east", "south", "west", "UNKNOWN"] as const
+export type ExitDirection = typeof exitDirections[number]
+
+/** Exit is derived from One-Page JSON data. Aids navigation. */
 export type Exit = {
   towards: ExitDirection
   to: number | "outside"
@@ -16,6 +19,7 @@ export enum DoorType {
   portcullis,
   double,
   secret,
+  steel,
   down,
   stairwell,
 }
@@ -58,6 +62,8 @@ export type Water = {
   y: number
 }
 
+/** Dungeon is a navigable object derived from One-Page Dungeon's
+ * JSON object */
 export type Dungeon = {
   version: string
   title: string
@@ -70,6 +76,8 @@ export type Dungeon = {
   rooms?: Room[]
 }
 
+/** Room is an object derived from One-Page JSON data.
+ * Aids navigation and presentation. */
 export type Room = Rect & {
   id: number
   description: string

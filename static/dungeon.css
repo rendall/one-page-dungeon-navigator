@@ -131,30 +131,45 @@ p.description {
   margin-bottom: 0;
 }
 
-p.description + ul {
-	list-style: none;
-	padding: 0 1rem;
-	margin: 0;
-	padding-left: 1rem;
+p.description+ul {
+  list-style: none;
+  padding: 0 1rem;
+  margin: 0;
+  padding-left: 1rem;
 }
 
 p.message {
   font-weight: bold;
 }
 
-p.instructions + ul {
+p.instructions+ul {
   padding: 0;
   list-style-position: inside;
   font-weight: normal;
 }
 
-p.instructions + ul li {
+p.instructions+ul li {
   margin-bottom: 0.5rem;
 }
 
-p.instructions + ul li span {
-  font-family: 'Courier New', Courier, monospace;
+p.instructions+ul li span {
+  font-family: "Courier New", Courier, monospace;
   font-weight: bold;
+}
+
+li.control {
+  cursor: pointer;
+  border: solid var(--dark-background-color) 1px;
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+  padding: 1.2rem 1.5rem;
+  text-align: center;
+}
+
+li.control:active, 
+li.control:hover {
+  color: var(--light-text-color);
+  background-color: var(--dark-background-color);
 }
 
 section#game {
@@ -231,7 +246,7 @@ section#game {
   background-color: var(--dark-background-color);
 }
 
-#menu aside#select > h3 {
+#menu aside#select>h3 {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -307,7 +322,8 @@ body.credits {
 }
 
 /* a touchscreen implies a virtual keyboard */
-@media (pointer: course), (max-width: 1028px) {
+@media (pointer: course),
+(max-width: 1028px) {
   #message-input {
     display: unset;
     height: 2rem;

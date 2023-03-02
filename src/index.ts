@@ -2,8 +2,7 @@ import { Dungeon, Exit } from "../script/dungeon"
 import { parseDungeon } from "../script/parseDungeon"
 import { game, GameOutput, Action } from "../script/gameLoop"
 
-const INSTRUCTIONS =
-  `
+const INSTRUCTIONS = `
 <p class="instructions">Navigate the dungeon by using the arrow keys or pressing the following keys:</p>
 <ul>
   <li>To move up, or north, press <span>w</span> or <span>up arrow</span></li>
@@ -13,7 +12,7 @@ const INSTRUCTIONS =
   <li>To search for secrets, press <span>x</span></li>
   <li>To quit to main menu, press <span>q</span></li>
   <!--<li>To view entire dungeon, press <span>#</span></li>-->
-  <li>To move through a specific exit, press its corresponding <span>number</span> key, assigned in a clockwise direction starting with <span>1</span>.</li>
+  <li>To move through a specific exit, press its corresponding <span>number</span> key, assigned in a clockwise direction starting with <span>1</span> to the north west.</li>
   <li>To view these instructions again, press <span>?</span></li>
 </ul>
 <hr/>
@@ -63,7 +62,7 @@ const getSVGPaths = (svg: SVGElement) => {
 
 /** A higher-order function.
  * @returns (id:number) => SVGPathElement - accepts a room id and unmasks its shape
-*/
+ */
 const revealRoomFunc = (paths: SVGPathElement[], mask: SVGMaskElement) => (id: number) => {
   const pathId = `room-${id}`
   if (document.getElementById(pathId)) return paths[id]
@@ -146,14 +145,14 @@ const printMessage = (message: string, type: string = "message") => {
       messageScroll.innerHTML = message
       return
     case "html":
-      messageScroll.insertAdjacentHTML('beforeend', message)
-      break;
+      messageScroll.insertAdjacentHTML("beforeend", message)
+      break
     default:
       const messageP = document.createElement("p") as HTMLParagraphElement
       messageP.classList.add(type)
       messageP.innerHTML = message
       messageScroll.appendChild(messageP)
-      break;
+      break
   }
   updateMessageScroll()
 }
@@ -166,6 +165,33 @@ const printExits = (exits:Exit[]) => {
     li.textContent = exit.description
     ul.appendChild(li)
   })
+  messageScroll.appendChild(ul)
+}
+const addTouchControls = (exits: Exit[], turn: number) => {
+  const messageScroll = document.getElementById("message-scroll")
+  const ul = document.createElement("ul") as HTMLUListElement
+  const createCommandLi = (text: string, command: string) => {
+    const li = document.createElement("li") as HTMLLIElement
+    li.textContent = text
+    li.classList.add("control")
+    li.dataset.command = command
+    li.dataset.turn = turn.toString()
+    return li
+  }
+  exits.forEach((exit, i) => {
+    const li = createCommandLi(exit.description, (i + 1).toString())
+    ul.appendChild(li)
+  })
+
+  const searchLi = createCommandLi("You can also search.", "x")
+  ul.appendChild(searchLi)
+
+  const hasExit = exits.some((exit) => exit.to === "outside")
+  if (hasExit) {
+    const quitLi = createCommandLi("And you can leave the dungeon (quit)", "q")
+    ul.appendChild(quitLi)
+  }
+
   messageScroll.appendChild(ul)
   updateMessageScroll()
 }
@@ -181,7 +207,7 @@ const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (resul
     case "noop":
       break // Do not print these messages. They will be handled below.
     default:
-      if (/^\d$/.test(result.action)) printMessage(`You move towards exit ${result.action}`)
+      if (/^\d$/.test(result.action)) { }
       else printMessage(result.action, "action")
       const message = result.message.replace(/\n/g, "<br>")
       if (message.startsWith("You leave the dungeon")) printMessage("You attempt to leave the dungeon.")
@@ -202,7 +228,7 @@ const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (resul
 
   const description = result.description.replace(/\n/g, "<br>")
   printMessage(description, "description")
-  printExits(result.exits)
+  addTouchControls(result.exits, result.turn)
 
   const roomId = result.room
   const path: SVGPathElement = revealRoom(roomId)
@@ -247,7 +273,6 @@ const getSvgBounds = (svg: SVGElement) => {
 
 /** Void function that alters the svg in a consistent way for display */
 const normalizeMapSvg = (svg: SVGElement) => {
-
   const setSvgAttributes = (svg: SVGElement) => {
     svg.setAttribute("id", "dungeon-svg")
     const gTransform = svg.querySelector(`g[transform]`) as SVGGElement
@@ -277,7 +302,6 @@ const normalizeMapSvg = (svg: SVGElement) => {
     // This normalizes the apparent size of the rooms no matter the size of the map
     const width = bounds.right - bounds.left
     svg.style.width = `${width}px`
-
   }
 
   const removeNonMapLayers = (g: SVGGElement) => {
@@ -336,7 +360,9 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
   // init ui
   const svgContainer = document.querySelector("div#map-container") as HTMLDivElement
   const svg = displayMap(mapSvgData, svgContainer)
-  if (!svg) { throw new Error(`Svg data is corrupt in ${dungeonData.title}`); }
+  if (!svg) {
+    throw new Error(`Svg data is corrupt in ${dungeonData.title}`)
+  }
   normalizeMapSvg(svg)
   const resizeEventListener = () => centerAvatar()
   window.addEventListener("resize", resizeEventListener)
@@ -354,27 +380,54 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
   presentResult(initResult)
 
   // define game loop
-  const getNextResult = async (): Promise<GameOutput> => {
-    const getNextInput = () =>
-      new Promise<Action | string>((resolve) => {
+  const getNextResult = async (oldResult: GameOutput): Promise<GameOutput> => {
+    console.log("turn:", oldResult.turn)
+    const oldTouchControls = document.querySelectorAll(".control")
+    Array.from(oldTouchControls)
+      .filter((oldControl: HTMLLIElement) => parseInt(oldControl.dataset.turn) < oldResult.turn)
+      .forEach((oldControl: HTMLLIElement) => oldControl.remove())
+
+    const getNextInput = async (): Promise<Action | string> => {
+      const keyboardPromise = new Promise<Action | string>((resolve) => {
         const onKeyDownListener = (event: KeyboardEvent) => {
           const key = event.key.toLowerCase()
-          const isValidKey = /^[a-z#?0-9]$/.test(key) || key.startsWith("arrow")
-
-          if (!isValidKey) {
-            event.preventDefault()
-            getNextInput().then(resolve)
-          } else {
-            resolve(key)
-          }
+          resolve(key)
         }
         document.addEventListener("keydown", onKeyDownListener, { once: true })
       })
 
+      const touchPromise = new Promise<Action | string>((resolve) => {
+        // get the exit elements
+        const exitElements = document.querySelectorAll(".control")
+
+        // add a touch event listener to each exit element
+        exitElements.forEach((exitElement: HTMLElement) => {
+          exitElement.addEventListener(
+            "click",
+            (event) => {
+              // prevent the default touch event behavior
+              event.preventDefault()
+
+              // remove the event listeners and classes from all exit elements
+              exitElements.forEach((exitElement: HTMLElement) => {
+                exitElement.removeEventListener("click", null)
+              })
+
+              // resolve the getNextInput promise with the exit direction
+              resolve(exitElement.dataset.command.toString())
+            },
+            { once: true }
+          )
+        })
+      })
+
+      return await Promise.race([keyboardPromise, touchPromise])
+    }
+
     const key = await getNextInput()
     const action = getAction(key)
     if (key === "#") paths.forEach((_, i) => revealRoom(i))
-    else if (key==="?") printMessage(INSTRUCTIONS, "html")
+    else if (key === "?") printMessage(INSTRUCTIONS, "html")
     else if (action === "noop") {
       printMessage(`<p class="error">Unknown command '${key}'</p>${INSTRUCTIONS}`, "html")
     }
@@ -391,11 +444,11 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
       return result
     } else {
       requestAnimationFrame(updateMessageScroll)
-      return getNextResult()
+      return getNextResult(result)
     }
   }
 
-  return getNextResult()
+  return getNextResult(initResult)
 }
 
 const getSelectedDungeon = (selectId: string) => {

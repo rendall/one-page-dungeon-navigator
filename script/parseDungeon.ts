@@ -44,45 +44,52 @@ const describeDoor = (door: Door, direction: ExitDirection, destination: Rect | 
 }
 
 const waterDescription = (room: Rect, water?: Water[]) => {
-
   if (!water?.length) return ""
 
   const area = room.h * room.w
   const percent = Math.floor(100 * (water.length / area))
 
-  const floodDesc = water.length >= 12 ? random([
-    ", flooding it up to ankle level",
-    " as a large lake",
-    " flowing as a stream",
-    ", almost a river",
-    ", making it nearly impassable",
-    " in a thick muddy layer, making it difficult to walk",
-    " turning the space into a shallow pool",
-    ", gushing like a river"]) : ""
+  const floodDesc =
+    water.length >= 12
+      ? random([
+          ", flooding it up to ankle level",
+          " as a large lake",
+          " flowing as a stream",
+          ", almost a river",
+          ", making it nearly impassable",
+          " in a thick muddy layer, making it difficult to walk",
+          " turning the space into a shallow pool",
+          ", gushing like a river",
+        ])
+      : ""
 
   const floorCoverage = (percent: number): string => {
-    if (percent < 10 ) {
-      return "a small area";
+    if (percent < 10) {
+      return "a small area"
     }
 
     if (percent <= 25) {
-      return random( ["part","some"] );
+      return random(["part", "some"])
     }
 
     if (percent <= 50) {
-      return random(["almost half", "some"]);
+      return random(["almost half", "some"])
     }
 
     if (percent <= 75) {
-      return random(["more than half", "a good portion"]);
+      return random(["more than half", "a good portion"])
     }
 
-     return random(["a large area", "most", "almost all", "almost the entire"]);
-
+    return random(["a large area", "most", "almost all", "almost the entire"])
   }
 
-  const basicDescription = percent === 100 ? area <= 2 ? "Water covers the floor" : "Water covers the entire floor" : `Water covers ${floorCoverage(percent)} of the floor`
-  const here = Math.random() < 0.3 ? " here":""
+  const basicDescription =
+    percent === 100
+      ? area <= 2
+        ? "Water covers the floor"
+        : "Water covers the entire floor"
+      : `Water covers ${floorCoverage(percent)} of the floor`
+  const here = Math.random() < 0.3 ? " here" : ""
   return `${basicDescription}${here}${floodDesc}. `
 }
 
@@ -92,7 +99,9 @@ const describeRoom = (room: Rect, exits: Exit[], columns?: Column[], water?: Wat
     columns && columns.length > 0
       ? room.rotunda
         ? `${columns.length} columns ring the center of the room. `
-        : `There are ${Math.floor(columns.length)} columns arranged in two rows of ${Math.floor(columns.length / 2)} here. `
+        : `There are ${Math.floor(columns.length)} columns arranged in two rows of ${Math.floor(
+            columns.length / 2
+          )} here. `
       : ""
   const waterDesc = waterDescription(room, water)
   const description = `${noun}. ${columnDesc}${waterDesc}`.trim()
@@ -200,7 +209,7 @@ const getAdjacent = <T extends Rect>(a: T, rects: T[]) => rects.filter((rect) =>
 export const parseDungeon = (dungeon: Dungeon): Dungeon => {
   const { rects, notes, doors } = dungeon
 
-  // Assign a unique id to each rect 
+  // Assign a unique id to each rect
   const rectsWithId: (Rect & { id: number })[] = rects.map((r, id) => ({
     id,
     ...r,
@@ -221,7 +230,7 @@ export const parseDungeon = (dungeon: Dungeon): Dungeon => {
   const getDoor = doorFunc(doorsWithId)
 
   /* Assign each room (non-door) its corresponding unique rect id
- * and associated note, exits, column, water and description */
+   * and associated note, exits, column, water and description */
   const rooms = rectsWithId
     .filter((r) => !getDoor(r))
     .map((fullRoom) => {

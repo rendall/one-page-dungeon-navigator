@@ -1,5 +1,5 @@
 export const exitDirections = ["north", "east", "south", "west", "UNKNOWN"] as const
-export type ExitDirection = typeof exitDirections[number]
+export type ExitDirection = (typeof exitDirections)[number]
 
 /** Exit is derived from One-Page JSON data. Aids navigation. */
 export type Exit = {

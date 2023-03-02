@@ -32,9 +32,9 @@ const describeDoor = (door: Door, direction: ExitDirection, destination: Rect | 
     case 7:
       return "steel door"
     case 8:
-      return "broad staircase down"
+      return "broad stairs down"
     case 9: {
-      return `stairwell ${isFacing ? "down" : "up"}`
+      return `stairs ${isFacing ? "down" : "up"}`
     }
 
     default:
@@ -42,21 +42,60 @@ const describeDoor = (door: Door, direction: ExitDirection, destination: Rect | 
       return "portal"
   }
 }
+
+const waterDescription = (room: Rect, water?: Water[]) => {
+
+  if (!water?.length) return ""
+
+  const area = room.h * room.w
+  const percent = Math.floor(100 * (water.length / area))
+
+  const floodDesc = water.length >= 12 ? random([
+    ", flooding it up to ankle level",
+    " as a large lake",
+    " flowing as a stream",
+    ", almost a river",
+    ", making it nearly impassable",
+    " in a thick muddy layer, making it difficult to walk",
+    " turning the space into a shallow pool",
+    ", gushing like a river"]) : ""
+
+  const floorCoverage = (percent: number): string => {
+    if (percent < 10 ) {
+      return "a small area";
+    }
+
+    if (percent <= 25) {
+      return random( ["part","some"] );
+    }
+
+    if (percent <= 50) {
+      return random(["almost half", "some"]);
+    }
+
+    if (percent <= 75) {
+      return random(["more than half", "a good portion"]);
+    }
+
+     return random(["a large area", "most", "almost all", "almost the entire"]);
+
+  }
+
+  const basicDescription = percent === 100 ? area <= 2 ? "Water covers the floor" : "Water covers the entire floor" : `Water covers ${floorCoverage(percent)} of the floor`
+  const here = Math.random() < 0.3 ? " here":""
+  return `${basicDescription}${here}${floodDesc}. `
+}
+
 const describeRoom = (room: Rect, exits: Exit[], columns?: Column[], water?: Water[]): string => {
   const noun = getRoomNoun(room, exits)
   const columnDesc =
     columns && columns.length > 0
       ? room.rotunda
-        ? `\n${columns.length} columns ring the center of the room.`
-        : `\ntwo rows of ${Math.floor(columns.length / 2)} columns support the ceiling.`
+        ? `${columns.length} columns ring the center of the room. `
+        : `There are ${Math.floor(columns.length)} columns arranged in two rows of ${Math.floor(columns.length / 2)} here. `
       : ""
-  const waterDesc =
-    water && water.length > 0
-      ? water.length === room.h * room.w
-        ? `\nWater entirely covers the floor.`
-        : `\nWater covers part of the floor (${Math.floor(100 * (water.length / (room.h * room.w)))}%).`
-      : ""
-  const description = `${noun} ${columnDesc}${waterDesc}`.trim()
+  const waterDesc = waterDescription(room, water)
+  const description = `${noun}. ${columnDesc}${waterDesc}`.trim()
   return description
 }
 
@@ -107,6 +146,7 @@ const getRoomNoun = (room: Rect | "outside", exits: Exit[]): string => {
 /** 1 x 1 rooms are connectors between different rooms */
 const is1x1 = (a: Rect) => a.w === 1 && a.h === 1
 
+/** Return true if a and b share one edge */
 const isAdjacent = (a: Rect, b: Rect): boolean => {
   if (!is1x1(a) && !is1x1(b)) return false // in this format, if rects are adjacent, one of them must by 1 x 1
   if (!is1x1(b)) return isAdjacent(b, a) // makes things easier if the 2nd is always the 1 x 1
@@ -153,11 +193,14 @@ const getDir = <T extends Rect>(from: T | undefined, to: T): "north" | "south" |
 const doorFunc = (doors: Door[]) => (a: { x: number; y: number }) =>
   doors.find((door) => door.x === a.x && door.y === a.y)
 
+/** Return every rect that is connected to 'a' along one edge */
 const getAdjacent = <T extends Rect>(a: T, rects: T[]) => rects.filter((rect) => isAdjacent(rect, a))
 
+/** Accepts One-Page JSON and returns a navigable object */
 export const parseDungeon = (dungeon: Dungeon): Dungeon => {
   const { rects, notes, doors } = dungeon
 
+  // Assign a unique id to each rect 
   const rectsWithId: (Rect & { id: number })[] = rects.map((r, id) => ({
     id,
     ...r,
@@ -165,14 +208,20 @@ export const parseDungeon = (dungeon: Dungeon): Dungeon => {
 
   const isDoor = (rect: Rect) =>
     rect.h === 1 && rect.w === 1 && doors.some((door) => door.x === rect.x && door.y === rect.y)
+
+  // Assign each door its corresponding rect id
   const doorsWithId = rectsWithId
     .filter((rect) => isDoor(rect))
     .map((rect) => ({
       id: rect.id,
       ...doors.find((door) => door.x === rect.x && door.y === rect.y),
     }))
+
+  // Return the door at {x,y}
   const getDoor = doorFunc(doorsWithId)
 
+  /* Assign each room (non-door) its corresponding unique rect id
+ * and associated note, exits, column, water and description */
   const rooms = rectsWithId
     .filter((r) => !getDoor(r))
     .map((fullRoom) => {
@@ -197,10 +246,8 @@ export const parseDungeon = (dungeon: Dungeon): Dungeon => {
 
       const door = getDoor(fullRoom)
       const contains = notes.filter((note) => isInside(note.pos, fullRoom))?.[0]?.text
-
       const columns = dungeon.columns.filter((column) => isInside(column, fullRoom))
       const water = dungeon.water.filter((column) => isInside(column, fullRoom))
-
       const description = describeRoom(fullRoom, exits, columns, water)
 
       const room: Room = {

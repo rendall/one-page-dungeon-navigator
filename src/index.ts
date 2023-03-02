@@ -179,18 +179,13 @@ const addTouchControls = (exits: Exit[], turn: number) => {
     return li
   }
   exits.forEach((exit, i) => {
-    const li = createCommandLi(exit.description, (i + 1).toString())
+    const command = exit.to==='outside' ? 'q' : (i+1).toString()
+    const li = createCommandLi(`${exit.description}${command === 'q'? ' (quit)':''}`, command)
     ul.appendChild(li)
   })
 
   const searchLi = createCommandLi("You can also search.", "x")
   ul.appendChild(searchLi)
-
-  const hasExit = exits.some((exit) => exit.to === "outside")
-  if (hasExit) {
-    const quitLi = createCommandLi("And you can leave the dungeon (quit)", "q")
-    ul.appendChild(quitLi)
-  }
 
   messageScroll.appendChild(ul)
   updateMessageScroll()

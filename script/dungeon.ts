@@ -5,6 +5,7 @@ export type ExitDirection = (typeof exitDirections)[number]
 export type Exit = {
   towards: ExitDirection
   to: number | "outside"
+  shortDescription: string
   description: string
   isFacing: boolean // some doors have directions, secret doors for example
   door: Door

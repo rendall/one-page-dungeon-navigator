@@ -1,4 +1,6 @@
-/** This file takes a One Page Dungeon json file and parses it for navigation */
+/** This file takes a One Page Dungeon json file and parses it for navigation.
+ * This is the immutable, single source of truth for the adventure.
+ */
 import type { Column, Door, Dungeon, Exit, ExitDirection, Rect, Room, Water } from "./dungeon"
 
 export const facingDirection = (door: Door): ExitDirection => {
@@ -120,7 +122,7 @@ const areOpposite = (dir1: string, dir2: string): boolean => {
 
 const getRoomNoun = (room: Rect | "outside", exits: Exit[]): string => {
   if (room === "outside") return room
-  const exitsLength = exits.filter((exit) => exit.description !== "secret door").length
+  const exitsLength = exits.filter((exit) => exit.shortDescription !== "secret door").length
   if (is1x1(room)) {
     switch (exitsLength) {
       case 1:
@@ -248,7 +250,7 @@ export const parseDungeon = (dungeon: Dungeon): Dungeon => {
             to,
             type: door.type,
             door,
-            description: destination ? describeDoor(door, direction, destination) : "way out of the dungeon",
+            shortDescription: destination ? describeDoor(door, direction, destination) : "way out of the dungeon",
           } as Exit
         } else return { towards: direction, to: exit.id } as Exit
       })

@@ -3,7 +3,7 @@ import { parseDungeon } from "../script/parseDungeon"
 import { game, GameOutput, Action } from "../script/gameLoop"
 
 const INSTRUCTIONS = `
-<p class="instructions">Navigate the dungeon by using the arrow keys or pressing the following keys:</p>
+<p class="instructions">Navigate the dungeon by pressing the buttons below, using the arrow keys, or pressing the following keys:</p>
 <ul>
   <li>To move up, or north, press <span>w</span> or <span>up arrow</span></li>
   <li>To move right, or east, press <span>d</span> or <span>right arrow</span></li>
@@ -157,17 +157,19 @@ const printMessage = (message: string, type: string = "message") => {
   updateMessageScroll()
 }
 
-const printExits = (exits:Exit[]) => {
+const printExits = (exits: Exit[]) => {
   const messageScroll = document.getElementById("message-scroll")
   const ul = document.createElement("ul") as HTMLUListElement
-  exits.forEach( exit => {
+  exits.forEach((exit) => {
     const li = document.createElement("li") as HTMLLIElement
     li.textContent = exit.description
     ul.appendChild(li)
   })
   messageScroll.appendChild(ul)
 }
-const addTouchControls = (exits: Exit[], turn: number) => {
+const addTouchControls = (result: GameOutput) => {
+  const exits = result.exits
+  const turn = result.turn
   const messageScroll = document.getElementById("message-scroll")
   const ul = document.createElement("ul") as HTMLUListElement
   const createCommandLi = (text: string, command: string) => {
@@ -179,14 +181,15 @@ const addTouchControls = (exits: Exit[], turn: number) => {
     return li
   }
   exits.forEach((exit, i) => {
-    const command = exit.to==='outside' ? 'q' : (i+1).toString()
-    const li = createCommandLi(`${exit.description}${command === 'q'? ' (quit)':''}`, command)
+    const command = exit.to === "outside" ? "q" : (i + 1).toString()
+    const li = createCommandLi(`${exit.description}${command === "q" ? " (quit)" : ""}`, command)
     ul.appendChild(li)
   })
 
-  const searchLi = createCommandLi("You can also search.", "x")
-  ul.appendChild(searchLi)
-
+  if (!result.statuses?.includes("searched")) {
+    const searchLi = createCommandLi("You can also search.", "x")
+    ul.appendChild(searchLi)
+  }
   messageScroll.appendChild(ul)
   updateMessageScroll()
 }
@@ -202,8 +205,8 @@ const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (resul
     case "noop":
       break // Do not print these messages. They will be handled below.
     default:
-      if (/^\d$/.test(result.action)) { }
-      else printMessage(result.action, "action")
+      if (/^\d$/.test(result.action)) {
+      } else printMessage(result.action, "action")
       const message = result.message.replace(/\n/g, "<br>")
       if (message.startsWith("You leave the dungeon")) printMessage("You attempt to leave the dungeon.")
       else printMessage(message)
@@ -223,7 +226,7 @@ const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (resul
 
   const description = result.description.replace(/\n/g, "<br>")
   printMessage(description, "description")
-  addTouchControls(result.exits, result.turn)
+  addTouchControls(result)
 
   const roomId = result.room
   const path: SVGPathElement = revealRoom(roomId)
@@ -300,7 +303,6 @@ const normalizeMapSvg = (svg: SVGElement) => {
   }
 
   const removeNonMapLayers = (g: SVGGElement) => {
-    console.log("removeNonMapLayers")
     const siblingLayer = g.nextElementSibling
     if (siblingLayer) {
       siblingLayer.remove()
@@ -376,7 +378,6 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
 
   // define game loop
   const getNextResult = async (oldResult: GameOutput): Promise<GameOutput> => {
-    console.log("turn:", oldResult.turn)
     const oldTouchControls = document.querySelectorAll(".control")
     Array.from(oldTouchControls)
       .filter((oldControl: HTMLLIElement) => parseInt(oldControl.dataset.turn) < oldResult.turn)
@@ -458,7 +459,6 @@ const startGame = async () => {
   const selectedDungeon = getSelectedDungeon("dungeon-select")
   try {
     const gameDataFiles = await loadFiles(selectedDungeon, onProgress)
-    console.log({ selectedDungeon, gameDataFiles })
     const result = await gameLoop(gameDataFiles)
     return gameEnd(result)
   } catch (error) {

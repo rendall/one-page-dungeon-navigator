@@ -1,3 +1,5 @@
 /node_modules/
+RAW
+coverage/*
 dist/*
-/RAW
+script/*.js

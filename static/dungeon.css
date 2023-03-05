@@ -218,11 +218,6 @@ section#game {
   overflow-y: scroll;
 }
 
-#message-input {
-  display: none;
-  color: transparent;
-}
-
 #menu {
   display: flex;
   flex-direction: row;
@@ -322,18 +317,5 @@ body.credits {
 @media (max-width: 780px) {
   .credits article {
     flex-direction: column;
-  }
-}
-
-/* a touchscreen implies a virtual keyboard */
-@media (pointer: course), (max-width: 1028px) {
-  #message-input {
-    display: unset;
-    height: 2rem;
-    width: 100%;
-  }
-
-  #message-scroll {
-    height: calc(100vh - 2rem);
   }
 }

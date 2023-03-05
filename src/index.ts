@@ -15,10 +15,7 @@ const INSTRUCTIONS = `
   <li>To move through a specific exit, press its corresponding <span>number</span> key, assigned in a clockwise direction starting with <span>1</span> to the north west.</li>
   <li>To view these instructions again, press <span>?</span></li>
 </ul>
-<hr/>
-
-
-`
+<hr/>`
 
 const loadFiles = (dungeonName: string, onProgress?: (progress: number) => void): Promise<[string, Dungeon]> => {
   const imageUrl: string = `dungeons/${dungeonName}.svg`
@@ -141,8 +138,11 @@ const updateMessageScroll = () => {
 const printMessage = (message: string, type: string = "message") => {
   const messageScroll = document.getElementById("message-scroll")
   switch (type) {
-    case "clear":
+    case "init":
       messageScroll.innerHTML = message
+      requestAnimationFrame(() => {
+        document.getElementById("message-scroll").scrollTop = 0
+      })
       return
     case "html":
       messageScroll.insertAdjacentHTML("beforeend", message)
@@ -157,16 +157,6 @@ const printMessage = (message: string, type: string = "message") => {
   updateMessageScroll()
 }
 
-const printExits = (exits: Exit[]) => {
-  const messageScroll = document.getElementById("message-scroll")
-  const ul = document.createElement("ul") as HTMLUListElement
-  exits.forEach((exit) => {
-    const li = document.createElement("li") as HTMLLIElement
-    li.textContent = exit.description
-    ul.appendChild(li)
-  })
-  messageScroll.appendChild(ul)
-}
 const addTouchControls = (result: GameOutput) => {
   const exits = result.exits
   const turn = result.turn
@@ -198,7 +188,7 @@ const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (resul
   switch (result.action) {
     case "init":
       const [title, subtitle] = result.message.split("\n")
-      printMessage(`<h1 class="title">${title}</h1><p class="story">${subtitle}</p>`, "clear")
+      printMessage(`<h1 class="title">${title}</h1><p class="story">${subtitle}</p>`, "init")
       printMessage(INSTRUCTIONS)
       break
     case "quit":
@@ -232,9 +222,6 @@ const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (resul
   const path: SVGPathElement = revealRoom(roomId)
   moveAvatar(path.getAttribute("d"))
   result.exits.forEach((exit) => revealRoom(exit.door.id))
-
-  const messageInput = document.getElementById("message-input") as HTMLInputElement
-  messageInput.value = result.action
 }
 
 const getSvgBounds = (svg: SVGElement) => {
@@ -280,9 +267,8 @@ const normalizeMapSvg = (svg: SVGElement) => {
     gDungeon.setAttribute("id", "dungeon-map")
 
     svg.querySelector("rect").removeAttribute("fill") // the background of the dungeon should be controlled by the page
-    // remove non-map layers (notes, title, legends, etc)
 
-    // the svg should only be contained within itself
+    // Fit the SVG's viewBox to its content
     const bounds = getSvgBounds(svg)
     const viewBox = `${bounds.left} ${bounds.top} ${bounds.right - bounds.left} ${bounds.bottom - bounds.top}`
 
@@ -302,6 +288,7 @@ const normalizeMapSvg = (svg: SVGElement) => {
     svg.style.width = `${width}px`
   }
 
+  // remove non-map layers (notes, title, legends, etc)
   const removeNonMapLayers = (g: SVGGElement) => {
     const siblingLayer = g.nextElementSibling
     if (siblingLayer) {
@@ -393,24 +380,24 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
       })
 
       const touchPromise = new Promise<Action | string>((resolve) => {
-        // get the exit elements
-        const exitElements = document.querySelectorAll(".control")
+        // get the control elements
+        const controlElements = document.querySelectorAll(".control")
 
-        // add a touch event listener to each exit element
-        exitElements.forEach((exitElement: HTMLElement) => {
-          exitElement.addEventListener(
+        // add a touch event listener to each control element
+        controlElements.forEach((control: HTMLElement) => {
+          control.addEventListener(
             "click",
             (event) => {
               // prevent the default touch event behavior
               event.preventDefault()
 
-              // remove the event listeners and classes from all exit elements
-              exitElements.forEach((exitElement: HTMLElement) => {
-                exitElement.removeEventListener("click", null)
+              // once touched, remove the event listeners and classes from all exit elements
+              controlElements.forEach((control: HTMLElement) => {
+                control.removeEventListener("click", null)
               })
 
               // resolve the getNextInput promise with the exit direction
-              resolve(exitElement.dataset.command.toString())
+              resolve(control.dataset.command.toString())
             },
             { once: true }
           )

@@ -81,20 +81,21 @@ const gameLoop = async (dungeon: Dungeon): Promise<void> => {
     description: "",
     exits: [],
     end: false,
-    turn: 0
+    turn: 0,
   }
 
   const welcome: GameOutput = inputToGame("init")
   console.log(welcome.message)
   console.log(welcome.description)
-  welcome.exits.forEach(exit => console.log(exit.description))
+  welcome.exits.forEach((exit) => console.log(exit.description))
 
   while (!out.end) {
     const input = (await prompt("> ")) as string
 
-
     if (!isAction(input)) {
-      const possibleActions = [...exitDirections, ...actions].filter(action => !["noop", "init", "UNKNOWN", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(action))
+      const possibleActions = [...exitDirections, ...actions].filter(
+        (action) => !["noop", "init", "UNKNOWN", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(action)
+      )
       console.log(`Unknown command ${input}. The following commands are possible: ${possibleActions.join(", ")}`)
       continue
     }
@@ -103,7 +104,7 @@ const gameLoop = async (dungeon: Dungeon): Promise<void> => {
     console.log(out.message)
     if (!out.end) {
       console.log(out.description)
-      out.exits.forEach(exit => console.log(exit.description))
+      out.exits.forEach((exit) => console.log(exit.description))
     }
   }
 

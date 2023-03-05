@@ -27,3 +27,7 @@ The barbarian helmet icon is used as the avatar for the adventurer.
 
 - `npm run build:node`
 - `npm run run:node` or `node ./script/node.js`
+
+### Test
+
+- `npm run test`

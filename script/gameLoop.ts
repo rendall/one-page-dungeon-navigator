@@ -138,6 +138,8 @@ const handleSearch =
 
 const getCurrentRoom = (dungeon: Dungeon, gameState: GameState) => {
   const dungeonCurrentRoom = dungeon.rooms.find((room) => room.id === gameState.id)
+  if (!dungeonCurrentRoom) throw new Error(`Bad data: room ${gameState.id} not found`)
+
   const stateCurrentRoom = gameState.rooms?.find((room) => room.id === gameState.id)
   const currentRoom = {
     ...dungeonCurrentRoom,
@@ -163,8 +165,9 @@ const handleExit =
       : false
     if (!exit) return { ...gameState, message: "You cannot go that way" }
     if (exit.to === "outside") return { ...gameState, message: "You leave the dungeon", end: true }
-    const door = {
-      ...dungeon.doors.find((door) => door.id === exit.door.id),
+    const dungeonDoor = (dungeon.doors as Door[]).find((door) => door.id === exit.door.id)
+    const door: DoorState = {
+      ...dungeonDoor,
       ...gameState.doors.find((door) => door.id === exit.door.id),
     }
     switch (door.type) {
@@ -235,7 +238,7 @@ const describeRoomFunc =
       .sort(sortExitsClockwise(currentRoom))
       .map((exit, i) => ({
         ...exit,
-        description: `To the ${exit.towards} ${isA(exit.shortDescription)} ${exit.shortDescription}${exitNumber(
+        description: `To the ${exit.towards} ${isA(exit.description)} ${exit.description}${exitNumber(
           areExitsSame,
           i
         )}`,
@@ -295,8 +298,6 @@ const isVisibleExitFunc = (gameState: GameState) => (exit: Exit) => {
   }
 }
 
-const describeExit = (exit: Exit, gameState: GameState, currentRoom: Room) => {}
-
 const toOutput = (gameState: GameState): GameOutput => {
   const room = gameState.rooms.find((room) => room.id === gameState.id)
   const output = {
@@ -342,7 +343,7 @@ export const game = (dungeon: Dungeon): GameInterface => {
       gameState = interpretInput({ ...gameState, action })
       return toOutput(gameState)
     } else {
-      if (action !== "init") throw new Error("The first call to the game must be 'init")
+      if (action !== "init") throw new Error("The first call to the game must be 'init'")
       gameState = compose(describeRoomFunc(dungeon), addStatusToRoom("visited"), advanceTurn)(gameState)
       return toOutput(gameState)
     }

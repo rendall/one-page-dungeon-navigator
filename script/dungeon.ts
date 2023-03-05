@@ -5,7 +5,6 @@ export type ExitDirection = (typeof exitDirections)[number]
 export type Exit = {
   towards: ExitDirection
   to: number | "outside"
-  shortDescription: string
   description: string
   isFacing: boolean // some doors have directions, secret doors for example
   door: Door
@@ -25,11 +24,6 @@ export enum DoorType {
   stairwell,
 }
 
-export type Direction = {
-  x: 1 | 0 | -1
-  y: 1 | 0 | -1
-}
-
 export type Rect = {
   x: number
   y: number
@@ -40,11 +34,11 @@ export type Rect = {
 }
 
 export type Door = {
+  id: number
   x: number
   y: number
   dir: Direction
   type: number
-  id: number
 }
 
 export type Note = {
@@ -65,16 +59,25 @@ export type Water = {
 
 /** Dungeon is a navigable object derived from One-Page Dungeon's
  * JSON object */
-export type Dungeon = {
+export type JsonDungeon = {
   version: string
   title: string
   story: string
   rects: Rect[]
-  doors: Door[]
+  doors: { x: number; y: number; dir: { x: number; y: number }; type: number }[]
   notes: Note[]
   columns: Column[]
   water: Water[]
-  rooms?: Room[]
+}
+
+export type Direction = {
+  x: 1 | 0 | -1
+  y: 1 | 0 | -1
+}
+
+export type Dungeon = JsonDungeon & {
+  rooms: Room[]
+  doors: Door[]
 }
 
 /** Room is an object derived from One-Page JSON data.

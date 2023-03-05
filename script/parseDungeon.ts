@@ -1,7 +1,7 @@
 /** This file takes a One Page Dungeon json file and parses it for navigation.
  * This is the immutable, single source of truth for the adventure.
  */
-import type { Column, Door, Dungeon, Exit, ExitDirection, Rect, Room, Water } from "./dungeon"
+import type { Column, Direction, Door, Dungeon, Exit, ExitDirection, JsonDungeon, Rect, Room, Water } from "./dungeon"
 
 export const facingDirection = (door: Door): ExitDirection => {
   if (door.dir.x === -1) return "west"
@@ -122,7 +122,7 @@ const areOpposite = (dir1: string, dir2: string): boolean => {
 
 const getRoomNoun = (room: Rect | "outside", exits: Exit[]): string => {
   if (room === "outside") return room
-  const exitsLength = exits.filter((exit) => exit.shortDescription !== "secret door").length
+  const exitsLength = exits.filter((exit) => exit.description !== "secret door").length
   if (is1x1(room)) {
     switch (exitsLength) {
       case 1:
@@ -208,7 +208,7 @@ const doorFunc = (doors: Door[]) => (a: { x: number; y: number }) =>
 const getAdjacent = <T extends Rect>(a: T, rects: T[]) => rects.filter((rect) => isAdjacent(rect, a))
 
 /** Accepts One-Page JSON and returns a navigable object */
-export const parseDungeon = (dungeon: Dungeon): Dungeon => {
+export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
   const { rects, notes, doors } = dungeon
 
   // Assign a unique id to each rect
@@ -226,7 +226,7 @@ export const parseDungeon = (dungeon: Dungeon): Dungeon => {
     .map((rect) => ({
       id: rect.id,
       ...doors.find((door) => door.x === rect.x && door.y === rect.y),
-    }))
+    })) as (Door & { id: number; dir: Direction })[]
 
   // Return the door at {x,y}
   const getDoor = doorFunc(doorsWithId)
@@ -250,7 +250,7 @@ export const parseDungeon = (dungeon: Dungeon): Dungeon => {
             to,
             type: door.type,
             door,
-            shortDescription: destination ? describeDoor(door, direction, destination) : "way out of the dungeon",
+            description: destination ? describeDoor(door, direction, destination) : "way out of the dungeon",
           } as Exit
         } else return { towards: direction, to: exit.id } as Exit
       })

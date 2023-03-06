@@ -374,7 +374,12 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
       const keyboardPromise = new Promise<Action | string>((resolve) => {
         const onKeyDownListener = (event: KeyboardEvent) => {
           const key = event.key.toLowerCase()
-          resolve(key)
+          const isValid = /^[a-z#?0-9]$/.test(key) || key.startsWith("arrow")
+          if (!isValid) {
+            event.preventDefault()
+            getNextInput().then(resolve)
+          }
+          else resolve(key)
         }
         document.addEventListener("keydown", onKeyDownListener, { once: true })
       })

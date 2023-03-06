@@ -216,6 +216,15 @@ const handleActionFunc =
 
 const advanceTurn: GameStateModifier = (gameState: GameState) => ({ ...gameState, turn: gameState.turn + 1 })
 
+export const describeNote = (note: string) => {
+  if (note.startsWith("The")) return note
+  const deCap = (str: string) => /(writing)/.test(str) ? `some ${str.slice(2)}` : `${str.charAt(0).toLowerCase() + str.slice(1)}`
+  const hasVerb = (str: string) => (/(holds|hides)/.test(str) ? "" : /^\w*s\s/.test(str) ? "are " : "is ")
+  const hereIs = (str: string) => `Here ${hasVerb(str)}${deCap(str)}`
+
+  return hereIs(note)
+}
+
 const describeRoomFunc =
   (dungeon: Dungeon): GameStateModifier =>
     (gameState: GameState): GameState => {
@@ -249,7 +258,6 @@ const describeRoomFunc =
           areExitsSame,
           i
         )}`
-
       }
 
       const exits = currentRoom.exits
@@ -270,11 +278,7 @@ const describeRoomFunc =
           description: getExitDescription(exit, i, all),
         }))
 
-      const deCap = (str: string) => /(writing)/.test(str) ? `some ${str.slice(2)}` : `${str.charAt(0).toLowerCase() + str.slice(1)}`
-      const hasVerb = (str: string) => (/(holds|hides)/.test(str) ? "" : /^\w*s\s/.test(str) ? "are " : "is ")
-      const hereIs = (str: string) => `Here ${hasVerb(str)}${deCap(str)}`
-
-      const description = `You are in a ${currentRoom.area} ${currentRoom.description} ${currentRoom.contains ? hereIs(currentRoom.contains) : ""}`
+      const description = `You are in a ${currentRoom.area} ${currentRoom.description} ${currentRoom.contains ? describeNote(currentRoom.contains) : ""}`
 
       const room: RoomState = { ...currentRoom, exits, description }
 

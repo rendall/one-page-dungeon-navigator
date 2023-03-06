@@ -3,3 +3,4 @@ RAW
 coverage/*
 dist/*
 lib/*.js
+scripts/notes-checker.mjs

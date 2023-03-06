@@ -1,7 +1,7 @@
 const fs = require("fs")
 const path = require("path")
 const directoryPath = "./static/dungeons"
-const parseDungeon = require("../script/parseDungeon")
+const parseDungeon = require("../lib/parseDungeon")
 
 fs.readdir(directoryPath, (err, files) => {
   if (err) {
@@ -29,7 +29,6 @@ fs.readdir(directoryPath, (err, files) => {
       }
 
       // add any other SVG health checks here
-
       console.log(`${i} SVG file ${file} is healthy`)
     })
   })

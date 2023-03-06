@@ -1,4 +1,4 @@
-export const exitDirections = ["north", "east", "south", "west", "UNKNOWN"] as const
+export const exitDirections = ["north", "east", "south", "west"] as const
 export type ExitDirection = (typeof exitDirections)[number]
 
 /** Exit is derived from One-Page JSON data. Aids navigation. */

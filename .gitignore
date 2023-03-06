@@ -2,4 +2,4 @@
 RAW
 coverage/*
 dist/*
-script/*.js
+lib/*.js

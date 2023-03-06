@@ -8,7 +8,6 @@ export const facingDirection = (door: Door): ExitDirection => {
   if (door.dir.y === 1) return "south"
   if (door.dir.x === 1) return "east"
   if (door.dir.y === -1) return "north"
-  return "UNKNOWN"
 }
 
 const describeDoor = (door: Door, direction: ExitDirection, destination: Rect | "outside"): string | number => {
@@ -181,24 +180,18 @@ const isAdjacent = (a: Rect, b: Rect): boolean => {
 const isInside = (pos: { x: number; y: number }, rect: Rect) =>
   pos.x >= rect.x && pos.x < rect.x + rect.w && pos.y >= rect.y && pos.y < rect.y + rect.h
 
-const getDir = <T extends Rect>(from: T | undefined, to: T): "north" | "south" | "east" | "west" | "UNKNOWN" => {
-  if (!from) return "UNKNOWN"
-  // to is expected to be a 1x1
+const getDir = <T extends Rect>(from: T | undefined, to: T): "north" | "south" | "east" | "west" => {
   if (!is1x1(to)) {
-    console.warn(`Unexpected argument to getDir ${to}`)
-    return "UNKNOWN"
+    console.error(`Unexpected argument to getDir ${to}`)
   }
   if (!isAdjacent(to, from)) {
-    console.warn(`Arguments to getDir are not adjacent: ${{ from: to, to: from }}`)
-    return "UNKNOWN"
+    console.error(`Arguments to getDir are not adjacent: ${{ from: to, to: from }}`)
   }
 
   if (to.x === from.x - 1) return "west"
   if (to.x === from.x + from.w) return "east"
   if (to.y === from.y - 1) return "north"
   if (to.y === from.y + from.h) return "south"
-
-  return "UNKNOWN"
 }
 
 const doorFunc = (doors: Door[]) => (a: { x: number; y: number }) =>

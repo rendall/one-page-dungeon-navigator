@@ -1,7 +1,7 @@
 import { Dungeon, exitDirections } from "./dungeon"
 import { actions, game, GameOutput } from "./gameLoop"
 import { parseDungeon } from "./parseDungeon"
-import testDungeon from "../tests/test_dungeon.json"
+import testDungeon from "../tests/house_of_the_immortal_lord.json"
 
 const minimalDungeon: Dungeon = {
   version: "",
@@ -46,34 +46,7 @@ describe("gameLoop good game()", () => {
 
   test("First output should welcome properly", () => {
     const input = game(parsedDungeon)
-    const firstOutput = {
-      message:
-        "Test Dungeon\nFor several centuries the Test Dungeon remained sealed. These days it is badly infested by goats.",
-      room: 0,
-      end: false,
-      turn: 1,
-      description: "You are in a 7m x 6m room. Here is a mouth-shaped stone double door with a keyhole to the west. ",
-      action: "init",
-      exits: [
-        {
-          towards: "south",
-          isFacing: false,
-          to: "outside",
-          type: 3,
-          door: { id: 4, x: 0, y: 0, dir: { x: 0, y: -1 }, type: 3 },
-          description: "To the south is a way out of the dungeon",
-        },
-        {
-          towards: "west",
-          isFacing: true,
-          to: 1,
-          type: 5,
-          door: { id: 5, x: -4, y: -1, dir: { x: -1, y: 0 }, type: 5 },
-          description: "To the west are double doors",
-        },
-      ],
-      statuses: ["visited"],
-    }
+    const firstOutput = {"message":"House of the Immortal Lord\nThe house of the Immortal Lord is situated high in the Mondjit mountains. Lately a huge mutant rabbit has made its lair here. It is rumored that the house is rich with gold and jewels and magical artifacts.","room":0,"end":false,"turn":1,"description":"You are in a 3m x 4m room.  ","action":"init","exits":[{"towards":"north","isFacing":false,"to":"outside","type":3,"door":{"id":6,"x":0,"y":0,"dir":{"x":0,"y":1},"type":3},"description":"To the north is a way out of the dungeon"},{"towards":"east","isFacing":true,"to":1,"type":1,"door":{"id":7,"x":2,"y":3,"dir":{"x":1,"y":0},"type":1},"description":"To the east is a door"},{"towards":"west","isFacing":true,"to":2,"type":1,"door":{"id":8,"x":-2,"y":3,"dir":{"x":-1,"y":0},"type":1},"description":"To the west is a door"}],"statuses":["visited"]}
     const output = input("init")
     expect(output).toEqual(firstOutput)
   })
@@ -99,20 +72,31 @@ describe("gameLoop good game()", () => {
     })
 
     test("search should reveal secret door and allow exit", () => {
-      const eastOutput: GameOutput = input("east")
-      expect(eastOutput.message).toBe("You cannot go that way")
-      expect(eastOutput.exits.length).toBe(2)
+      // first move to the room with the secret door
+      input("east")
+
+      // moving in the direction of the secret door should fail
+      const northOutput: GameOutput = input("north")
+      expect(northOutput.message).toBe("You cannot go that way")
+      expect(northOutput.exits.length).toBe(1)
 
       const searchOutput = input("search")
-      expect(searchOutput.message).toBe("You discover a secret door to the east!")
-      expect(searchOutput.exits.length).toBe(3)
+      expect(searchOutput.message).toBe("You discover a secret door to the north!")
+      expect(searchOutput.exits.length).toBe(2)
 
-      const secretOutput = input("east")
-      expect(secretOutput.message).toBe("You go east")
+      // moving in the direction of the secret door should now succeed
+      const secretOutput = input("north")
+      expect(secretOutput.message).toBe("You go north")
     })
 
-    test("second search should give 'searched' status", () => {
+    test("unsuccessful search should give 'searched' status", () => {
+      // move to the room with the secret doors
+      input("east")
+
+      // discover both secret doors
       input("search")
+      input("search")
+
       const output = input("search")
       expect(output.message).toBe("You find nothing else of interest.")
       expect(output.statuses).toContain("searched")

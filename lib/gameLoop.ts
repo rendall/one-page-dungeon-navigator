@@ -104,6 +104,8 @@ const addStatusToRoom = (status: RoomStatus, roomId?: number) => (gameState: Gam
   return newState
 }
 
+const addStatusToDoor = (door:DoorState, ...statuses:string[]) => updateDoorState(addStatus(door, ...statuses))
+
 /** Set current room id to id */
 const moveTo =
   (id: number): GameStateModifier =>
@@ -122,6 +124,7 @@ const handleSearch =
         exit.door.type === 6 &&
         !gameState.doors.find((door) => door.id === exit.door.id)?.statuses.includes("discovered")
     )
+
     if (undiscoveredSecret) {
       const doors: DoorState[] = [...gameState.doors, { ...undiscoveredSecret.door, statuses: ["discovered"] }]
       return {
@@ -178,7 +181,7 @@ const handleExit =
         if (exit.isFacing) return { ...gameState, message: "The portcullis bars your way." }
         else {
           return compose(
-            updateDoorState(addStatus(door, "unlocked", "open")),
+            addStatusToDoor(door, "unlocked", "open"),
             addMessage(`You pull the lever. The portcullis opens. You go ${exit.towards}.`),
             moveTo(exit.to)
           )(gameState)

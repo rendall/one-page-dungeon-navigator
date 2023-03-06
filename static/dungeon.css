@@ -138,6 +138,10 @@ p.description + ul {
   padding-left: 1rem;
 }
 
+ul:empty {
+  display: none;
+}
+
 p.message {
   font-weight: bold;
 }

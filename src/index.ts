@@ -1,6 +1,6 @@
-import { Dungeon, Exit } from "../script/dungeon"
-import { parseDungeon } from "../script/parseDungeon"
-import { game, GameOutput, Action } from "../script/gameLoop"
+import { Dungeon, Exit } from "../lib/dungeon"
+import { parseDungeon } from "../lib/parseDungeon"
+import { game, GameOutput, Action } from "../lib/gameLoop"
 
 const INSTRUCTIONS = `
 <p class="instructions">Navigate the dungeon by pressing the buttons below, using the arrow keys, or pressing the following keys:</p>

@@ -26,8 +26,15 @@ export const arrEqual = (a: unknown[], b: unknown[]): boolean => {
 /** Replace item in array with id */
 export const replace = <T extends { id: number }>(e: T, arr: T[]) => arr.map((a) => (e.id === a.id ? e : a))
 
+/** Remove duplicate elements */
+export const unique = <T>(arr: T[]) => arr.reduce((out: T[], e: T) => (out.includes(e) ? out : [...out, e]), [])
+
 /** Make only the first letter lower-case */
 export const deCapitalize = (str: string) => `${str.charAt(0).toLowerCase() + str.slice(1)}`
 
-/** Remove duplicate elements */
-export const unique = <T>(arr: T[]) => arr.reduce((out: T[], e: T) => (out.includes(e) ? out : [...out, e]), [])
+/** Capitalize the string */
+export const capitalize = (str: string) => `${str.charAt(0).toUpperCase() + str.slice(1)}`
+
+/** Replace 'a' with 'the' */
+export const toThe = (str:string) => str.replace(/\b[Aa]n?\b/g, "the")
+

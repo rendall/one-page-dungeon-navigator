@@ -2,7 +2,7 @@
  * GameState holds all of the changes or status updates. On user
  * input, the GameState is merged or compared with data from
  * Dungeon data and used to determine the result of the player action. */
-import { Action, Door, Dungeon, Exit, ExitDirection, Note, NoteStatus, NoteType, Room, Secret } from "./dungeon"
+import { Action, Door, Dungeon, Exit, ExitDirection, NoteStatus, NoteType, Room, Secret } from "./dungeon"
 import { exitDirections, DoorType, isAction } from "./dungeon"
 import { compose, replace, unique } from "./utilties"
 type GameState = {

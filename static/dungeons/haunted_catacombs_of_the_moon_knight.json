@@ -108,7 +108,7 @@
     { "text": "A flask of holy water and a helm tucked under some debris.", "ref": "3", "pos": { "x": 0, "y": 13.5 } },
     { "text": "An enchanted cape on a pedestal table.", "ref": "5", "pos": { "x": 16.5, "y": 11.5 } },
     {
-      "text": "A dying thief, a weird, sticky to touch breastplate among his belongings.",
+      "text": "A dying thief, a weird, sticky breastplate among his belongings.",
       "ref": "4",
       "pos": { "x": -7.5, "y": 11.5 }
     },

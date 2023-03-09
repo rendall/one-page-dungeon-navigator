@@ -6,7 +6,7 @@ _The castle is situated at a bend of the winding Havius. These days it is badly 
 2. A silver crown hidden in a crevice of the floor.
 3. A mouth-shaped gate with a keyhole to the east.
 4. A key in a chest.
-5. A strange, covered with glyphs object in the middle of a circle of runes on the ground.
+5. A strange object covered with glyphs in the middle of a circle of runes on the ground.
 6. A halfling, lying on the ground.
 7. A corpse of a cultist, a lamp and some gold nearby.
 8. A writing on the wall painted in blood: DREAMS ARE COMING

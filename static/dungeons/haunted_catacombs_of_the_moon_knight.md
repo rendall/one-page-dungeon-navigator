@@ -5,7 +5,7 @@ _For decades the catacombs of the Moon Knight remained sealed. Lately they were 
 1. A notable ironbound door on the southern wall of the small chamber.
 2. A crate containing some gold.
 3. A flask of holy water and a helm tucked under some debris.
-4. A dying thief, a weird, sticky to touch breastplate among his belongings.
+4. A dying thief, a weird, sticky breastplate among his belongings.
 5. An enchanted cape on a pedestal table.
 6. A relief depicting a scene of sacrifice.
 

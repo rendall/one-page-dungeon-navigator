@@ -155,7 +155,7 @@
     { "text": "An old dwarf. Has an axe of life stealing for trade.", "ref": "1", "pos": { "x": 1.5, "y": -5 } },
     { "text": "A rotten chest with a scarf and some gold.", "ref": "3", "pos": { "x": -7.5, "y": 0 } },
     {
-      "text": "A mysterious, made of an unknown material javelin hovering in the middle of the chamber.",
+      "text": "A mysterious javelin of unknown material hovering in the middle of the chamber.",
       "ref": "6",
       "pos": { "x": -7.5, "y": 13 }
     },

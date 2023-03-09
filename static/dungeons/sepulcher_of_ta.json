@@ -207,7 +207,7 @@
     { "text": "A smith, sleeping on the ground.", "ref": "10", "pos": { "x": -12.5, "y": -10.5 } },
     { "text": "A pile of rubble hides a shield.", "ref": "7", "pos": { "x": 25.5, "y": 18.5 } },
     {
-      "text": "A corpse of a gnoll, an uncanny, warm to touch object close to it.",
+      "text": "A corpse of a gnoll, an uncanny, warm object close to it.",
       "ref": "3",
       "pos": { "x": 23.5, "y": -0.5 }
     }

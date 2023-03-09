@@ -216,7 +216,7 @@
     },
     { "text": "A broken strongbox with a silver key.", "ref": "7", "pos": { "x": -7.5, "y": -6 } },
     {
-      "text": "A dwarf. Wants to pay you to get rid of a strange, ice-cold to touch flute.",
+      "text": "A dwarf. Wants to pay you to get rid of a strange, ice-cold flute.",
       "ref": "8",
       "pos": { "x": -7.5, "y": 5 }
     },

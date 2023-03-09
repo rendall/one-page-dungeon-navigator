@@ -4,7 +4,7 @@ _After the defeat of Akta the fortress has changed hands many times. Recently a 
 
 1. A huge double door with two keyholes on the northern wall of the room.
 2. An orb of haunting hovering in the middle of the chamber.
-3. A chest containing a strange, sticky to touch grimoire.
+3. A chest containing a strange, sticky grimoire.
 4. A half-eaten body of a hobgoblin, a breastplate close to it.
 5. A sarcastic sad-eyed human, whistling tunelessly.
 6. A giant pile of rubble hides a copper key.

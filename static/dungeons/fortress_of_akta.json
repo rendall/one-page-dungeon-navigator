@@ -184,7 +184,7 @@
       "pos": { "x": 3, "y": 0.5 }
     },
     { "text": "An orb of haunting hovering in the middle of the chamber.", "ref": "2", "pos": { "x": 3.5, "y": 6.5 } },
-    { "text": "A chest containing a strange, sticky to touch grimoire.", "ref": "3", "pos": { "x": 3.5, "y": -5.5 } },
+    { "text": "A chest containing a strange, sticky grimoire.", "ref": "3", "pos": { "x": 3.5, "y": -5.5 } },
     { "text": "A copper key in a battered strongbox.", "ref": "8", "pos": { "x": 8.5, "y": 11 } },
     { "text": "A map and some gold at the bottom of a pool.", "ref": "7", "pos": { "x": 8.5, "y": 2 } },
     {

@@ -117,7 +117,7 @@
     { "text": "A brass key on a pedestal.", "ref": "4", "pos": { "x": -1.5, "y": 15 } },
     { "text": "A shield and some gold at the bottom of a small pool.", "ref": "5", "pos": { "x": -11, "y": 9.5 } },
     { "text": "A pilgrim, whistling tunelessly.", "ref": "11", "pos": { "x": 17.5, "y": 5.5 } },
-    { "text": "A crate holds a weird, covered with runes chainmail.", "ref": "6", "pos": { "x": -7.5, "y": 3 } },
+    { "text": "A crate holds a weird chainmail covered with runes.", "ref": "6", "pos": { "x": -7.5, "y": 3 } },
     { "text": "A jeweled throne, drives a person mad when sat on.", "ref": "7", "pos": { "x": -19.5, "y": 6 } },
     { "text": "A corpse of an elf, a golden comb close to it.", "ref": "8", "pos": { "x": -19.5, "y": 18 } }
   ],

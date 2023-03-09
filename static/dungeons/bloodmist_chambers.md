@@ -7,6 +7,6 @@ _For a long time the chambers were considered lost. Now they are controlled by a
 3. A rotten chest with a scarf and some gold.
 4. A key hidden in a crack of the floor.
 5. A crystalized body of a thug, a golden figurine close by.
-6. A mysterious, made of an unknown material javelin hovering in the middle of the chamber.
+6. A mysterious javelin of unknown material hovering in the middle of the chamber.
 
 [https://watabou.github.io/one-page-dungeon/?seed=120204374&tags=large](https://watabou.github.io/one-page-dungeon/?seed=120204374&tags=large)

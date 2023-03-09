@@ -9,7 +9,7 @@ _Long after Magtherinn's defeat the crypt remained uninhabited. Currently it is 
 5. A mosaic of a bat pattern on the floor
 6. A reinforced chest containing a torch and a mantle.
 7. A broken strongbox with a silver key.
-8. A dwarf. Wants to pay you to get rid of a strange, ice-cold to touch flute.
+8. A dwarf. Wants to pay you to get rid of a strange, ice-cold flute.
 9. A giant pile of rubble hides a mysterious, whispering helm.
 10. A relief depicting the landscape around the crypt as it looked in the distant past.
 11. A scorched door with three keyholes on the eastern wall.

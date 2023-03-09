@@ -179,7 +179,7 @@
   ],
   "notes": [
     { "text": "A rear entrance into the library.", "ref": "1", "pos": { "x": 3, "y": 0.5 } },
-    { "text": "An uncanny, ice-cold to touch object locked in a  safe.", "ref": "2", "pos": { "x": 3.5, "y": -3 } },
+    { "text": "An uncanny, ice-cold object locked in a  safe.", "ref": "2", "pos": { "x": 3.5, "y": -3 } },
     {
       "text": "A lavishly decorated double door on the eastern wall of the chamber.",
       "ref": "3",

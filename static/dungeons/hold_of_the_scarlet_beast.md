@@ -2,7 +2,7 @@
 
 _Since the demise of the Scarlet Beast the hold has changed hands many times. Recently a pack of fire-breathing rhinos have made its lair here. It is said that countless treasures of ancient books and magical artifacts are stored here._
 
-1. A weird, made of an unknown material chainmail locked in a safe.
+1. A weird chainmail of unknown material locked in a safe.
 2. Arrows and a staff of slaying hidden in a crevice of the floor.
 3. A chest with a leather armor in it.
 4. A round door to the east.

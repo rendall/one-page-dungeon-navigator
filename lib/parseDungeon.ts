@@ -279,7 +279,6 @@ export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
         w: fullRoom.w,
         h: fullRoom.h,
         notes,
-        ...(notes && notes.length > 1 ? { notes } : {}),
         ...(fullRoom.ending ? { ending: true } : {}),
         ...(door ? { door } : {}),
       }

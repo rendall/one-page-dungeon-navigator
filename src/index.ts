@@ -1,6 +1,6 @@
-import { Dungeon, Exit } from "../lib/dungeon"
+import { Dungeon, Action } from "../lib/dungeon"
 import { parseDungeon } from "../lib/parseDungeon"
-import { game, GameOutput, Action } from "../lib/gameLoop"
+import { game, GameOutput } from "../lib/gameLoop"
 
 const INSTRUCTIONS = `
 <p class="instructions">Navigate the dungeon by pressing the buttons below, using the arrow keys, or pressing the following keys:</p>
@@ -154,7 +154,7 @@ const printMessage = (message: string, type: string = "message") => {
       messageScroll.appendChild(messageP)
       break
   }
-  updateMessageScroll()
+  requestAnimationFrame(updateMessageScroll)
 }
 
 const addTouchControls = (result: GameOutput) => {
@@ -378,8 +378,7 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
           if (!isValid) {
             event.preventDefault()
             getNextInput().then(resolve)
-          }
-          else resolve(key)
+          } else resolve(key)
         }
         document.addEventListener("keydown", onKeyDownListener, { once: true })
       })

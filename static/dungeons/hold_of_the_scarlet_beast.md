@@ -9,7 +9,7 @@ _Since the demise of the Scarlet Beast the hold has changed hands many times. Re
 5. A stuffed owl, tells an unwanted truth when stroked.
 6. A reinforced chest containing gems.
 7. A rear entrance into the hold. A teenager, lying in a corner.
-8. Remains of a bandit apparently killed by elfs, some gold and some gold clutched in his hands.
+8. Remains of a bandit apparently killed by elves, some gold and some gold clutched in his hands.
 9. A still warm body of a dwarf, a magic bracelet close by.
 
 [https://watabou.github.io/one-page-dungeon/?seed=1035130813&tags=secret,large](https://watabou.github.io/one-page-dungeon/?seed=1035130813&tags=secret,large)

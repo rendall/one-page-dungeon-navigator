@@ -4,3 +4,5 @@ coverage/*
 dist/*
 lib/*.js
 scripts/notes-checker.mjs
+scripts/random.js
+scripts/node.js

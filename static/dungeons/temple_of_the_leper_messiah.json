@@ -94,7 +94,7 @@
     { "text": "A crowbar among rubble on the ground.", "ref": "2", "pos": { "x": 12, "y": -2.5 } },
     { "text": "A rear entrance into the temple.", "ref": "4", "pos": { "x": -8.5, "y": -6.5 } },
     {
-      "text": "An uncanny, sticky to touch leather armor in a trophy case.",
+      "text": "An uncanny, sticky leather armor in a trophy case.",
       "ref": "3",
       "pos": { "x": 12.5, "y": -7.5 }
     },

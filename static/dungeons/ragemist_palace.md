@@ -4,7 +4,7 @@ _The palace is situated high in the Frostheart peaks. Lately a huge blood-suckin
 
 1. A battered iron gate on the eastern wall.
 2. A rear entrance into the palace. A soldier, sitting on the ground.
-3. A strange, made of an unknown material scale mail hovering in the middle of the large chamber.
+3. A strange scale of unknown material mail hovering in the middle of the large chamber.
 4. A corpse of an elf, an unknown potion close to it.
 5. A carpet of death wish hidden in a crevice of the wall.
 6. Some gold and a chainmail in a reinforced chest.

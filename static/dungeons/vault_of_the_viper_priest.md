@@ -7,7 +7,7 @@ _For a millenium the vault of the Viper Priest was considered lost. Recently a g
 3. A notable gate with two keyholes to the west.
 4. A brass key on a pedestal.
 5. A shield and some gold at the bottom of a small pool.
-6. A crate holds a weird, covered with runes chainmail.
+6. A crate holds a weird chainmail covered with runes.
 7. A jeweled throne, drives a person mad when sat on.
 8. A corpse of an elf, a golden comb close to it.
 9. A carving on the wall, totally destroyed by mold.

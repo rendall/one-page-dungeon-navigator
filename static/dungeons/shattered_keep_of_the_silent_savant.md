@@ -5,7 +5,7 @@ _For a long time the keep of the Silent Savant remained sealed. Currently it is 
 1. A pile of rubble hides a crowbar.
 2. Remains of an orc, some gold and an ornate dagger in his hands.
 3. A broken chest containing a key.
-4. A weird, ice-cold to touch looking glass hovering in the middle of the small chamber.
+4. A weird, ice-cold looking glass hovering in the middle of the small chamber.
 5. A key in a box.
 6. A magic compass at the bottom of a pool.
 7. A rotten strongbox holds a key.

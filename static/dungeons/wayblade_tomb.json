@@ -83,7 +83,7 @@
   ],
   "notes": [
     { "text": "Remains of a barbarian, some gold clutched in his hands.", "ref": "1", "pos": { "x": 7.5, "y": -2.5 } },
-    { "text": "A weird, sticky to touch glaive tucked under some debris.", "ref": "2", "pos": { "x": 8.5, "y": -8.5 } },
+    { "text": "A weird, sticky glaive tucked under some debris.", "ref": "2", "pos": { "x": 8.5, "y": -8.5 } },
     {
       "text": "A great double door on the southern wall of the small room.",
       "ref": "4",

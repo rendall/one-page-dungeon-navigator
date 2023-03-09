@@ -3,7 +3,7 @@
 _The hall of the Fire Emperor is situated deep in the high mountains, protected by the impassable terrain. Recently it was squatted by a band of bandits. The hall of the Fire Emperor is home to a rare specie of plants._
 
 1. A chest with a cursed rapier, some gold and a potion of speed in it.
-2. A rotten crate holds a mysterious, warm to touch helm.
+2. A rotten crate holds a mysterious, warm helm.
 3. A smuggler. Wants to join you.
 4. A battered wooden double door with a keyhole on the southern wall of the large chamber.
 5. A mosaic on the wall, totally destroyed by fire.

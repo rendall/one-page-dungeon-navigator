@@ -9,7 +9,7 @@ _The temple of the Demon Savant is situated deep in the wasteland, protected by 
 5. A battered crate holds a leaf-shaped key.
 6. A fresco on the ceiling, ages a person when looked at.
 7. A huge iron double door with two keyholes to the south.
-8. A pile of rubble hides a mysterious, made of an unknown material helm.
+8. A pile of rubble hides a mysterious helm of unknown material.
 9. A leaf-shaped key hovering in the middle of the small chamber.
 10. An old friend, weak of starvation.
 

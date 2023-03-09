@@ -3,7 +3,7 @@
 _The library of Farax-Shamakta is situated high in the Darkwing peaks. Recently an undead dragon has made its lair here. It is said that countless treasures of ancient books and gold can be found here._
 
 1. A rear entrance into the library.
-2. An uncanny, ice-cold to touch object locked in a safe.
+2. An uncanny, ice-cold object locked in a safe.
 3. A lavishly decorated double door on the eastern wall of the chamber.
 4. A tome on a lectern, turns a person to stone when opened.
 5. Some gold and rations among rubble on the ground.

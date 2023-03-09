@@ -86,7 +86,7 @@
   ],
   "notes": [
     {
-      "text": "A crate holds a weird, made of an unknown material bracelet.",
+      "text": "A crate holds a weird bracelet of unknown material.",
       "ref": "1",
       "pos": { "x": 11.5, "y": -3 }
     },
@@ -97,7 +97,7 @@
     },
     { "text": "A huge stone door to the north.", "ref": "4", "pos": { "x": -15, "y": -12.5 } },
     { "text": "A rotten chest containing a rusty mace and some gold.", "ref": "5", "pos": { "x": -13.5, "y": -8 } },
-    { "text": "An uncanny, ice-cold to touch dagger on a pedestal.", "ref": "3", "pos": { "x": -9, "y": -18.5 } }
+    { "text": "An uncanny, ice-cold dagger on a pedestal.", "ref": "3", "pos": { "x": -9, "y": -18.5 } }
   ],
   "columns": [],
   "water": [

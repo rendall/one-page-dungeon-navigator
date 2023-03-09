@@ -48,7 +48,7 @@
     { "text": "A round wooden gate with a keyhole to the east.", "ref": "1", "pos": { "x": -0.5, "y": -4 } },
     { "text": "A large pile of rubble hides a brass key.", "ref": "2", "pos": { "x": 2.5, "y": 11 } },
     {
-      "text": "A battered chest with an uncanny, sticky to touch javelin in it.",
+      "text": "A battered chest with an uncanny, sticky javelin in it.",
       "ref": "3",
       "pos": { "x": 7, "y": 5.5 }
     },

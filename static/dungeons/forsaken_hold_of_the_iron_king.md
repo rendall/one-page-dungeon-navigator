@@ -2,7 +2,7 @@
 
 _Long after the Iron King's defeat the hold remained uninhabited. Currently it is overrun with goats._
 
-1. A mysterious, warm to touch rod in a shattered curio case.
+1. A mysterious, warm rod in a shattered curio case.
 2. A rear entrance into the hold.
 3. A scorched gate with two keyholes on the southern wall.
 4. A villager, chained to the wall.

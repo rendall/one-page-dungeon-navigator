@@ -78,7 +78,7 @@
     { "text": "A dying cultist, a scimitar among his belongings.", "ref": "4", "pos": { "x": -11.5, "y": -9.5 } },
     { "text": "A key tucked under some debris.", "ref": "2", "pos": { "x": 15.5, "y": -13.5 } },
     {
-      "text": "A lifelike statue of a human artificer, a weird, sticky to touch mace in its hands.",
+      "text": "A lifelike statue of a human artificer, a weird, sticky mace in its hands.",
       "ref": "5",
       "pos": { "x": -22, "y": -10.5 }
     },

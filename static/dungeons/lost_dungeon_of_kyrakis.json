@@ -122,7 +122,7 @@
     },
     { "text": "A medium chest holds a silver key.", "ref": "6", "pos": { "x": 25, "y": 11.5 } },
     {
-      "text": "Remains of a druid apparently killed by cultists, an uncanny, covered with carvings dice clutched in his hands.",
+      "text": "Remains of a druid apparently killed by cultists, an uncanny dice covered with carvings clutched in his hands.",
       "ref": "7",
       "pos": { "x": 28.5, "y": -3.5 }
     },

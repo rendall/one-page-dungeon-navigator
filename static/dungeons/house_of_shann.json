@@ -97,7 +97,7 @@
     { "x": -5, "y": 11, "dir": { "x": -1, "y": 0 }, "type": 0 }
   ],
   "notes": [
-    { "text": "A mysterious, warm to touch robe in a glass display case.", "ref": "1", "pos": { "x": -7.5, "y": 3.5 } },
+    { "text": "A mysterious, warm robe in a glass display case.", "ref": "1", "pos": { "x": -7.5, "y": 3.5 } },
     { "text": "A magic tablet among rubble on the ground.", "ref": "5", "pos": { "x": 3.5, "y": 16.5 } },
     { "text": "A petrified body of an elf, a copper key close by.", "ref": "2", "pos": { "x": 0.5, "y": -4.5 } },
     {

@@ -4,7 +4,7 @@ _For a long time the asylum of the Scarlet Dragon remained abandoned. These days
 
 1. A round wooden gate with a keyhole to the east.
 2. A large pile of rubble hides a brass key.
-3. A battered chest with an uncanny, sticky to touch javelin in it.
+3. A battered chest with an uncanny, sticky javelin in it.
 4. A ticking gearwork machine, allows a person to breath under water when the lever is pulled.
 5. A magic scroll in the middle of a circle of runes on the ground.
 

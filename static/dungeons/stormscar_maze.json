@@ -117,7 +117,7 @@
     },
     { "text": "A smuggler, resting in a corner.", "ref": "6", "pos": { "x": 1.5, "y": 14 } },
     {
-      "text": "A mysterious, covered with glyphs book in a shattered trophy case.",
+      "text": "A mysterious book covered with glyphs in a shattered trophy case.",
       "ref": "4",
       "pos": { "x": -11.5, "y": -16.5 }
     },

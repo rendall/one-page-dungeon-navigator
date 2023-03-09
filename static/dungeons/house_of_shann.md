@@ -2,7 +2,7 @@
 
 _For several centuries the house of Shann was considered lost. Lately a band of pirates rediscovered it, making it their headquarters. Rumors say that Farax-Crieta, a legendary wand, is still hidden here._
 
-1. A mysterious, warm to touch robe in a glass display case.
+1. A mysterious, warm robe in a glass display case.
 2. A petrified body of an elf, a copper key close by.
 3. A battered chest containing some gold.
 4. A massive wooden double door with a keyhole on the southern wall of the room.

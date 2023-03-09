@@ -4,7 +4,7 @@ _Long after Ta's fall the sepulcher remained abandoned. Lately a pack of sphinxe
 
 1. A mundane-looking door, turns a person to stone when the knob is touched.
 2. A sword, some gold and lockpicks hidden in a crevice of the wall.
-3. A corpse of a gnoll, an uncanny, warm to touch object close to it.
+3. A corpse of a gnoll, an uncanny, warm object close to it.
 4. An enchanted tome in a medium crate.
 5. A rear entrance into the sepulcher. A chest with some gold.
 6. A flute of magic missile locked in a safe.

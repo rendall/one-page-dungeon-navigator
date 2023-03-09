@@ -2,7 +2,7 @@
 
 _The vault of the Black General is situated deep in the enchanted wood, protected by the dangerous local fauna. Currently it is infested by bears, which don't care about the past of the place._
 
-1. A weird, covered with carvings object locked in a mechanical safe.
+1. A weird object covered with carvings locked in a mechanical safe.
 2. An ornate javelin at the bottom of a small pool.
 3. A large chest holds some gold, candles and a scarf.
 4. A battered stone double door with three keyholes to the east.

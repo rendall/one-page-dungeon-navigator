@@ -1,7 +1,20 @@
 /** This file takes a One Page Dungeon json file and parses it for navigation.
  * This is the immutable, single source of truth for the adventure.
  */
-import type { Column, Direction, Door, Dungeon, Exit, ExitDirection, JsonDungeon, Rect, Room, Water } from "./dungeon"
+import type {
+  Column,
+  Direction,
+  Door,
+  Dungeon,
+  Exit,
+  ExitDirection,
+  JsonDungeon,
+  JsonNote,
+  Rect,
+  Room,
+  Water,
+} from "./dungeon"
+import { parseNote } from "./parseNote"
 
 export const facingDirection = (door: Door): ExitDirection => {
   if (door.dir.x === -1) return "west"
@@ -202,7 +215,7 @@ const getAdjacent = <T extends Rect>(a: T, rects: T[]) => rects.filter((rect) =>
 
 /** Accepts One-Page JSON and returns a navigable object */
 export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
-  const { rects, notes, doors } = dungeon
+  const { rects, notes: notesWithoutId, doors } = dungeon
 
   // Assign a unique id to each rect
   const rectsWithId: (Rect & { id: number })[] = rects.map((r, id) => ({
@@ -220,6 +233,8 @@ export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
       id: rect.id,
       ...doors.find((door) => door.x === rect.x && door.y === rect.y),
     })) as (Door & { id: number; dir: Direction })[]
+
+  const dungeonNotes: (JsonNote & { id: number })[] = notesWithoutId.map((note, id) => ({ ...note, id }))
 
   // Return the door at {x,y}
   const getDoor = doorFunc(doorsWithId)
@@ -249,7 +264,8 @@ export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
       })
 
       const door = getDoor(fullRoom)
-      const contains = notes.filter((note) => isInside(note.pos, fullRoom))?.[0]?.text
+      const notes = dungeonNotes.filter((note) => isInside(note.pos, fullRoom)).flatMap(parseNote)
+      const contains = notes.reduce((out, note) => out + (note.contains ?? ""), "")
       const columns = dungeon.columns.filter((column) => isInside(column, fullRoom))
       const water = dungeon.water.filter((column) => isInside(column, fullRoom))
       const description = describeRoom(fullRoom, exits, columns, water)
@@ -258,14 +274,16 @@ export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
         id: fullRoom.id,
         description,
         area: fullRoom.rotunda ? `${fullRoom.h}m across` : `${fullRoom.w}m x ${fullRoom.h}m`,
-        ...(contains ? { contains } : {}),
-        ...(fullRoom.ending ? { ending: true } : {}),
-        ...(door ? { door } : {}),
         exits,
         x: fullRoom.x,
         y: fullRoom.y,
         w: fullRoom.w,
         h: fullRoom.h,
+        notes,
+        ...(notes && notes.length > 1 ? { notes } : {}),
+        ...(contains ? { contains } : {}),
+        ...(fullRoom.ending ? { ending: true } : {}),
+        ...(door ? { door } : {}),
       }
 
       return room

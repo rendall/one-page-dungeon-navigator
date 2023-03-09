@@ -1,11 +1,11 @@
 /** This node app will run a random walk through a random dungeon */
 
-import { Dungeon, exitDirections } from "../lib/dungeon"
+import { actions, Dungeon, exitDirections } from "../lib/dungeon"
 import { inspect } from "util"
 import { readdir, readFile } from "fs"
 import { extname, join as pathjoin } from "path"
 import { parseDungeon } from "../lib/parseDungeon"
-import { actions, game, GameOutput } from "../lib/gameLoop"
+import { game, GameOutput } from "../lib/gameLoop"
 
 const jsonDirectory = "./static/dungeons"
 

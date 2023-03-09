@@ -1,6 +1,10 @@
 export const exitDirections = ["north", "east", "south", "west"] as const
 export type ExitDirection = (typeof exitDirections)[number]
 
+export type Action = (typeof actions)[number] | ExitDirection
+export const actions = ["quit", "noop", "search", "init", "1", "2", "3", "4", "5", "6", "7", "8", "9"] as const
+export const isAction = (x: string | Action): x is Action => [...actions, ...exitDirections].some((elem) => elem === x)
+
 /** Exit is derived from One-Page JSON data. Aids navigation. */
 export type Exit = {
   towards: ExitDirection
@@ -41,7 +45,7 @@ export type Door = {
   type: number
 }
 
-export type Note = {
+export type JsonNote = {
   text: string
   ref: string
   pos: { x: number; y: number }
@@ -65,7 +69,7 @@ export type JsonDungeon = {
   story: string
   rects: Rect[]
   doors: { x: number; y: number; dir: { x: number; y: number }; type: number }[]
-  notes: Note[]
+  notes: JsonNote[]
   columns: Column[]
   water: Water[]
 }
@@ -80,6 +84,31 @@ export type Dungeon = JsonDungeon & {
   doors: Door[]
 }
 
+// enum compatible with Jest
+export const NoteType = {
+  none: "none",
+  secret: "secret",
+} as const
+
+export type NoteType = (typeof NoteType)[keyof typeof NoteType]
+export type NoteStatus = "searched"
+
+export type Note = JsonNote & {
+  id: number
+  text: string
+  contains?: string
+  type: NoteType
+  statuses?: NoteStatus[]
+}
+
+export type Secret = Note & {
+  type: "secret"
+  message: string
+  item: string
+  items: string[]
+  hidden: string
+}
+
 /** Room is an object derived from One-Page JSON data.
  * Aids navigation and presentation. */
 export type Room = Rect & {
@@ -87,5 +116,6 @@ export type Room = Rect & {
   description: string
   area: string
   exits: Exit[]
+  notes?: Note[]
   contains?: string
 }

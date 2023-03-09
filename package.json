@@ -8,9 +8,9 @@
     "build": "webpack --mode=production --node-env=production",
     "build:dev": "webpack --mode=development",
     "build:prod": "webpack --mode=production --node-env=production",
-    "node-game": "npx tsc ./scripts/node.ts && node ./scripts/node.js",
+    "game": "npx tsc ./scripts/node.ts && node ./scripts/node.js",
     "random": "npx tsc ./scripts/random.ts && node ./scripts/random.js",
-    "fix": "node ./build-scripts/generate-options.js && prettier . --write && prettier --write --parser html '**/*.svg'",
+    "fix": "node ./scripts/generate-options.js && prettier . --write && prettier --write --parser html '**/*.svg'",
     "watch": "webpack --watch",
     "serve": "webpack serve"
   },

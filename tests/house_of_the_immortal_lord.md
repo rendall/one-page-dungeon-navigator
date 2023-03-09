@@ -1,6 +1,6 @@
-# House of the Immortal Lord 
+# House of the Immortal Lord
 
-*The house of the Immortal Lord is situated high in the Mondjit mountains. Lately a huge mutant rabbit has made its lair here. It is rumored that the house is rich with gold and jewels and magical artifacts.*
+_The house of the Immortal Lord is situated high in the Mondjit mountains. Lately a huge mutant rabbit has made its lair here. It is rumored that the house is rich with gold and jewels and magical artifacts._
 
 1. Some gold and a staff in a crate.
 2. A crowbar among rubble on the ground.

@@ -6,3 +6,4 @@ lib/*.js
 scripts/notes-checker.mjs
 scripts/random.js
 scripts/node.js
+scripts/notes-checker.mjs

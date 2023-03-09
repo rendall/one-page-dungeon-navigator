@@ -87,8 +87,9 @@ export type Dungeon = JsonDungeon & {
 // enum compatible with Jest
 export const NoteType = {
   none: "none",
+  container: "container",
+  more: "more",
   secret: "secret",
-  container: "container"
 } as const
 
 export type NoteType = (typeof NoteType)[keyof typeof NoteType]

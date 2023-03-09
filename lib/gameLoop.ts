@@ -2,7 +2,7 @@
  * GameState holds all of the changes or status updates. On user
  * input, the GameState is merged or compared with data from
  * Dungeon data and used to determine the result of the player action. */
-import { Action, Container, Door, Dungeon, Exit, ExitDirection, Note, NoteStatus, NoteType, Room, Secret } from "./dungeon"
+import { Action, Body, Container, Door, Dungeon, Exit, ExitDirection, Note, NoteStatus, NoteType, Room, Secret } from "./dungeon"
 import { exitDirections, DoorType, isAction } from "./dungeon"
 import { compose, replace, unique } from "./utilties"
 type GameState = {
@@ -155,6 +155,23 @@ const handleSearch =
         return newGameState
       }
 
+      const itemNoteTypes: NoteType[] = [NoteType.feature, NoteType.corpse, NoteType.hovering, NoteType.body, NoteType.remains, NoteType.dying]
+
+      const unAcquiredItem = currentRoom.notes?.find(
+        (note) => (itemNoteTypes.includes(note.type)) && !note.statuses?.includes("searched")
+      ) as Body
+
+      if (unAcquiredItem) {
+        const newGameState = compose(
+          addMessage(unAcquiredItem.message),
+          addStatusToNote(unAcquiredItem.id, "searched"),
+          addToInventory(unAcquiredItem.items),
+          addInventoryMessage()
+        )(gameState)
+
+        return newGameState
+      }
+
       const undiscoveredSecret = currentRoom.notes?.find(
         (note) => note.type === NoteType.secret && !note.statuses?.includes("searched")
       ) as Secret
@@ -277,14 +294,8 @@ const advanceTurn: GameStateModifier = (gameState: GameState) => ({ ...gameState
 export const describeNote = (note: Note) => {
 
   switch (note.type) {
-    case "container":
-      if (note.statuses?.includes("searched")) return (note as Container).empty
-      else return (note as Container).pristine
-    case "secret": return ""
-
-    default:
-
-
+    case "door":
+    case "none":
       if (note.text.startsWith("The")) return note.text
       const deCap = (str: string) =>
         /(writing)/.test(str) ? `some ${str.slice(2)}` : `${str.charAt(0).toLowerCase() + str.slice(1)}`
@@ -292,6 +303,14 @@ export const describeNote = (note: Note) => {
       const hereIs = (str: string) => `Here ${hasVerb(str)}${deCap(str)}`
 
       return hereIs(note.text)
+
+    case "secret": return ""
+
+    default:
+      if (note.statuses?.includes("searched")) return (note as Container).empty
+      else return (note as Container).pristine
+
+
   }
 }
 

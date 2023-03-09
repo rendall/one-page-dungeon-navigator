@@ -38,3 +38,6 @@ export const capitalize = (str: string) => `${str.charAt(0).toUpperCase() + str.
 /** Replace 'a' with 'the' */
 export const toThe = (str:string) => str.replace(/\b[Aa]n?\b/g, "the")
 
+/** add a or an depending on the string */
+export const aAn = (str: string) => ['aeiou'].includes(str.charAt(0).toLowerCase()) ? `an ${str}` : `a ${str}`
+

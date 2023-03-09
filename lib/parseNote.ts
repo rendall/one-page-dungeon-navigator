@@ -1,5 +1,6 @@
-import { JsonNote, PlainNote, NoteType, Secret, Note } from "./dungeon"
-import { arrEqual, capitalize, deCapitalize, toThe } from "./utilties"
+import { deprecate } from "util"
+import { JsonNote, PlainNote, NoteType, Secret, Note, Container, Body } from "./dungeon"
+import { aAn, arrEqual, capitalize, deCapitalize, toThe } from "./utilties"
 
 export const notePatterns = [
   /(?<npc_desc>[A-Za-z-,\s]+)\. (?<npc_desire>Can be convinced to help you in your mission)./,
@@ -10,10 +11,10 @@ export const notePatterns = [
   /(?<feature>[A-Za-z-\s]+, totally destroyed by (?:fire|mold|(?<enemy>[A-Za-z-\s]+) vandals).)/,
   /A mosaic of (?<symbol>[A-Za-z-\s]+) pattern on the (?:floor|walls|ceiling)/,
   /(?<writing>[A-Za-z-\s]+) on the (?:wall|floor|ceiling)(?: painted in blood): (?<sign>[A-Za-z-\s]+)/,
-  /(?<body>Remains of an? [A-Za-z-\s]+) apparently killed by (?<enemy>[A-Za-z-\s]+), (?<item>[A-Za-z-,\s]+) clutched in his hands./,
-  /(?<body>Remains of an? [A-Za-z-\s]+) apparently killed by (?<enemy>[A-Za-z-\s]+), (?<item>[A-Za-z-,\s]+) in his hands./,
-  /(?<body>Remains of an? [A-Za-z-\s]+), (?<item>[A-Za-z-,\s]+) clutched in his hands./,
-  /(?<body>Remains of an? [A-Za-z-\s]+), (?<item>[A-Za-z-,\s]+) in his hands./,
+  /(?<remains>Remains of an? [A-Za-z-\s]+) apparently killed by (?<enemy>[A-Za-z-\s]+), (?<item>[A-Za-z-,\s]+) clutched in his hands./,
+  /(?<remains>Remains of an? [A-Za-z-\s]+) apparently killed by (?<enemy>[A-Za-z-\s]+), (?<item>[A-Za-z-,\s]+) in his hands./,
+  /(?<remains>Remains of an? [A-Za-z-\s]+), (?<item>[A-Za-z-,\s]+) clutched in his hands./,
+  /(?<remains>Remains of an? [A-Za-z-\s]+), (?<item>[A-Za-z-,\s]+) in his hands./,
   /(?<rear>A rear entrance into [A-Za-z-\s]+\.)$/,
   /(?<rear>A rear entrance into [A-Za-z-\s]+\.) (?<more>[A-Za-z-,\s]+\.)/,
   /(?<feature>A (?:lifelike )?(?:statue|sculpture) of [A-Za-z-,\s]+), (?<item>[A-Za-z-,\s]+) in its hands./,
@@ -21,12 +22,12 @@ export const notePatterns = [
   /(?<item>[A-Za-z-,\s]+) in the middle of a (?<feature>[A-Za-z-\s]+)./,
   /(?<npc_desc>[A-Za-z-,\s]+), (?<npc_state>locked [A-Za-z-,\s]+)./,
   /(?<item>[A-Za-z-,\s]+) locked in a (?<locked>magical |mechanical | )(?<container>safe)./,
-  /(?<item>[A-Za-z-,\s]+) in a (?<display>(?:shattered |glass |)(?:display|trophy|curio) case)./,
-  /(?<item>[A-Za-z-,\s]+) in a (?<locked>magic)ally locked (?<display>(?:display|trophy|curio) case)./,
+  /(?<item>[A-Za-z-,\s]+) in a (?<feature>(?:shattered |glass |)(?:display|trophy|curio) case)./,
+  /(?<item>[A-Za-z-,\s]+) in a (?<locked>magic)ally locked (?<feature>(?:display|trophy|curio) case)./,
   /(?<item>[A-Za-z-,\s]+) on a (?<feature>pedestal(?: table)?)./,
   /(?<item>[A-Za-z-,\s]+) on an altar./,
   /A (?<corpse>[A-Za-z-,\s]+), (?<item>[A-Za-z-,\s]+) (nearby|close to it|close by)./,
-  /A dying (?<dying>[A-Za-z-,\s]+), (?<item>[A-Za-z-,\s]+) among his belongings./,
+  /(?<dying>A dying (?<creature>[A-Za-z-\s]+)), (?<item>[A-Za-z-,\s]+) among his belongings./,
   /(?<body>A [A-Za-z-,\s]+)(?: (?<npc_class>[A-Za-z-,\s]+)) with (?<item>[A-Za-z-,\s]+) in their hands./,
   /(?<hidden>A [A-Za-z-,\s]+) (conceals|hides) (?<item>[A-Za-z-,\s]+)./,
   /(?<feature>A (sign|writing) on the wall( painted in blood)?): (?<writing>[A-Za-z-,\s]+)/,
@@ -48,17 +49,26 @@ export const notePatterns = [
 
 export const isSecret = (note: null | RegExpMatchArray) => note ? arrEqual(Object.keys(note.groups), ["hidden", "item"]) : false
 export const isContainer = (note: null | RegExpMatchArray) => note ? arrEqual(Object.keys(note.groups), ["container", "item"]) : false
+export const isFeatureItem = (note: null | RegExpMatchArray) => note ? arrEqual(Object.keys(note.groups), ["feature", "item"]) && !Object.keys(note.groups).includes("locked") : false
 
 const matchNoteFunc =
   (patterns: RegExp[]) =>
-  (note: string): RegExpMatchArray | null =>
-    patterns.reduce<RegExpMatchArray | null>((out, pattern) => (out ? out : note.match(pattern)), null)
+    (note: string): RegExpMatchArray | null =>
+      patterns.reduce<RegExpMatchArray | null>((out, pattern) => (out ? out : note.match(pattern)), null)
 
 export const matchNote = matchNoteFunc(notePatterns)
 
 export const matchType = (note: null | RegExpMatchArray): NoteType => {
   if (note === null) return NoteType.none
   if (note.groups.more) return NoteType.more
+  if (note.groups.door) return NoteType.door
+  if (note.groups.body) return NoteType.body
+  if (note.groups.body) return NoteType.body
+  if (note.groups.corpse) return NoteType.corpse
+  if (note.groups.remains) return NoteType.remains
+  if (note.groups.dying) return NoteType.dying
+  if (note.groups.hovering) return NoteType.hovering
+  if (isFeatureItem(note)) return NoteType.feature
   if (isContainer(note)) return NoteType.container
   if (isSecret(note)) return NoteType.secret
   return NoteType.none
@@ -88,6 +98,63 @@ export const parseNote = (note: JsonNote & { id: number }): Note | [Note, Note] 
     case NoteType.secret:
       const messageSecret = `You find ${deCapitalize(note.text)}`
       return { ...note, type, ...match.groups, items, message: messageSecret }
+    
+    case NoteType.feature:
+      const featureStates = {
+        pristine: `Here is ${deCapitalize(note.text)}`,
+        empty: `Here is ${deCapitalize(match.groups.feature)}.`,
+        imperative: `Take ${toThe(match.groups.item)}.`,
+        message: `You take ${toThe(match.groups.item)}.`,
+        items
+      }
+      return {...note, type, ...match.groups, ...featureStates}
+
+    case NoteType.corpse:
+      const corpseStates = {
+        pristine: `Here is ${deCapitalize(note.text)}`,
+        empty: `Here is ${deCapitalize(match.groups.corpse)}.`,
+        imperative: `Take ${toThe(match.groups.item)}.`,
+        message: `You take ${toThe(match.groups.item)}.`,
+        items
+      }
+      return {...note, type, ...match.groups, ...corpseStates}
+
+    case NoteType.hovering:
+      const hoveringStates = {
+        pristine: `Here is ${deCapitalize(note.text)}`,
+        empty: '',
+        imperative: `Take ${toThe(match.groups.item)}.`,
+        message: `You approach ${toThe(match.groups.item) } hovering ${match.groups.hovering} and take it.`,
+        items
+      }
+      return {...note, type, ...match.groups, ...hoveringStates}
+
+    case NoteType.remains:
+      const remainsStates = {
+        message: `You loot ${toThe(match.groups.item)} from the ${deCapitalize(toThe(match.groups.remains))}.`,
+        imperative: `Loot ${toThe(match.groups.remains)}.`,
+        pristine: `Here are the ${deCapitalize(note.text).replace(",", ", here,")}.`,
+        empty: `The looted ${deCapitalize(toThe(match.groups.remains))} are here.`
+      }
+      return { ...note, type, ...match.groups, items, ...remainsStates }
+
+    case NoteType.body:
+      const bodyStates = {
+        message: `You take the ${toThe(match.groups.item)} from ${toThe(match.groups.body)}.`,
+        imperative: `Take the ${toThe(match.groups.item)} from ${toThe(match.groups.body)}.`,
+        pristine: `${note.text.replace(match.groups.npc_class, `${match.groups.npc_class} is here,`)}`,
+        empty: `${capitalize(toThe(match.groups.body))} ${match.groups.npc_class} is here.`
+      }
+      return { ...note, type, ...match.groups, items, ...bodyStates }
+
+    case NoteType.dying:
+      const dyingStates = {
+        message: `You search the belongings of the ${match.groups.creature} and find ${match.groups.item}, just as the ${match.groups.creature} dies.`,
+        pristine: `A dying ${match.groups.creature} is here.`,
+        imperative: `Loot the dying ${match.groups.creature}.`,
+        empty: `The looted corpse of ${aAn(match.groups.creature)} is here.`
+      }
+      return { ...note, type, ...match.groups, items, ...dyingStates }
 
     case NoteType.container:
       const messageContainer = `You open ${toThe(match.groups.container)} and find ${deCapitalize(match.groups.item)}.`

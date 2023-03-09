@@ -87,7 +87,14 @@ export type Dungeon = JsonDungeon & {
 // enum compatible with Jest
 export const NoteType = {
   none: "none",
+  body: "body", 
+  feature: "feature", 
+  corpse: "corpse", 
+  dying: "dying",
+  hovering: "hovering",
+  remains: "remains", // "remains" type judges you
   container: "container",
+  door: "door",
   more: "more",
   secret: "secret",
 } as const
@@ -122,7 +129,16 @@ export type Container = PlainNote & {
   empty: string
 }
 
-export type Note = Secret | Container | PlainNote
+export type Body = PlainNote & {
+  type: "body" | "remains" | "dying"
+  message: string
+  item: string
+  items: string[]
+  imperative: string
+  pristine: string
+  empty: string
+}
+export type Note = Secret | Container | PlainNote | Body
 
 /** Room is an object derived from One-Page JSON data.
  * Aids navigation and presentation. */

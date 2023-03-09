@@ -265,7 +265,6 @@ export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
 
       const door = getDoor(fullRoom)
       const notes = dungeonNotes.filter((note) => isInside(note.pos, fullRoom)).flatMap(parseNote)
-      const contains = notes.reduce((out, note) => out + (note.contains ?? ""), "")
       const columns = dungeon.columns.filter((column) => isInside(column, fullRoom))
       const water = dungeon.water.filter((column) => isInside(column, fullRoom))
       const description = describeRoom(fullRoom, exits, columns, water)
@@ -281,7 +280,6 @@ export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
         h: fullRoom.h,
         notes,
         ...(notes && notes.length > 1 ? { notes } : {}),
-        ...(contains ? { contains } : {}),
         ...(fullRoom.ending ? { ending: true } : {}),
         ...(door ? { door } : {}),
       }

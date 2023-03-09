@@ -12,7 +12,7 @@ export type Exit = {
   description: string
   isFacing: boolean // some doors have directions, secret doors for example
   door: Door
-  type?: DoorType
+  type: DoorType
 }
 
 export enum DoorType {
@@ -131,5 +131,4 @@ export type Room = Rect & {
   area: string
   exits: Exit[]
   notes?: PlainNote[]
-  contains?: string
 }

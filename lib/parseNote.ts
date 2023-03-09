@@ -71,7 +71,7 @@ export const parseItems = (items: string): string[] =>
       .map((item) => deCapitalize(item))
   )
 
-export const parseNote = (note: JsonNote & { id: number }): Note => {
+export const parseNote = (note: JsonNote & { id: number }): Note | [Note, Note] => {
   const match: RegExpMatchArray | null = matchNote(note.text)
   const type = matchType(match)
 

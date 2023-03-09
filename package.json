@@ -12,7 +12,8 @@
     "random": "npx tsc ./scripts/random.ts && node ./scripts/random.js",
     "fix": "node ./scripts/generate-options.js && prettier . --write && prettier --write --parser html '**/*.svg'",
     "watch": "webpack --watch",
-    "serve": "webpack serve"
+    "serve": "webpack serve",
+    "clean": "rm ./lib/*.js"
   },
   "author": "",
   "license": "ISC",

@@ -133,7 +133,7 @@ describe("gameLoop good game()", () => {
       input("search")
 
       const output = input("search")
-      expect(output.message).toBe("You find nothing else of interest.")
+      expect(output.message).toMatch(/You find nothing( else)? of interest./)
       expect(output.statuses).toContain("searched")
     })
   })

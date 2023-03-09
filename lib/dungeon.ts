@@ -88,12 +88,13 @@ export type Dungeon = JsonDungeon & {
 export const NoteType = {
   none: "none",
   secret: "secret",
+  container: "container"
 } as const
 
 export type NoteType = (typeof NoteType)[keyof typeof NoteType]
 export type NoteStatus = "searched"
 
-export type Note = JsonNote & {
+export type PlainNote = JsonNote & {
   id: number
   text: string
   contains?: string
@@ -101,13 +102,26 @@ export type Note = JsonNote & {
   statuses?: NoteStatus[]
 }
 
-export type Secret = Note & {
+export type Secret = PlainNote & {
   type: "secret"
   message: string
   item: string
   items: string[]
   hidden: string
 }
+
+export type Container = PlainNote & {
+  type: "container"
+  message: string
+  item: string
+  items: string[]
+  container: string
+  imperative: string
+  pristine: string
+  empty: string
+}
+
+export type Note = Secret | Container | PlainNote
 
 /** Room is an object derived from One-Page JSON data.
  * Aids navigation and presentation. */
@@ -116,6 +130,6 @@ export type Room = Rect & {
   description: string
   area: string
   exits: Exit[]
-  notes?: Note[]
+  notes?: PlainNote[]
   contains?: string
 }

@@ -130,7 +130,7 @@ describe("gameLoop good game()", () => {
       // move to the room with the secret doors
       input("east")
 
-      // search the chest
+      // search the crate
       input("search")
 
       // discover both secret doors

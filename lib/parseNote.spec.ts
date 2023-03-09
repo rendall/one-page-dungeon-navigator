@@ -1,5 +1,5 @@
 const fs = require("fs")
-import { NoteType, PlainNote, Secret } from "./dungeon"
+import { Note, NoteType, PlainNote, Secret } from "./dungeon"
 import { parseNote, parseItems } from "./parseNote"
 import { toThe } from "./utilties"
 
@@ -25,16 +25,49 @@ describe("parseNote()", () => {
     expect(secret.message).toMatch(/^You find /)
   })
 
+  describe("More type", () => {
+
+    const moreNotes = [
+      "A rear entrance into the fortress. A huge gate with two keyholes to the east.",
+      "A rear entrance into the mausoleum. A corpse of a hobgoblin, a key nearby.",
+      "A rear entrance into the sepulcher. A reinforced strongbox holds a heart-shaped key.",
+      "A rear entrance into the stronghold. A dying goblin, a key among his belongings.",
+      "A rear entrance into the tomb. A battered double door with two keyholes on the eastern wall.",
+      "A rear entrance into the vault. A key in a crate.",
+    ]
+
+    test.each(moreNotes)("%s should be two notes", (text) => {
+      const notes = parseNote({...minNote, text}) as [Note, Note]
+      expect(notes).toHaveLength(2)
+    })
+
+    const notMoreNotes = [
+      "A rear entrance into the fortress.", "A huge gate with two keyholes to the east.",
+      "A rear entrance into the mausoleum.", "A corpse of a hobgoblin, a key nearby.",
+      "A rear entrance into the sepulcher.", "A reinforced strongbox holds a heart-shaped key.",
+      "A rear entrance into the stronghold.", "A dying goblin, a key among his belongings.",
+      "A rear entrance into the tomb.", "A battered double door with two keyholes on the eastern wall.",
+      "A rear entrance into the vault.", "A key in a crate.",
+    ]
+
+    test.each(notMoreNotes)("%s should be only one note", (text) => {
+      const note = parseNote({...minNote, text}) as Note
+      expect(note).toEqual(expect.objectContaining({ text: expect.stringMatching(text) }))
+    })
+
+
+  })
+
   describe("Container type", () => {
-    const containers = [ "An enchanted tome in a medium crate." ]
+    const containers = ["An enchanted tome in a medium crate."]
 
     test.each(containers)("%s should be a container type", (text) => {
-      const parsedNote = parseNote({...minNote, text})
+      const parsedNote = parseNote({ ...minNote, text })
       expect(parsedNote.type).toBe(NoteType.container)
     })
-    const nonContainers = ["A druid. Wants to join you.", "A gnome, lying in ambush.","An explorer. Can be convinced to help you in your mission." ]
+    const nonContainers = ["A druid. Wants to join you.", "A gnome, lying in ambush.", "An explorer. Can be convinced to help you in your mission."]
     test.each(nonContainers)("%s should not be a container type", (text) => {
-      const parsedNote = parseNote({...minNote, text})
+      const parsedNote = parseNote({ ...minNote, text })
       expect(parsedNote.type).not.toBe(NoteType.container)
     })
 

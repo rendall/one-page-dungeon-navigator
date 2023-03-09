@@ -58,6 +58,7 @@ export const matchNote = matchNoteFunc(notePatterns)
 
 export const matchType = (note: null | RegExpMatchArray): NoteType => {
   if (note === null) return NoteType.none
+  if (note.groups.more) return NoteType.more
   if (isContainer(note)) return NoteType.container
   if (isSecret(note)) return NoteType.secret
   return NoteType.none
@@ -78,6 +79,12 @@ export const parseNote = (note: JsonNote & { id: number }): Note | [Note, Note] 
   const items = match?.groups?.item ? parseItems(match.groups.item) : undefined
 
   switch (type) {
+    case NoteType.more:
+      // Assign an arbitrary id to the first note, because as a
+      // "rear" type, it will never need a status update
+      const firstNote = parseNote({ ...note, text: match.groups.rear, id: -1 })
+      const moreNote = parseNote({ ...note, text: match.groups.more })
+      return [firstNote, moreNote] as [Note, Note]
     case NoteType.secret:
       const messageSecret = `You find ${deCapitalize(note.text)}`
       return { ...note, type, ...match.groups, items, message: messageSecret }

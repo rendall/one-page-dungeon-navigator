@@ -1,10 +1,10 @@
-import { Dungeon, exitDirections } from "../lib/dungeon"
+import { actions, Dungeon, exitDirections, isAction } from "../lib/dungeon"
 import { inspect } from "util"
 import { readdir, readFile } from "fs"
 import { extname, join as pathjoin } from "path"
 import { createInterface, Interface } from "readline"
 import { parseDungeon } from "../lib/parseDungeon"
-import { actions, game, GameOutput, isAction } from "../lib/gameLoop"
+import { game, GameOutput } from "../lib/gameLoop"
 
 const jsonDirectory = "./static/dungeons"
 

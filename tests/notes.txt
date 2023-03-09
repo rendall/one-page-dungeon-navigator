@@ -1,0 +1,739 @@
+A bard. Wants to pay you to get rid of an uncanny, slightly humming idol.
+A basket containing a crowbar.
+A basket containing gems.
+A basket holds a key.
+A basket with a leather armor and some gold.
+A basket with a scarf.
+A bat-shaped key hidden in a crack of the wall.
+A battered basket with a key in it.
+A battered basket with an enchanted rod.
+A battered box holds a censer of binding.
+A battered chest containing some gold.
+A battered chest with an uncanny, sticky to touch javelin in it.
+A battered crate holds a leaf-shaped key.
+A battered door on the southern wall.
+A battered double door with two keyholes to the west.
+A battered gate to the north.
+A battered gate with a keyhole to the south.
+A battered iron gate on the eastern wall.
+A battered ironclad double door to the north.
+A battered ironclad double door with a keyhole to the north.
+A battered stone door with three keyholes to the west.
+A battered stone double door with three keyholes to the east.
+A battered stone gate with two keyholes to the east.
+A battered strongbox containing a crown-shaped key.
+A battered strongbox containing a leather armor.
+A battered trunk containing a chainmail and lockpicks.
+A battered trunk with a key.
+A battered wooden double door with a keyhole on the southern wall of the large chamber.
+A battered wooden gate with a keyhole to the east.
+A blade of health hovering in the middle of the small chamber.
+A blood-covered altar, shows visions of the distant past when the candles on it are lit.
+A bony bard. Has some gold for trade.
+A bony halfling, resting in a corner.
+A book of charming locked in a magical safe.
+A book on a lectern, bursts into flames when opened.
+A book on a lectern, makes a person slightly smaller when opened.
+A bottomless pit, turns a person to stone if a coin is dropped into it.
+A bottomless well, bursts into flames if a coin is dropped into it.
+A box containing a magic ring.
+A box containing some gold.
+A box holds a copper key.
+A box holds a key.
+A box with a breastplate.
+A box with a cross-shaped key.
+A box with a key.
+A box with an iron key in it.
+A brain preserved in a jar, makes a person forget his name when shaken.
+A brash druid. Can be convinced to help you in your mission.
+A brash dwarf, sleeping in a corner.
+A brash halfling, sitting on the ground.
+A brass key on a pedestal table.
+A brass key on a pedestal.
+A breastplate and some gold tucked under some debris.
+A breastplate, a mace and some gold hidden in a crevice of the wall.
+A broken chest containing a key.
+A broken chest containing some gold.
+A broken chest holds a bottle of wine and an enchanted scimitar.
+A broken chest holds a key.
+A broken chest with a breastplate, a spear and a potion of mind reading in it.
+A broken crate containing a key.
+A broken crate with some gold, a scarf and an ancient katana in it.
+A broken locker containing a breastplate.
+A broken strongbox with a silver key.
+A broken trunk holds a jewel-encrusted comb.
+A burning fire in a brazier, turns out to be a mimic when touched.
+A burning fire in a fireplace, makes a person smaller when touched.
+A burning fire in a fireplace, wails loudly when touched.
+A calm human, resting in a corner.
+A calm large knight, sleeping on the ground.
+A calm pockmarked cleric, lying on the ground.
+A carpet of death wish hidden in a crevice of the wall.
+A carving depicting the Serpent Savant.
+A carving on the wall depicting the land around the tomb as it looked in the distant past.
+A carving on the wall depicting the salt marshes around the crypt.
+A carving on the wall, totally destroyed by fire.
+A carving on the wall, totally destroyed by mold.
+A carving, totally destroyed by fire.
+A carving, totally destroyed by mold.
+A chainmail in a basket.
+A chainmail, a regular spear and a flask of holy water among rubble on the ground.
+A cheerful gnome, resting on the ground.
+A chest containing a copper key.
+A chest containing a heart-shaped key.
+A chest containing a scale mail.
+A chest containing a strange, sticky to touch grimoire.
+A chest holds a chainmail and some gold.
+A chest holds a key.
+A chest holds gems.
+A chest with a cloak in it.
+A chest with a cursed rapier, some gold and a potion of speed in it.
+A chest with a leather armor in it.
+A child, mortally wounded.
+A child. Needs help to get out from the chambers.
+A claw-shaped key hidden in a crack of the wall.
+A claw-shaped key in a glass trophy case.
+A claw-shaped key locked in a mechanical safe.
+A colorful mosaic, totally destroyed by thug vandals.
+A copper key in a battered strongbox.
+A copper key in a battered trunk.
+A corpse of a bandit, a key close to it.
+A corpse of a cultist, a lamp and some gold nearby.
+A corpse of a druid, some gold, a rusty katana and arrows close by.
+A corpse of a dwarf, rations close by.
+A corpse of a gnoll, an uncanny, warm to touch object close to it.
+A corpse of a gnome, a regular staff close by.
+A corpse of a goblin, an iron key close to it.
+A corpse of a halfling, a silver key nearby.
+A corpse of a halfling, a strange, translucent brooch close by.
+A corpse of a human, a torch, rations and some gold close by.
+A corpse of a human, an iron key close to it.
+A corpse of a wizard, a strange, unnaturally light leather armor nearby.
+A corpse of an elf, a golden comb close to it.
+A corpse of an elf, an unknown potion close to it.
+A corpse of an elf, gems close by.
+A crate containing a jeweled necklace.
+A crate containing a key.
+A crate containing a rapier and some gold.
+A crate containing an iron key.
+A crate containing some gold.
+A crate holds a cloak, a rope and some gold.
+A crate holds a strange, unnaturally heavy tiara.
+A crate holds a weird, covered with runes chainmail.
+A crate holds a weird, made of an unknown material bracelet.
+A crate with a key.
+A crate with a knife of intellect.
+A crate with a silver key.
+A creepy doll, drives a person mad when picked up.
+A creepy doll, spawns a book of protection when picked up.
+A creepy doll, transforms a person into a pirate when picked up.
+A creepy doll, turns into dust when picked up.
+A creepy slim knight, sleeping in a corner.
+A crowbar among rubble on the ground.
+A crowbar and a rusty axe among rubble on the ground.
+A crowbar tucked under some debris.
+A crystalized body of a bard, a key nearby.
+A crystalized body of a thug, a golden figurine close by.
+A cursed mace, a breastplate and some gold hidden in a crack of the floor.
+A decapitated body of a cultist, a fish-shaped key nearby.
+A desiccated body of a bandit, a mysterious, unnaturally heavy scarf close by.
+A druid, lying on the ground.
+A druid. Wants to join you.
+A dusty book on a lectern, wails loudly when opened.
+A dusty tome on a lectern, drives a person mad when opened.
+A dwarf, looking sick.
+A dwarf, sleeping on the ground.
+A dwarf, tightly tied to a stake.
+A dwarf, weak of starvation.
+A dwarf. Pleads to borrow rations.
+A dwarf. Wants to pay you to get rid of a strange, ice-cold to touch flute.
+A dying cultist, a scimitar among his belongings.
+A dying druid, a leather armor among his belongings.
+A dying dwarf, an ornate flail and a cloak among his belongings.
+A dying elf, a key among his belongings.
+A dying elf, a map of the sepulcher among his belongings.
+A dying elf, a relic of frost among his belongings.
+A dying goblin, some gold and a shield among his belongings.
+A dying halfling, gems among his belongings.
+A dying human, a bronze ring among his belongings.
+A dying human, a leather armor among his belongings.
+A dying human, a silver medallion among his belongings.
+A dying orc, a crowbar, a vorpal mace and a shield among his belongings.
+A dying ranger, a staff and some gold among his belongings.
+A dying thief, a weird, sticky to touch breastplate among his belongings.
+A dying warlock, a strange, burning robe among his belongings.
+A dying wizard, a bottle of wine and a robe among his belongings.
+A fierce long-haired human, lying in ambush.
+A fire in a brazier, bursts into flames when touched.
+A flask of holy water and a helm tucked under some debris.
+A floor mirror, makes a person smaller when looked in.
+A floor mirror, turns out to be a mimic when looked in.
+A flute of magic missile locked in a  safe.
+A fresco depicting the landscape around the sanctum.
+A fresco on the ceiling, ages a person when looked at.
+A fresco on the ceiling, makes a person hallucinate when looked at.
+A fresco on the wall depicting the snowy plains around the pyramid.
+A fresco on the wall, ages a person when looked at.
+A fresco on the wall, totally destroyed by fire.
+A fresco on the wall, totally destroyed by gnoll vandals.
+A fresco on the wall, totally destroyed by orc vandals.
+A fresco, totally destroyed by fire.
+A frozen body of a bard, a chainmail and lockpicks close by.
+A frozen body of a gnome, gems close by.
+A gem of binding hovering in the middle of the small chamber.
+A gem of summoning locked in a  safe.
+A giant pile of rubble hides a copper key.
+A giant pile of rubble hides a mysterious, whispering helm.
+A giant pile of rubble hides a scale mail.
+A giant pile of rubble hides a scarf and some gold.
+A giant pile of rubble hides gems.
+A giant pile of rubble hides some gold and candles.
+A giant pile of rubble hides some gold.
+A giant stuffed beast, wails loudly when stroked.
+A giant stuffed boar, ages a person when stroked.
+A giant stuffed wasp, animates when stroked.
+A girl, eager to talk.
+A girl, shaking out of fear.
+A girl. Pleads to borrow lockpicks.
+A girl. Would like to hire you for a job.
+A glaive in a basket.
+A gnoll, talking to an invisible friend.
+A gnome, lying in ambush.
+A gnome, sleeping in a corner.
+A graffiti depicting a bearded elf.
+A graffiti depicting a scene of celebration.
+A graffiti depicting the landscape around the house.
+A graffiti on the wall depicting a scene of battle.
+A graffiti on the wall, totally destroyed by fire.
+A great door on the northern wall.
+A great double door on the southern wall of the small room.
+A great double door to the east.
+A great gate with a keyhole to the north.
+A great iron door with a keyhole to the south.
+A great iron gate with a keyhole on the northern wall.
+A great ironbound gate on the eastern wall.
+A great ironbound gate with a keyhole on the northern wall.
+A great stone double door on the southern wall.
+A great wooden double door on the western wall of the small chamber.
+A half-eaten body of a hobgoblin, a breastplate close to it.
+A halfling, lying on the ground.
+A heart preserved in a jar, tells a story of this place when shaken.
+A holy box on a pedestal.
+A hooded dwarf. Claims to have a message for you.
+A hooded figure, resting on the ground.
+A hooded human, sleeping on the ground.
+A huge door with a keyhole to the north.
+A huge double door on the southern wall of the room.
+A huge double door with two keyholes on the eastern wall of the small chamber.
+A huge double door with two keyholes on the northern wall of the room.
+A huge gate to the south.
+A huge iron double door with two keyholes to the south.
+A huge ironclad gate with a keyhole on the western wall.
+A huge stone door to the north.
+A huge stone door with four keyholes on the eastern wall.
+A huge stone double door on the northern wall of the hall.
+A huge wooden door with three keyholes to the north.
+A jellyfied body of a thug, a chainmail close by.
+A jeweled throne, allows a person to breath under water when sat on.
+A jeweled throne, drives a person mad when sat on.
+A key among rubble on the ground.
+A key at the bottom of a pool.
+A key hidden in a crack of the floor.
+A key in a box.
+A key in a chest.
+A key in a glass trophy case.
+A key in a locker.
+A key in a reinforced crate.
+A key in a rotten crate.
+A key in a trophy case.
+A key in a trunk.
+A key in the middle of a pentagram on the ground.
+A key locked in a  safe.
+A key locked in a magical safe.
+A key on a pedestal.
+A key tucked under some debris.
+A knife of resurection at the bottom of a small pool.
+A knight. Has a quest for you.
+A lamp and a blood-stained flail hidden in a crack of the wall.
+A lamp, some gold and a rapier of smiting at the bottom of a pool.
+A lantern of intellect in the middle of a pentagram on the ground.
+A lantern of summoning tucked under some debris.
+A large chest holds a lamp.
+A large chest holds some gold, candles and a scarf.
+A large chest with a leather armor, some gold and a torch.
+A large chest with an enchanted spear, a torch and some gold in it.
+A large crate containing gems.
+A large crate with a magic rod in it.
+A large double door with two keyholes to the east.
+A large ironclad gate with a keyhole on the eastern wall of the large room.
+A large pile of rubble hides a brass key.
+A large pile of rubble hides a lily-shaped key.
+A large pile of rubble hides a staff and some gold.
+A large pile of rubble hides some gold.
+A large stone door with a keyhole on the northern wall.
+A large stone gate with a keyhole on the southern wall of the room.
+A large strongbox holds some gold, a breastplate and a scimitar.
+A large wooden gate to the north.
+A large wooden gate with three keyholes to the south.
+A lavishly decorated door to the south.
+A lavishly decorated door with two keyholes on the northern wall.
+A lavishly decorated double door on the eastern wall of the chamber.
+A lavishly decorated gate to the south.
+A lavishly decorated gate with a keyhole on the eastern wall.
+A lavishly decorated gate with two keyholes to the south.
+A lavishly decorated iron gate to the north.
+A lavishly decorated iron gate with a keyhole on the northern wall of the chamber.
+A lavishly decorated ironbound gate on the eastern wall of the large chamber.
+A lavishly decorated wooden double door with a keyhole on the northern wall.
+A lavishly decorated wooden gate on the eastern wall of the small chamber.
+A lavishly decorated wooden gate with four keyholes on the northern wall of the large chamber.
+A leaf-shaped key hovering in the middle of the small chamber.
+A lichen-covered body of a cultist, gems close by.
+A lifelike sculpture of a gnome, a weird, made of an unknown material tablet in its hands.
+A lifelike sculpture of an elf, a key in its hands.
+A lifelike statue of a gnome shaman, a crown-shaped key in its hands.
+A lifelike statue of a human artificer, a weird, sticky to touch mace in its hands.
+A locker with a key in it.
+A locker with an enchanted skull in it.
+A magic ball hovering in the middle of the chamber.
+A magic carpet hovering in the middle of the small chamber.
+A magic compass at the bottom of a pool.
+A magic hourglass in the middle of a pentagram on the ground.
+A magic scroll in the middle of a circle of runes on the ground.
+A magic statuette in a chest.
+A magic tablet among rubble on the ground.
+A magic wand in the middle of a pentagram on the ground.
+A maimed human, lying on the ground.
+A map and some gold at the bottom of a pool.
+A massive double door to the west.
+A massive gate with a keyhole to the south.
+A massive gate with three keyholes on the western wall.
+A massive ironbound door to the north.
+A massive ironbound door with a keyhole to the east.
+A massive stone gate with a keyhole on the eastern wall.
+A massive wooden double door with a keyhole on the southern wall of the room.
+A medium box with a javelin and a chainmail.
+A medium chest containing a breastplate and some gold.
+A medium chest holds a silver key.
+A medium crate holds a hammer of smiting.
+A medium crate with a long sword and a scarf.
+A mold-covered body of a gnome, gems nearby.
+A mosaic depicting the sun-drenched desert of white sand around the library.
+A mosaic of a bat pattern on the ceiling
+A mosaic of a bat pattern on the floor
+A mosaic of a bird pattern on the ceiling
+A mosaic of a fish pattern on the ceiling
+A mosaic of a fish pattern on the walls
+A mosaic of a fist pattern on the ceiling
+A mosaic of a fist pattern on the walls
+A mosaic of a heart pattern on the floor
+A mosaic of a lily pattern on the walls
+A mosaic of a skull pattern on the ceiling
+A mosaic of a snail pattern on the ceiling
+A mosaic of a snail pattern on the walls
+A mosaic of a star pattern on the ceiling
+A mosaic of an arrow pattern on the ceiling
+A mosaic of an arrow pattern on the floor
+A mosaic of an arrow pattern on the walls
+A mosaic of an eye pattern on the ceiling
+A mosaic on the wall, totally destroyed by fire.
+A mouth-shaped double door to the north.
+A mouth-shaped double door to the south.
+A mouth-shaped gate on the western wall of the chamber.
+A mouth-shaped gate with a keyhole on the eastern wall.
+A mouth-shaped gate with a keyhole on the western wall of the chamber.
+A mouth-shaped gate with a keyhole to the east.
+A mouth-shaped gate with two keyholes on the western wall.
+A mouth-shaped ironbound double door with two keyholes to the west.
+A mouth-shaped ironclad gate with three keyholes to the west.
+A mouth-shaped stone gate with two keyholes on the eastern wall.
+A mundane-looking door, turns a person to stone when the knob is touched.
+A mundane-looking door, wails loudly when the knob is touched.
+A mural on the wall, pleads to be killed when examined.
+A mural on the wall, turns out to be a mimic when examined.
+A mutilated body of a goblin, a flail of vengeance and lockpicks close by.
+A mutilated body of a human, a sword, a torch and a helm nearby.
+A mysterious gnome, sitting on the ground.
+A mysterious, covered with glyphs book in a shattered trophy case.
+A mysterious, made of an unknown material javelin hovering in the middle of the chamber.
+A mysterious, translucent chess piece in a box.
+A mysterious, unnaturally heavy halberd hovering in the middle of the small chamber.
+A mysterious, unnaturally heavy medallion locked in a  safe.
+A mysterious, unnaturally heavy scale mail hidden in a crack of the wall.
+A mysterious, unnaturally heavy scale mail in a trophy case.
+A mysterious, vibrating object locked in a magical safe.
+A mysterious, warm to touch robe in a glass display case.
+A mysterious, warm to touch rod in a shattered curio case.
+A mysterious, whispering object locked in a mechanical safe.
+A noble, lying in a corner.
+A noble. Claims to have a message for you.
+A notable door with a keyhole to the east.
+A notable double door with a keyhole on the southern wall of the chamber.
+A notable gate with two keyholes to the west.
+A notable ironbound door on the southern wall of the small chamber.
+A notable ironbound gate with a keyhole on the southern wall.
+A notable stone double door with four keyholes on the southern wall of the small chamber.
+A notable wooden door with four keyholes to the west.
+A notable wooden double door with two keyholes to the west.
+A painting depicting the landscape around the citadel.
+A painting on the wall depicting a scene of wedding.
+A painting on the wall, totally destroyed by pirate vandals.
+A painting, totally destroyed by bandit vandals.
+A painting, totally destroyed by fire.
+A petrified body of an elf, a copper key close by.
+A pile of rubble hides a copper key.
+A pile of rubble hides a crowbar.
+A pile of rubble hides a fish-shaped key.
+A pile of rubble hides a key.
+A pile of rubble hides a mysterious, made of an unknown material helm.
+A pile of rubble hides a scimitar and a leather armor.
+A pile of rubble hides a shield.
+A pile of rubble hides candles and some gold.
+A pile of rubble hides some gold and a scale mail.
+A pile of rubble hides some gold and a torch.
+A pile of rubble hides some gold, a halberd and lockpicks.
+A pile of rubble hides some gold.
+A pilgrim, whistling tunelessly.
+A pirate. Pleads to borrow a lamp.
+A polite gnome, sitting in a corner.
+A polite hooded elf, mortally wounded.
+A pool of dark water, teleports a person outside the stronghold when drank from.
+A potion of resistence among rubble on the ground.
+A puddle of murky water, makes a person slightly bigger when drank from.
+A puddle of water, turns into dust when drank from.
+A quiet gnome, sitting in a corner.
+A ranger. Can be convinced to help you in your mission.
+A rapier of smiting among rubble on the ground.
+A rear entrance into the abbey. A pool of water, wails loudly when drank from.
+A rear entrance into the asylum.
+A rear entrance into the basilica.
+A rear entrance into the basilica. A crate holds gems.
+A rear entrance into the castle.
+A rear entrance into the catacombs. A statue of a snake, turns out to be a mimic when touched.
+A rear entrance into the chambers.
+A rear entrance into the chambers. A mantle and a mace hidden in a crack of the wall.
+A rear entrance into the chapel.
+A rear entrance into the citadel.
+A rear entrance into the crypt.
+A rear entrance into the crypt. A mosaic of an eye pattern on the walls
+A rear entrance into the dungeon.
+A rear entrance into the dungeon. A brain preserved in a jar, makes a person bigger when shaken.
+A rear entrance into the dungeon. A pile of rubble hides an uncanny, unnaturally heavy dagger.
+A rear entrance into the fortress.
+A rear entrance into the fortress. A chest with gems.
+A rear entrance into the fortress. A huge gate with two keyholes to the east.
+A rear entrance into the hall.
+A rear entrance into the halls.
+A rear entrance into the halls. A pile of rubble hides a scimitar of lightning and some gold.
+A rear entrance into the hold.
+A rear entrance into the hold. A teenager, lying in a corner.
+A rear entrance into the house.
+A rear entrance into the house. A massive door to the south.
+A rear entrance into the house. A scarf and a long sword tucked under some debris.
+A rear entrance into the keep.
+A rear entrance into the labyrinth. An enormous crystal, heals a person if struck hard.
+A rear entrance into the lair.
+A rear entrance into the library.
+A rear entrance into the manor.
+A rear entrance into the manor. A quiet dwarf, sitting on the ground.
+A rear entrance into the manor. A soldier, locked in a cage.
+A rear entrance into the mansion. A chest containing a bronze comb.
+A rear entrance into the mausoleum.
+A rear entrance into the mausoleum. A corpse of a hobgoblin, a key nearby.
+A rear entrance into the maze.
+A rear entrance into the maze. A stuffed spider, wails loudly when stroked.
+A rear entrance into the monastery. A dying kobold, an ivory dice among his belongings.
+A rear entrance into the palace.
+A rear entrance into the palace. A holy scroll in a magically locked curio case.
+A rear entrance into the palace. A soldier, sitting on the ground.
+A rear entrance into the prison.
+A rear entrance into the pyramid.
+A rear entrance into the pyramid. An uncanny, smoking sword locked in a magical safe.
+A rear entrance into the sanctum.
+A rear entrance into the sepulcher. A chest with some gold.
+A rear entrance into the sepulcher. A reinforced strongbox holds a heart-shaped key.
+A rear entrance into the stronghold. A dying goblin, a key among his belongings.
+A rear entrance into the stronghold. A statue of a hobgoblin, tells a story of this place when touched.
+A rear entrance into the temple.
+A rear entrance into the tomb.
+A rear entrance into the tomb. A battered double door with two keyholes on the eastern wall.
+A rear entrance into the tomb. A pilgrim, checking the content of a broken chest.
+A rear entrance into the vault.
+A rear entrance into the vault. A key in a crate.
+A regular spear and a torch in a battered chest.
+A regular staff in a large basket.
+A reinforced basket with a lamp in it.
+A reinforced box holds a cursed hammer and a robe.
+A reinforced box holds a snail-shaped key.
+A reinforced box with an exotic sword.
+A reinforced chest containing a key.
+A reinforced chest containing a torch and a mantle.
+A reinforced chest containing gems.
+A reinforced chest with a strange, humming object.
+A reinforced crate with a key.
+A reinforced crate with a vorpal glaive.
+A reinforced locker holds a cape.
+A reinforced locker with a breastplate, a scale mail and some gold.
+A reinforced locker with gems.
+A reinforced strongbox with a brass key in it.
+A reinforced strongbox with a key.
+A reinforced trunk holds a key.
+A reinforced trunk holds a star-shaped key.
+A reinforced trunk with a jeweled medallion.
+A relief depicting a handsome elf.
+A relief depicting a scene of sacrifice.
+A relief depicting the landscape around the crypt as it looked in the distant past.
+A relief on the wall depicting a scene of siege.
+A relief, totally destroyed by hobgoblin vandals.
+A rope in a broken crate.
+A rotten chest containing a crowbar and a spear.
+A rotten chest containing a rusty mace and some gold.
+A rotten chest containing some gold.
+A rotten chest holds a blood-stained sword and candles.
+A rotten chest holds a key.
+A rotten chest holds gems.
+A rotten chest with a scarf and some gold.
+A rotten crate holds a mysterious, warm to touch helm.
+A rotten locker holds a breastplate.
+A rotten strongbox containing a robe.
+A rotten strongbox containing lockpicks and an axe.
+A rotten strongbox holds a key.
+A rotten trunk containing a key.
+A round door on the southern wall of the small room.
+A round door to the east.
+A round double door to the north.
+A round gate to the east.
+A round gate with two keyholes to the east.
+A round iron gate with a keyhole to the north.
+A round stone gate with three keyholes on the southern wall.
+A round wooden gate with a keyhole to the east.
+A rusty clockwork machine, allows a person to see in darkness when the lever is pulled.
+A rusty clockwork machine, makes a person forget his name when the lever is pulled.
+A rusty clockwork machine, turns into dust when the lever is pulled.
+A sarcastic barbarian, sitting on the ground.
+A sarcastic sad-eyed human, whistling tunelessly.
+A scarf and some gold in a chest.
+A scorched door with three keyholes on the eastern wall.
+A scorched double door to the south.
+A scorched double door to the west.
+A scorched double door with two keyholes to the south.
+A scorched gate with two keyholes on the southern wall.
+A scorched iron door with a keyhole to the north.
+A scorched ironbound double door with a keyhole on the southern wall.
+A scorched ironbound gate on the western wall.
+A scorched stone door with three keyholes on the northern wall.
+A scorched wooden double door with two keyholes on the western wall.
+A scorched wooden gate to the south.
+A sculpture of a gnome bard, a mysterious, unnaturally heavy breastplate in its hands.
+A sculpture of a halfling artificer, a weird, unnaturally heavy halberd in its hands.
+A sculpture of an elf hunter, a censer of magic missile in its hands.
+A seashell-shaped key on a pedestal table.
+A sellsword, tightly tied to a stake.
+A shield among rubble on the ground.
+A shield and some gold at the bottom of a small pool.
+A short gnome. Would like to join you for a reward.
+A sign on the wall painted in blood: DEATH TO KOBOLDS
+A sign on the wall painted in blood: PIRANHAS ARE NOT WHAT THEY SEEM
+A sign on the wall painted in blood: REVEAL YOUR INNER WASP
+A sign on the wall painted in blood: UNCOVER YOUR INNER WARLOCK
+A sign on the wall: ALL HAIL THE SCARLET KNIGHT
+A sign on the wall: RIETA-FAR WAS HERE
+A silver crown hidden in a crevice of the floor.
+A silver dice at the bottom of a pool.
+A silver key hovering in the middle of the small chamber.
+A silver key in a chest.
+A silver key in a reinforced chest.
+A silver key in a rotten chest.
+A silver key tucked under some debris.
+A simple altar, turns out to be a mimic when the candles on it are lit.
+A skeleton on the ground, ages a person if disturbed.
+A skinless body of a halfling, a key nearby.
+A skinless body of a human, a strange, translucent helm close to it.
+A slime-covered body of a halfling, a map of the halls nearby.
+A slime-covered body of a human, a mysterious, whispering helm close by.
+A smith, sleeping on the ground.
+A smuggler, lying on the ground.
+A smuggler, resting in a corner.
+A smuggler. Desperately needs help.
+A smuggler. Wants to join you.
+A soldier, muttering gibberish.
+A star-shaped key in a basket.
+A statue of a dwarf, tells a story of the labyrinth when touched.
+A statue of a gnome, teleports a person outside the house when touched.
+A statue of a halfling, a fish-shaped key in its hands.
+A statue of a human, makes a person forget his name when touched.
+A still warm body of a cultist, a stone of blasting nearby.
+A still warm body of a dwarf, a magic bracelet close by.
+A stone altar, swears when a sacrifice is made.
+A stone of charming locked in a mechanical safe.
+A strange, covered with glyphs object in the middle of a circle of runes on the ground.
+A strange, made of an unknown material scale mail hovering in the middle of the large chamber.
+A strange, vibrating chainmail on a pedestal.
+A strange, whispering halberd locked in a magical safe.
+A strongbox containing an enchanted spear.
+A strongbox with a bat-shaped key.
+A stuffed boar, tells where a treasure is hidden when stroked.
+A stuffed dwarf artificer with a mysterious, ice-cold to touch cloak in their hands.
+A stuffed dwarf druid with a key in their hands.
+A stuffed elf artificer with a coin of force in their hands.
+A stuffed elf barbarian with a key in their hands.
+A stuffed elf druid with a tarot deck of illusions in their hands.
+A stuffed elf hunter with a strange, unnaturally light object in their hands.
+A stuffed elf shaman with an iron key in their hands.
+A stuffed elf with a key in their hands.
+A stuffed elf with a magic censer in their hands.
+A stuffed elf with a pin of blasting in their hands.
+A stuffed gnome ranger with a staff of protection in their hands.
+A stuffed gnome with a looking glass of haunting in their hands.
+A stuffed gnome with a strange, glowing grimoire in their hands.
+A stuffed halfling rogue with a doll of illusions in their hands.
+A stuffed human with a key in their hands.
+A stuffed owl, tells an unwanted truth when stroked.
+A stuffed scorpion, bursts into flames when stroked.
+A stuffed sparrow, makes a person smaller when stroked.
+A stuffed turtle, makes a person forget his name when stroked.
+A subtle handsome gnome, standing over a killed human.
+A suspicious door, makes a person slightly bigger when the knob is touched.
+A suspicious shaman, resting on the ground.
+A sword in a locker.
+A sword in a medium crate.
+A sword, some gold and lockpicks hidden in a crevice of the wall.
+A tapestry on the wall, makes a person forget his name when brushed.
+A tapestry on the wall, totally destroyed by fire.
+A tapestry on the wall, totally destroyed by mold.
+A tapestry, totally destroyed by kobold vandals.
+A teenager, trying to hide something behind their back.
+A teenager. Pleads to borrow a crowbar.
+A teenager. Wants to join you.
+A teenager. Would like to hire you for a job.
+A ticking clockwork machine, allows a person to breath under water when the lever is pulled.
+A ticking gearwork machine, allows a person to breath under water when the lever is pulled.
+A tome on a lectern, turns a person to stone when opened.
+A trunk containing an iron key.
+A trunk holds a chainmail.
+A trunk holds a key.
+A trunk holds an eldritch cube.
+A trunk holds lockpicks and some gold.
+A villager, chained to the wall.
+A villager, standing over a killed dwarf.
+A wall mirror, tells a story of the castle when looked in.
+A wand of force in the middle of a pentagram on the ground.
+A weird, covered with carvings object locked in a mechanical safe.
+A weird, ice-cold to touch axe in the middle of a pentagram on the ground.
+A weird, ice-cold to touch looking glass hovering in the middle of the small chamber.
+A weird, made of an unknown material chainmail locked in a  safe.
+A weird, sticky to touch glaive tucked under some debris.
+A weird, unnaturally heavy object hovering in the middle of the hall.
+A weird, unnaturally light scale mail in the middle of a circle of runes on the ground.
+A weird, vibrating chain on a pedestal.
+A weird, whispering ring in a shattered trophy case.
+A well-dressed monk, lying in a corner.
+A wild-haired artificer. Desperately needs help.
+A witch. Pleads to borrow a lamp.
+A wizard, resting in a corner.
+A wooden altar, animates when the candles on it are lit.
+A wooden altar, sounds the alarm when a sacrifice is made.
+A wooden altar, tells an unwanted truth when a sacrifice is made.
+A writing on the wall painted in blood: DREAMS ARE COMING
+A writing on the wall: NO MORE TERROR
+A writing on the wall: VOLDRAZZAKTA BRINGS DOOM
+A writing on the wall: WHERE IN HELL IS MY DAMNED SHIELD
+An adventurer, sitting in a corner.
+An ancient halberd tucked under some debris.
+An arrogant maimed elf, resting on the ground.
+An artist, apparently expecting you.
+An artist, checking the content of a medium trunk.
+An artist, sitting in a corner.
+An eldritch coin hidden in a crevice of the floor.
+An elf, sitting in a corner.
+An elf, sleeping in a corner.
+An enchanted cape on a pedestal table.
+An enchanted hammer among rubble on the ground.
+An enchanted knife locked in a  safe.
+An enchanted tome in a medium crate.
+An enigmatic large elf, utterly surprised.
+An enormous crystal, ages a person if struck hard.
+An enormous crystal, makes a person bigger if struck hard.
+An enormous crystal, puts a person to sleep if struck hard.
+An enormous crystal, teleports a person outside the citadel if struck hard.
+An exotic halberd and a shield at the bottom of a small pool.
+An explorer. Can be convinced to help you in your mission.
+An eye preserved in a jar, turns out to be a mimic when shaken.
+An incenerated body of a warlock, a lamp and a rusty glaive close to it.
+An intricate puzzle, ages a person when solved.
+An intricate puzzle, allows a person to breath under water when solved.
+An intricate puzzle, shows visions of the distant future when solved.
+An iron key hovering in the middle of the hall.
+An iron key in a battered chest.
+An iron key in a broken crate.
+An iron key in a large chest.
+An old dwarf. Has an axe of life stealing for trade.
+An old friend, cooking over a campfire.
+An old friend, weak of starvation.
+An old lady, lying on the ground.
+An old lady, resting on the ground.
+An orb of haunting hovering in the middle of the chamber.
+An orb of protection in a trunk.
+An ornate javelin at the bottom of a small pool.
+An ornate lamp, animates when lit.
+An ornate lamp, heals a person when lit.
+An ornate lamp, puts a person to sleep when lit.
+An ornate lamp, swears when lit.
+An uncanny, ice-cold to touch dagger on a pedestal.
+An uncanny, ice-cold to touch object locked in a  safe.
+An uncanny, slightly glowing spear on a pedestal table.
+An uncanny, slightly vibrating box hovering in the middle of the hall.
+An uncanny, sticky to touch leather armor in a trophy case.
+An unholy staff among rubble on the ground.
+Arrows and a glaive of slaying among rubble on the ground.
+Arrows and a staff of slaying hidden in a crevice of the floor.
+Arrows in a medium locker.
+Gems hidden in a crack of the wall.
+Gems in a basket.
+Gems in a large strongbox.
+Gems in a strongbox.
+Gems tucked under some debris.
+Lockpicks and some gold hidden in a crack of the wall.
+Lockpicks at the bottom of a small pool.
+Lockpicks in a box.
+Lockpicks in a chest.
+Lockpicks in a medium crate.
+Rations in a crate.
+Rations, a leather armor and a vorpal scimitar in a chest.
+Remains of a bandit apparently killed by elves, some gold and some gold clutched in his hands.
+Remains of a barbarian apparently killed by cultists, a jewel-encrusted statuette clutched in his hands.
+Remains of a barbarian, some gold clutched in his hands.
+Remains of a cultist apparently killed by humans, a weird, smoking pin clutched in his hands.
+Remains of a druid apparently killed by cultists, an uncanny, covered with carvings dice clutched in his hands.
+Remains of a dwarf, an iron key in his hands.
+Remains of a gnoll, an eldritch hourglass in his hands.
+Remains of a halfling, a bottle of wine and a long sword in his hands.
+Remains of a halfling, a scale mail, some gold and lockpicks clutched in his hands.
+Remains of a human apparently killed by dwarves, a key clutched in his hands.
+Remains of a human, a vorpal halberd in his hands.
+Remains of a kobold apparently killed by halflings, some gold in his hands.
+Remains of a kobold, a torch clutched in his hands.
+Remains of a monk, a strange, unnaturally light object in his hands.
+Remains of a shaman apparently killed by beasts, a leather armor and arrows clutched in his hands.
+Remains of a thief apparently killed by kobolds, some gold and a scale mail in his hands.
+Remains of a thug, a leather armor in his hands.
+Remains of a warlock apparently killed by gnomes, a vorpal axe and a halberd clutched in his hands.
+Remains of a wizard apparently killed by halflings, a scale mail clutched in his hands.
+Remains of an elf, some gold clutched in his hands.
+Remains of an orc, some gold and an ornate dagger in his hands.
+Some gold among rubble on the ground.
+Some gold and a blood-stained long sword hidden in a crack of the wall.
+Some gold and a chainmail in a reinforced chest.
+Some gold and a cursed flail in a crate.
+Some gold and a hammer among rubble on the ground.
+Some gold and a helm in a rotten trunk.
+Some gold and a javelin among rubble on the ground.
+Some gold and a vorpal spear among rubble on the ground.
+Some gold and rations among rubble on the ground.
+Some gold at the bottom of a small pool.
+Some gold in a box.
+Some gold in a chest.
+The chamber is filled with dense smoke. It pleads to be killed when inhaled.
+The hall is filled with dense fog. It tells an unwanted truth when inhaled.
+The large chamber is filled with dense haze. It shows visions of the distant future when breathed in.
+The large chamber is filled with swirly vapour. It makes a person slightly bigger when inhaled.

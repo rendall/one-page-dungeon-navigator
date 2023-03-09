@@ -11,3 +11,23 @@ export const compose =
   <T>(...funcs: ((i: T) => T)[]) =>
   (initValue: T): T =>
     funcs.reduce<T>((all: T, f) => f(all), initValue)
+
+/** Compare two arrays and only return true if they each have the same elements, irrespective of order */
+export const arrEqual = (a: unknown[], b: unknown[]): boolean => {
+  if (a.length !== b.length) return false
+  if (a.length === 0) return true
+  const aPop = a[0]
+  const bIndex = b.findIndex((b) => b === aPop)
+  if (bIndex === -1) return false
+  const bStripped = [...b.slice(0, bIndex), ...b.slice(bIndex + 1)]
+  return arrEqual(a.slice(1), bStripped)
+}
+
+/** Replace item in array with id */
+export const replace = <T extends { id: number }>(e: T, arr: T[]) => arr.map((a) => (e.id === a.id ? e : a))
+
+/** Make only the first letter lower-case */
+export const deCapitalize = (str: string) => `${str.charAt(0).toLowerCase() + str.slice(1)}`
+
+/** Remove duplicate elements */
+export const unique = <T>(arr: T[]) => arr.reduce((out: T[], e: T) => (out.includes(e) ? out : [...out, e]), [])

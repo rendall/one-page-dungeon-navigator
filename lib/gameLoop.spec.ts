@@ -110,6 +110,8 @@ describe("gameLoop good game()", () => {
       // first move to the room with the secret door
       input("east")
 
+      const openOutput = input("search")
+      expect(openOutput.message).toMatch(/You open the crate/)
       // moving in the direction of the secret door should fail
       const northOutput: GameOutput = input("north")
       expect(northOutput.message).toBe("You cannot go that way")
@@ -127,6 +129,9 @@ describe("gameLoop good game()", () => {
     test("unsuccessful search should give 'searched' status", () => {
       // move to the room with the secret doors
       input("east")
+
+      // search the chest
+      input("search")
 
       // discover both secret doors
       input("search")

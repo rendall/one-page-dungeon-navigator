@@ -1,6 +1,6 @@
 import { deprecate } from "util"
 import { JsonNote, PlainNote, NoteType, Secret, Note, Container, Body } from "./dungeon"
-import { aAn, arrEqual, capitalize, deCapitalize, toThe } from "./utilties"
+import { aAn, arrEqual, capitalize, containsElementsOf, deCapitalize, toThe } from "./utilties"
 
 export const notePatterns = [
   /(?<npc_desc>[A-Za-z-,\s]+)\. (?<npc_desire>Can be convinced to help you in your mission)./,
@@ -23,7 +23,7 @@ export const notePatterns = [
   /(?<npc_desc>[A-Za-z-,\s]+), (?<npc_state>locked [A-Za-z-,\s]+)./,
   /(?<item>[A-Za-z-,\s]+) locked in a (?<locked>magical |mechanical | )(?<container>safe)./,
   /(?<item>[A-Za-z-,\s]+) in a (?<feature>(?:shattered |glass |)(?:display|trophy|curio) case)./,
-  /(?<item>[A-Za-z-,\s]+) in a (?<locked>magic)ally locked (?<feature>(?:display|trophy|curio) case)./,
+  /(?<item>[A-Za-z-,\s]+) in a (?<locked>magically locked )(?<feature>(?:display|trophy|curio) case)./,
   /(?<item>[A-Za-z-,\s]+) on a (?<feature>pedestal(?: table)?)./,
   /(?<item>[A-Za-z-,\s]+) on an altar./,
   /A (?<corpse>[A-Za-z-,\s]+), (?<item>[A-Za-z-,\s]+) (nearby|close to it|close by)./,
@@ -49,7 +49,8 @@ export const notePatterns = [
 
 export const isSecret = (note: null | RegExpMatchArray) => note ? arrEqual(Object.keys(note.groups), ["hidden", "item"]) : false
 export const isContainer = (note: null | RegExpMatchArray) => note ? arrEqual(Object.keys(note.groups), ["container", "item"]) : false
-export const isFeatureItem = (note: null | RegExpMatchArray) => note ? arrEqual(Object.keys(note.groups), ["feature", "item"]) && !Object.keys(note.groups).includes("locked") : false
+export const isFeatureItem = (note: null | RegExpMatchArray) => note ? containsElementsOf(["feature", "item"], Object.keys(note.groups)) : false
+export const isLockedContainer = (note: null | RegExpMatchArray) => note ? arrEqual(Object.keys(note.groups), ["container", "item", "locked"]) : false
 
 const matchNoteFunc =
   (patterns: RegExp[]) =>
@@ -69,6 +70,7 @@ export const matchType = (note: null | RegExpMatchArray): NoteType => {
   if (note.groups.dying) return NoteType.dying
   if (note.groups.hovering) return NoteType.hovering
   if (isFeatureItem(note)) return NoteType.feature
+  if (isLockedContainer(note)) return NoteType.lockedcontainer
   if (isContainer(note)) return NoteType.container
   if (isSecret(note)) return NoteType.secret
   return NoteType.none
@@ -98,16 +100,18 @@ export const parseNote = (note: JsonNote & { id: number }): Note | [Note, Note] 
     case NoteType.secret:
       const messageSecret = `You find ${deCapitalize(note.text)}`
       return { ...note, type, ...match.groups, items, message: messageSecret }
-    
+
     case NoteType.feature:
+      // strip "magically locked" description since there is no game mechanic for locked items
+      const noteText = note.text.replace("magically locked ", "")
       const featureStates = {
-        pristine: `Here is ${deCapitalize(note.text)}`,
+        pristine: `Here is ${deCapitalize(noteText)}`,
         empty: `Here is ${deCapitalize(match.groups.feature)}.`,
         imperative: `Take ${toThe(match.groups.item)}.`,
         message: `You take ${toThe(match.groups.item)}.`,
         items
       }
-      return {...note, type, ...match.groups, ...featureStates}
+      return { ...note, type, ...match.groups, ...featureStates }
 
     case NoteType.corpse:
       const corpseStates = {
@@ -117,17 +121,17 @@ export const parseNote = (note: JsonNote & { id: number }): Note | [Note, Note] 
         message: `You take ${toThe(match.groups.item)}.`,
         items
       }
-      return {...note, type, ...match.groups, ...corpseStates}
+      return { ...note, type, ...match.groups, ...corpseStates }
 
     case NoteType.hovering:
       const hoveringStates = {
         pristine: `Here is ${deCapitalize(note.text)}`,
         empty: '',
         imperative: `Take ${toThe(match.groups.item)}.`,
-        message: `You approach ${toThe(match.groups.item) } hovering ${match.groups.hovering} and take it.`,
+        message: `You approach ${toThe(match.groups.item)} hovering ${match.groups.hovering} and take it.`,
         items
       }
-      return {...note, type, ...match.groups, ...hoveringStates}
+      return { ...note, type, ...match.groups, ...hoveringStates }
 
     case NoteType.remains:
       const remainsStates = {
@@ -156,12 +160,25 @@ export const parseNote = (note: JsonNote & { id: number }): Note | [Note, Note] 
       }
       return { ...note, type, ...match.groups, items, ...dyingStates }
 
+    case NoteType.lockedcontainer:
+      // Remove the locked description and turn it into a coffer. There is no current mechanism for opening locked safes.
+      const lockedContainerStates = {
+        message: `You open the coffer and find ${deCapitalize(match.groups.item)}.`,
+        imperative: `Open the coffer.`,
+        pristine: `There is closed coffer here.`,
+        empty: `An empty, open coffer is here.`,
+        items
+      }
+      return { ...note, type:NoteType.container, ...match.groups, ...lockedContainerStates }
+
     case NoteType.container:
-      const messageContainer = `You open ${toThe(match.groups.container)} and find ${deCapitalize(match.groups.item)}.`
-      const imperative = `Open ${toThe(match.groups.container)}.`
-      const pristine = `There is ${deCapitalize(match.groups.container)} here.`
-      const empty = `${capitalize(match.groups.container)} is here, open and empty.`
-      return { ...note, type, ...match.groups, items, message: messageContainer, imperative, pristine, empty }
+      const containerStates = {
+        message: `You open ${toThe(match.groups.container)} and find ${deCapitalize(match.groups.item)}.`,
+        imperative: `Open ${toThe(match.groups.container)}.`,
+        pristine: `There is ${deCapitalize(match.groups.container)} here.`,
+        empty: `${capitalize(match.groups.container)} is here, open and empty.`
+      }
+      return { ...note, type, ...match.groups, items, ...containerStates}
 
 
     default:

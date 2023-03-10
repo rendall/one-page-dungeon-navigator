@@ -88,14 +88,15 @@ export type Dungeon = JsonDungeon & {
 export const NoteType = {
   none: "none",
   body: "body", 
-  feature: "feature", 
-  corpse: "corpse", 
-  dying: "dying",
-  hovering: "hovering",
-  remains: "remains", // "remains" type judges you
   container: "container",
+  corpse: "corpse", 
   door: "door",
+  dying: "dying",
+  feature: "feature", 
+  hovering: "hovering",
+  lockedcontainer: "lockedcontainer",
   more: "more",
+  remains: "remains",
   secret: "secret",
 } as const
 

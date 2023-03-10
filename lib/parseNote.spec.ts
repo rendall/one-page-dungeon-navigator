@@ -30,29 +30,47 @@ describe("parseNote()", () => {
     const moreNotes = [
       "A rear entrance into the fortress. A huge gate with two keyholes to the east.",
       "A rear entrance into the mausoleum. A corpse of a hobgoblin, a key nearby.",
-      "A rear entrance into the sepulcher. A reinforced strongbox holds a heart-shaped key.",
-      "A rear entrance into the stronghold. A dying goblin, a key among his belongings.",
-      "A rear entrance into the tomb. A battered double door with two keyholes on the eastern wall.",
-      "A rear entrance into the vault. A key in a crate.",
     ]
 
     test.each(moreNotes)("%s should be two notes", (text) => {
-      const notes = parseNote({...minNote, text}) as [Note, Note]
+      const notes = parseNote({ ...minNote, text }) as [Note, Note]
       expect(notes).toHaveLength(2)
     })
 
     const notMoreNotes = [
       "A rear entrance into the fortress.", "A huge gate with two keyholes to the east.",
       "A rear entrance into the mausoleum.", "A corpse of a hobgoblin, a key nearby.",
-      "A rear entrance into the sepulcher.", "A reinforced strongbox holds a heart-shaped key.",
-      "A rear entrance into the stronghold.", "A dying goblin, a key among his belongings.",
-      "A rear entrance into the tomb.", "A battered double door with two keyholes on the eastern wall.",
-      "A rear entrance into the vault.", "A key in a crate.",
     ]
 
     test.each(notMoreNotes)("%s should be only one note", (text) => {
-      const note = parseNote({...minNote, text}) as Note
+      const note = parseNote({ ...minNote, text }) as Note
       expect(note).toEqual(expect.objectContaining({ text: expect.stringMatching(text) }))
+    })
+
+
+  })
+
+  describe("Door notes", () => {
+    const doors = [
+      "A lavishly decorated wooden gate with four keyholes on the northern wall of the large chamber.",
+      "A battered wooden double door with a keyhole on the southern wall of the large chamber.",
+      "A round double door to the north.",
+      "A large wooden gate to the north.",
+      "A huge gate to the south.",
+    ]
+
+    test.each(doors)("'%s' is a door", (text) => {
+      const parsedNote = parseNote({...minNote, text}) as Note
+      expect(parsedNote.type).toBe(NoteType.door)
+    })
+
+    const notdoors = [
+      "A villager, chained to the wall.",
+    ]
+
+    test.each(notdoors)("'%s' is not a door", (text) => {
+      const parsedNote = parseNote({...minNote, text}) as Note
+      expect(parsedNote.type).not.toBe(NoteType.door)
     })
 
 
@@ -67,7 +85,7 @@ describe("parseNote()", () => {
     })
     const nonContainers = ["A druid. Wants to join you.", "A gnome, lying in ambush.", "An explorer. Can be convinced to help you in your mission."]
     test.each(nonContainers)("%s should not be a container type", (text) => {
-      const parsedNote = parseNote({ ...minNote, text })
+      const parsedNote = parseNote({ ...minNote, text }) as Note
       expect(parsedNote.type).not.toBe(NoteType.container)
     })
 

@@ -1,4 +1,3 @@
-import { deprecate } from "util"
 import { JsonNote, PlainNote, NoteType, Secret, Note, Container, Body } from "./dungeon"
 import { aAn, arrEqual, capitalize, containsElementsOf, deCapitalize, toThe } from "./utilties"
 
@@ -36,7 +35,7 @@ export const notePatterns = [
   /(?<item>[A-Za-z-,\s]+) (?:tucked under|among|at the|hidden in) (?<hidden>[A-Za-z-,\s]+)./,
   /(?<item>[A-Za-z-\s]+) under (?<hidden>[A-Za-z-,\s]+)./,
   /(?<npc_desc>[A-Za-z-,\s]+), (?<doing>[A-Za-z-,\s]+) (?:in a corner|on the ground)./,
-  /(?<door>[A-Za-z-,\s]+) (?:on the|to the) (?<direction>[A-Za-z-,\s]+)/,
+  /(?<door>[A-Za-z-,\s]+) (?:on the|to the) (?<direction>(north|south|east|west))(?:ern wall)?/,
   /(?<container>[A-Za-z-,\s]+) containing (?<item>[A-Za-z-,\s]+)./,
   /(?<container>[A-Za-z-,\s]+) with (?<item>[A-Za-z-,\s]+) in it./,
   /(?<container>[A-Za-z-,\s]+) holds (?<item>[A-Za-z-,\s]+)./,

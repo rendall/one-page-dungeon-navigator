@@ -22,8 +22,8 @@ const readJsonFilesDirectory = () =>
 
 const promptUser = (jsonFiles: string[]) =>
   new Promise<string>((resolve, reject) => {
-    console.log("Choose a JSON file to load:")
-    jsonFiles.forEach((file, index) => console.log(`${index + 1}. ${file}`))
+    console.info("Choose a JSON file to load:")
+    jsonFiles.forEach((file, index) => console.info(`${index + 1}. ${file}`))
 
     const rl = createInterface({
       input: process.stdin,
@@ -85,9 +85,9 @@ const gameLoop = async (dungeon: Dungeon): Promise<void> => {
   }
 
   const welcome: GameOutput = inputToGame("init")
-  console.log(welcome.message)
-  console.log(welcome.description)
-  welcome.exits.forEach((exit) => console.log(exit.description))
+  console.info(welcome.message)
+  console.info(welcome.description)
+  welcome.exits.forEach((exit) => console.info(exit.description))
 
   while (!out.end) {
     const input = (await prompt("> ")) as string
@@ -96,15 +96,15 @@ const gameLoop = async (dungeon: Dungeon): Promise<void> => {
       const possibleActions = [...exitDirections, ...actions].filter(
         (action) => !["noop", "init", "UNKNOWN", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(action)
       )
-      console.log(`Unknown command ${input}. The following commands are possible: ${possibleActions.join(", ")}`)
+      console.info(`Unknown command ${input}. The following commands are possible: ${possibleActions.join(", ")}`)
       continue
     }
 
     out = inputToGame(input)
-    console.log(out.message)
+    console.info(out.message)
     if (!out.end) {
-      console.log(out.description)
-      out.exits.forEach((exit) => console.log(exit.description))
+      console.info(out.description)
+      out.exits.forEach((exit) => console.info(exit.description))
     }
   }
 
@@ -112,7 +112,7 @@ const gameLoop = async (dungeon: Dungeon): Promise<void> => {
 }
 
 const printDungeon = (dungeon: Dungeon) => {
-  console.log(inspect(dungeon, { depth: 6, colors: true }))
+  console.info(inspect(dungeon, { depth: 6, colors: true }))
   return dungeon
 }
 

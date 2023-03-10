@@ -24,7 +24,7 @@ const readJsonFilesDirectory = () =>
 const chooseRandom = (jsonFiles: string[]) =>
   new Promise<string>((resolve, reject) => {
     const index = Math.floor(Math.random() * jsonFiles.length)
-    console.log(`Selected: ${jsonFiles[index]}`)
+    console.info(`Selected: ${jsonFiles[index]}`)
     resolve(jsonFiles[index])
   })
 
@@ -59,25 +59,25 @@ const gameLoop = async (dungeon: Dungeon): Promise<void> => {
   }
 
   const welcome: GameOutput = inputToGame("init")
-  console.log(welcome.message)
-  console.log(welcome.description)
-  welcome.exits.forEach((exit) => console.log(exit.description))
+  console.info(welcome.message)
+  console.info(welcome.description)
+  welcome.exits.forEach((exit) => console.info(exit.description))
 
   while (!out.end) {
     const possibleActions = [...exitDirections, ...actions].filter((action) => !["quit", "UNKNOWN"].includes(action))
     const action = possibleActions[Math.floor(Math.random() * possibleActions.length)]
-    console.log(action)
+    console.info(action)
     out = inputToGame(action)
-    console.log(out.message)
+    console.info(out.message)
     if (!out.end) {
-      console.log(`#${out.turn}: ${out.description}`)
-      out.exits.forEach((exit) => console.log(exit.description))
+      console.info(`#${out.turn}: ${out.description}`)
+      out.exits.forEach((exit) => console.info(exit.description))
     }
   }
 }
 
 const printDungeon = (dungeon: Dungeon) => {
-  console.log(inspect(dungeon, { depth: 6, colors: true }))
+  console.info(inspect(dungeon, { depth: 6, colors: true }))
   return dungeon
 }
 

@@ -44,3 +44,41 @@ export const toThe = (str:string) => str.replace(/\b[Aa]n?\b/g, "the")
 /** add a or an depending on the string */
 export const aAn = (str: string) => ['aeiou'].includes(str.charAt(0).toLowerCase()) ? `an ${str}` : `a ${str}`
 
+/** remove a or an from the front of a string */
+export const deAAn = (str: string) => str.replace(/^[Aa]n?\s+/, "")
+
+/** to plural */
+export const pluralize = (count:number, word: string): string => {
+  if (count === 1) return word
+  if (word === "some gold") {
+    if (count === 2) return "gold"
+    return "a lot of gold"
+  }
+
+  // non-count mass items will not start with a/an
+  if (deAAn(word) === word) return word
+
+
+  // Realistically, the count never rises above 4 and never drops below 2
+  const countword = ["zero", "one", "two", "three", "four", "five", "six"][count]
+
+  // Realistically, the only word that will ever be pluralized is "key"
+  return `${countword} ${deAAn(word)}s`
+}
+
+/** comma list */
+export const toList = (items:string[]):string => {
+  if (items.length === 1) return items[0]
+  if (items.length === 2) return `${items[0]} and ${items[1]}`
+  return `${items[0]}, ${toList(items.slice(1))}`
+}
+
+
+/** Create inventory message */
+export const inventoryMessage = (inventory:string[]) => {
+  const keySort = (a:string, b:string) => a.endsWith("key") ? -1 : b.endsWith("key")? 1 : 0 // keys should always be the first item listed
+  const itemCount = inventory.map(item => item.toLowerCase()).sort(keySort).reduce((acc: { [key: string]: number }, curr: string) => ({ ...acc, [curr]: (acc[curr] || 0) + 1 }), {})
+  const items = Object.entries(itemCount).map(([item, count]: [string, number]) => pluralize(count, item))
+  return toList(items)
+}
+

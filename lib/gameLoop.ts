@@ -4,7 +4,7 @@
  * Dungeon data and used to determine the result of the player action. */
 import { Action, Body, Container, Door, Dungeon, Exit, ExitDirection, Note, NoteStatus, NoteType, Room, Secret } from "./dungeon"
 import { exitDirections, DoorType, isAction } from "./dungeon"
-import { compose, replace, unique } from "./utilties"
+import { compose, inventoryMessage, replace } from "./utilties"
 type GameState = {
   id: number
   action?: Action
@@ -120,12 +120,14 @@ const addStatusToNote =
 const addStatusToDoor = (door: DoorState, ...statuses: string[]) => updateDoorState(addStatus(door, ...statuses))
 
 const addToInventory = (items: string[]) => (gameState: GameState) => {
-  const inventory = unique([...(gameState.inventory ?? []), ...items]).sort()
+  const inventory = [...(gameState.inventory ?? []), ...items]
   return { ...gameState, inventory }
 }
 
-const addInventoryMessage = () => (gameState: GameState) =>
-  compose(addMessage(`You now have: ${gameState.inventory.join(", ")}`))(gameState)
+const addInventoryMessage = () => (gameState: GameState) => {
+  const inventory = inventoryMessage(gameState.inventory)
+  return compose(addMessage(`You now have: ${inventory}`))(gameState)
+}
 
 /** Set current room id to id */
 const moveTo =

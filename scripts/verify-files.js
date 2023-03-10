@@ -29,7 +29,7 @@ fs.readdir(directoryPath, (err, files) => {
       }
 
       // add any other SVG health checks here
-      console.log(`${i} SVG file ${file} is healthy`)
+      console.info(`${i} SVG file ${file} is healthy`)
     })
   })
 
@@ -47,12 +47,12 @@ fs.readdir(directoryPath, (err, files) => {
 
         // add any other JSON health checks here
 
-        console.log(`${i} JSON file ${file} is healthy`)
+        console.info(`${i} JSON file ${file} is healthy`)
       } catch (e) {
         console.error(`${i} JSON file ${file} is invalid:`, e)
       }
     })
   })
 
-  console.log(`${svgFiles.length} total number for each file type`)
+  console.info(`${svgFiles.length} total number for each file type`)
 })

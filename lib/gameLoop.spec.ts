@@ -2,6 +2,7 @@ import { actions, Dungeon, exitDirections } from "./dungeon"
 import { game, GameOutput } from "./gameLoop"
 import { parseDungeon } from "./parseDungeon"
 import testDungeon from "../tests/house_of_the_immortal_lord.json"
+import dungeonRun from "../tests/dungeons/chambers_of_the_red_master.json"
 
 const minimalDungeon: Dungeon = {
   version: "",
@@ -162,6 +163,44 @@ describe("gameLoop good game()", () => {
       expect(westExit).toBeDefined()
       expect(westExit!.door.statuses).toContain("open")
       expect(westExit!.description).toBe("To the west is an open door")
+    })
+  })
+
+  describe("dungeon run: Chambers of The Red Master", () => {
+    const parsedDungeon = parseDungeon(dungeonRun)
+    const gameInterface = game(parsedDungeon)
+    // action, message, description
+    const expectations: [string, string][] = [
+      [
+        "init",
+        "Chambers of the Red Master\nLong after the Red Master's demise the chambers remained deserted. These days they are badly infested by ants, which don't care about the past of the place.",
+      ],
+      ["south", "You go south"],
+      ["south", "You go south"],
+      ["east", "You go east"],
+      [
+        "search",
+        "You approach the iron key hovering in the middle of the hall and take it.\nYou now have: an iron key",
+      ],
+      ["west", "You go west"],
+      ["west", "You go west"],
+      ["west", "You go west"],
+      ["search", "You open the large chest and find an iron key.\nYou now have: two iron keys"],
+      ["north", "You go north"],
+      ["1", "You go north"],
+      ["north", "You go north"],
+      ["north", "You go north"],
+      ["west", "You go west"],
+      ["north", "The lavishly decorated wooden gate is locked."],
+      ["east", "You go east"],
+      ["south", "You go south"],
+      ["south", "You go south"],
+      ["south", "You go south"],
+    ]
+
+    test.each(expectations)("%s should output %s", (input, expectedMessage) => {
+      const { message } = gameInterface(input)
+      expect(message).toBe(expectedMessage)
     })
   })
 })

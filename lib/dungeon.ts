@@ -13,6 +13,7 @@ export type Exit = {
   isFacing: boolean // some doors have directions, secret doors for example
   door: Door
   type: DoorType
+  note?: DoorNote
 }
 
 export enum DoorType {
@@ -87,12 +88,12 @@ export type Dungeon = JsonDungeon & {
 // enum compatible with Jest
 export const NoteType = {
   none: "none",
-  body: "body", 
+  body: "body",
   container: "container",
-  corpse: "corpse", 
+  corpse: "corpse",
   door: "door",
   dying: "dying",
-  feature: "feature", 
+  feature: "feature",
   hovering: "hovering",
   lockedcontainer: "lockedcontainer",
   more: "more",
@@ -139,7 +140,18 @@ export type Body = PlainNote & {
   pristine: string
   empty: string
 }
-export type Note = Secret | Container | PlainNote | Body
+
+export type DoorNote = PlainNote & {
+  type: "door"
+  text: string
+  door: string
+  keyholes?: string
+  direction: ExitDirection
+}
+
+export const isDoorNote = (note: Note): note is DoorNote => note.type === NoteType.door
+
+export type Note = Secret | Container | PlainNote | Body | DoorNote
 
 /** Room is an object derived from One-Page JSON data.
  * Aids navigation and presentation. */

@@ -1,5 +1,5 @@
 const fs = require("fs")
-import { Note, NoteType, PlainNote, Secret } from "./dungeon"
+import { DoorNote, Note, NoteType, PlainNote, Secret } from "./dungeon"
 import { parseNote, parseItems } from "./parseNote"
 import { toThe } from "./utilties"
 
@@ -26,7 +26,6 @@ describe("parseNote()", () => {
   })
 
   describe("More type", () => {
-
     const moreNotes = [
       "A rear entrance into the fortress. A huge gate with two keyholes to the east.",
       "A rear entrance into the mausoleum. A corpse of a hobgoblin, a key nearby.",
@@ -38,16 +37,16 @@ describe("parseNote()", () => {
     })
 
     const notMoreNotes = [
-      "A rear entrance into the fortress.", "A huge gate with two keyholes to the east.",
-      "A rear entrance into the mausoleum.", "A corpse of a hobgoblin, a key nearby.",
+      "A rear entrance into the fortress.",
+      "A huge gate with two keyholes to the east.",
+      "A rear entrance into the mausoleum.",
+      "A corpse of a hobgoblin, a key nearby.",
     ]
 
     test.each(notMoreNotes)("%s should be only one note", (text) => {
       const note = parseNote({ ...minNote, text }) as Note
       expect(note).toEqual(expect.objectContaining({ text: expect.stringMatching(text) }))
     })
-
-
   })
 
   describe("Door notes", () => {
@@ -60,20 +59,28 @@ describe("parseNote()", () => {
     ]
 
     test.each(doors)("'%s' is a door", (text) => {
-      const parsedNote = parseNote({...minNote, text}) as Note
+      const parsedNote = parseNote({ ...minNote, text }) as Note
       expect(parsedNote.type).toBe(NoteType.door)
     })
 
-    const notdoors = [
-      "A villager, chained to the wall.",
-    ]
-
-    test.each(notdoors)("'%s' is not a door", (text) => {
-      const parsedNote = parseNote({...minNote, text}) as Note
-      expect(parsedNote.type).not.toBe(NoteType.door)
+    const keyholeDoors = doors.filter((door) => door.includes("keyhole"))
+    test.each(keyholeDoors)("'%s' is a keyhole door", (text) => {
+      const doorNote: DoorNote = parseNote({ ...minNote, text }) as DoorNote
+      expect(doorNote).toHaveProperty("keyholes")
     })
 
+    const notKeyholeDoors = doors.filter((door) => !door.includes("keyhole"))
+    test.each(notKeyholeDoors)("'%s' is a not keyhole door", (text) => {
+      const doorNote: DoorNote = parseNote({ ...minNote, text }) as DoorNote
+      expect(doorNote).not.toHaveProperty("keyholes")
+    })
 
+    const notdoors = ["A villager, chained to the wall."]
+
+    test.each(notdoors)("'%s' is not a door", (text) => {
+      const parsedNote = parseNote({ ...minNote, text }) as Note
+      expect(parsedNote.type).not.toBe(NoteType.door)
+    })
   })
 
   describe("Container type", () => {
@@ -83,19 +90,28 @@ describe("parseNote()", () => {
       const parsedNote = parseNote({ ...minNote, text })
       expect(parsedNote.type).toBe(NoteType.container)
     })
-    const nonContainers = ["A druid. Wants to join you.", "A gnome, lying in ambush.", "An explorer. Can be convinced to help you in your mission."]
+    const nonContainers = [
+      "A druid. Wants to join you.",
+      "A gnome, lying in ambush.",
+      "An explorer. Can be convinced to help you in your mission.",
+    ]
     test.each(nonContainers)("%s should not be a container type", (text) => {
       const parsedNote = parseNote({ ...minNote, text }) as Note
       expect(parsedNote.type).not.toBe(NoteType.container)
     })
-
   })
 })
 
 describe("parseItems()", () => {
   const expected: [string, string[]][] = [
-    ["A weird, sticky to touch glaive, a regular spear and a flask of holy water", ["a weird, sticky to touch glaive", "a regular spear", "a flask of holy water"],],
-    ["A chainmail, a regular spear and a flask of holy water", ["a chainmail", "a regular spear", "a flask of holy water"],],
+    [
+      "A weird, sticky to touch glaive, a regular spear and a flask of holy water",
+      ["a weird, sticky to touch glaive", "a regular spear", "a flask of holy water"],
+    ],
+    [
+      "A chainmail, a regular spear and a flask of holy water",
+      ["a chainmail", "a regular spear", "a flask of holy water"],
+    ],
     ["A crowbar and a rusty axe", ["a crowbar", "a rusty axe"]],
     ["A cursed mace, a breastplate and some gold", ["a cursed mace", "a breastplate", "some gold"]],
     ["a mysterious, whispering helm", ["a mysterious, whispering helm"]],

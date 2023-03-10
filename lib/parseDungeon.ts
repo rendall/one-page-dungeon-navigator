@@ -1,13 +1,15 @@
 /** This file takes a One Page Dungeon json file and parses it for navigation.
  * This is the immutable, single source of truth for the adventure.
  */
-import type {
+import {
   Column,
   Direction,
   Door,
+  DoorType,
   Dungeon,
   Exit,
   ExitDirection,
+  isDoorNote,
   JsonDungeon,
   JsonNote,
   Rect,
@@ -244,31 +246,37 @@ export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
   const rooms = rectsWithId
     .filter((r) => !getDoor(r))
     .map((fullRoom) => {
+      const door = getDoor(fullRoom)
+      const notes = dungeonNotes.filter((note) => isInside(note.pos, fullRoom)).flatMap(parseNote)
+      const columns = dungeon.columns.filter((column) => isInside(column, fullRoom))
+      const water = dungeon.water.filter((column) => isInside(column, fullRoom))
       const exits: Exit[] = getAdjacent(fullRoom, rectsWithId).map((exit) => {
         const door = getDoor(exit)
         const direction = getDir(fullRoom, exit)
         if (door) {
-          // If the exit is a door, include the to
+          // If the exit is a door, include the "to"
           const destination = rectsWithId.find((x) => isAdjacent(x, exit) && x.id !== fullRoom.id)
           const to = destination?.id ?? "outside"
           const isFacing = facingDirection(door) === direction
+
+          // If the door isFacing and it's of type double, then it might have an associated note.
+          const note =
+            isFacing && door.type === DoorType.double
+              ? notes.filter(isDoorNote).find((doorNote) => doorNote.direction === direction)
+              : undefined
+
           return {
             towards: direction,
             isFacing,
             to,
             type: door.type,
             door,
+            ...(note && { note }),
             description: destination ? describeDoor(door, direction, destination) : "way out of the dungeon",
           } as Exit
         } else return { towards: direction, to: exit.id } as Exit
       })
-
-      const door = getDoor(fullRoom)
-      const notes = dungeonNotes.filter((note) => isInside(note.pos, fullRoom)).flatMap(parseNote)
-      const columns = dungeon.columns.filter((column) => isInside(column, fullRoom))
-      const water = dungeon.water.filter((column) => isInside(column, fullRoom))
       const description = describeRoom(fullRoom, exits, columns, water)
-
       const room: Room = {
         id: fullRoom.id,
         description,

@@ -170,7 +170,7 @@ var onFilesLoad = function (_a) {
 }
 var onProgress = function (progressBar) {
   return function (value) {
-    console.log("progress", value)
+    console.info("progress", value)
     progressBar.value = value
   }
 }

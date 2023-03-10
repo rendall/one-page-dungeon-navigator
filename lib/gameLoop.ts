@@ -51,9 +51,9 @@ export type GameOutput = {
 }
 
 type DoorStatus = "unlocked" | "discovered" | "open"
-type DoorState = Door & { id: number; statuses?: DoorStatus[] }
+export type DoorState = Door & { id: number; statuses?: DoorStatus[] }
 
-const roomStatuses = ["visited", "searched", "visited"] as const
+const roomStatuses = ["visited", "searched"] as const
 type RoomStatus = (typeof roomStatuses)[number]
 
 type RoomState = Partial<Room> & { id: number; statuses: RoomStatus[] }
@@ -283,24 +283,28 @@ const handleExit =
       // steel doors can only be opened from one direction
       case DoorType.steel:
         const isSteelUnlocked = door?.statuses?.find((s) => s === "unlocked")
-        if (isSteelUnlocked) return compose(addMessage(`You go ${exit.towards}`), moveTo(exit.to))(gameState)
+        if (isSteelUnlocked)
+          return compose(addMessage(`You go ${exit.towards}`), addStatusToRoom("visited"), moveTo(exit.to))(gameState)
         if (exit.isFacing) return { ...gameState, message: "The steel door does not open." }
         else {
           return compose(
             addStatusToDoor(door, "unlocked", "open"),
             addMessage(`You shove against the steel door and it opens. You go ${exit.towards}.`),
+            addStatusToRoom("visited"),
             moveTo(exit.to)
           )(gameState)
         }
       // portcullises can only be opened from one direction
       case DoorType.portcullis:
         const isPortcullisUnlocked = door?.statuses?.find((s) => s === "unlocked")
-        if (isPortcullisUnlocked) return compose(addMessage(`You go ${exit.towards}`), moveTo(exit.to))(gameState)
+        if (isPortcullisUnlocked)
+          return compose(addMessage(`You go ${exit.towards}`), addStatusToRoom("visited"), moveTo(exit.to))(gameState)
         if (exit.isFacing) return { ...gameState, message: "The portcullis bars your way." }
         else {
           return compose(
             addStatusToDoor(door, "unlocked", "open"),
             addMessage(`You pull the lever. The portcullis opens. You go ${exit.towards}.`),
+            addStatusToRoom("visited"),
             moveTo(exit.to)
           )(gameState)
         }
@@ -308,7 +312,7 @@ const handleExit =
         // This door type falls through if there is no associated note
         if (exit.note && exit.note.keyholes) {
           if (door.statuses?.includes("open"))
-            return compose(addMessage(`You go ${exit.towards}`), moveTo(exit.to))(gameState)
+            return compose(addMessage(`You go ${exit.towards}`), addStatusToRoom("visited"), moveTo(exit.to))(gameState)
 
           const keys = gameState.inventory?.filter((item) => item.endsWith("key")) ?? []
 
@@ -321,12 +325,18 @@ const handleExit =
                   exit.note.door
                 )}. It grinds open. You go ${exit.towards}.`
               ),
+              addStatusToRoom("visited"),
               moveTo(exit.to)
             )(gameState)
           } else return { ...gameState, message: `${capitalize(toThe(exit.note.door))} is locked.` }
         }
       default:
-        return compose(addStatusToDoor(door, "open"), addMessage(`You go ${exit.towards}`), moveTo(exit.to))(gameState)
+        return compose(
+          addStatusToDoor(door, "open"),
+          addMessage(`You go ${exit.towards}`),
+          addStatusToRoom("visited"),
+          moveTo(exit.to)
+        )(gameState)
     }
   }
 
@@ -462,13 +472,7 @@ const describeRoomFunc =
 const inputFunc =
   (dungeon: Dungeon): GameStateModifier =>
   (oldGameState: GameState): GameState =>
-    compose(
-      resetState,
-      handleActionFunc(dungeon),
-      describeRoomFunc(dungeon),
-      addStatusToRoom("visited"),
-      advanceTurn
-    )(oldGameState)
+    compose(resetState, handleActionFunc(dungeon), describeRoomFunc(dungeon), advanceTurn)(oldGameState)
 
 /** This gives an expected order to the exits when using numbers to specify them */
 const sortExitsClockwise =

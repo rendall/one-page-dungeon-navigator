@@ -23,6 +23,9 @@ export const arrEqual = (a: unknown[], b: unknown[]): boolean => {
   return arrEqual(a.slice(1), bStripped)
 }
 
+/** Compare two arrays and return true if all elements of a are contained in b. Does not accommodate duplicates */
+export const containsElementsOf = (a: unknown[], b: unknown[]): boolean => a.every(e => b.includes(e))
+
 /** Replace item in array with id */
 export const replace = <T extends { id: number }>(e: T, arr: T[]) => arr.map((a) => (e.id === a.id ? e : a))
 

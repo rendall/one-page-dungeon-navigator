@@ -10,7 +10,7 @@ Give it a try! [one-map.netlify.app](https://one-map.netlify.app/)
 
 ### Oleg Dolya
 
-[Oleg Dolya of Watabou's Procgen Arcana](https://watabou.github.io/) is the almighty creator of the One Page Dungeon Generator, which this website is entirely based on. You can support Oleg on Patreon and be cool like me!
+[Oleg Dolya of Watabou's Procgen Arcana](https://watabou.github.io/) is the almighty creator of the One Page Dungeon Generator, upon which this website is entirely based. You can support Oleg on Patreon and be cool like me!
 
 ### Daniel DaLoia from Noun Project
 

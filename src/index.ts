@@ -10,6 +10,7 @@ const INSTRUCTIONS = `
   <li>To move down, or south, press <span>s</span> or <span>down arrow</span></li>
   <li>To move left, or west, press <span>a</span> or <span>left arrow</span></li>
   <li>To search for secrets, press <span>x</span></li>
+  <li>To use curious features in a room, press <span>u</span></li>
   <li>To quit to main menu, press <span>q</span></li>
   <!--<li>To view entire dungeon, press <span>#</span></li>-->
   <li>To move through a specific exit, press its corresponding <span>number</span> key, assigned in a clockwise direction starting with <span>1</span> to the north west.</li>
@@ -176,6 +177,11 @@ const addTouchControls = (result: GameOutput) => {
     ul.appendChild(li)
   })
 
+  result.imperatives?.forEach(([text, _command]: [string, string]) => {
+    const li = createCommandLi(text, "u")
+    ul.appendChild(li)
+  })
+
   if (!result.statuses?.includes("searched")) {
     const searchLi = createCommandLi("You can also search.", "x")
     ul.appendChild(searchLi)
@@ -333,6 +339,7 @@ const getAction = (key: string): Action => {
     arrowdown: "south",
     arrowleft: "west",
     arrowright: "east",
+    u: "use",
     q: "quit",
     x: "search",
   }

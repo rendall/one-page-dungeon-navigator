@@ -87,7 +87,7 @@ describe("parseNote()", () => {
     const containers = ["An enchanted tome in a medium crate."]
 
     test.each(containers)("%s should be a container type", (text) => {
-      const parsedNote = parseNote({ ...minNote, text })
+      const parsedNote = parseNote({ ...minNote, text }) as Note
       expect(parsedNote.type).toBe(NoteType.container)
     })
     const nonContainers = [
@@ -98,6 +98,88 @@ describe("parseNote()", () => {
     test.each(nonContainers)("%s should not be a container type", (text) => {
       const parsedNote = parseNote({ ...minNote, text }) as Note
       expect(parsedNote.type).not.toBe(NoteType.container)
+    })
+  })
+
+  describe("Curious type", () => {
+    const curiousNoteTexts = [
+      "A blood-covered altar, shows visions of the distant past when the candles on it are lit.",
+      "A dusty book on a lectern, wails loudly when opened.",
+      "A burning fire in a brazier, turns out to be a mimic when touched.",
+      "A fresco on the ceiling, makes a person hallucinate when looked at.",
+      "The large chamber is filled with dense haze. It shows visions of the distant future when breathed in.",
+      "A creepy doll, turns into dust when picked up.",
+      "A suspicious door, makes a person slightly bigger when the knob is touched.",
+      "A statue of a dwarf, tells a story of the labyrinth when touched.",
+      "A skeleton on the ground, ages a person if disturbed.",
+      "A brain preserved in a jar, makes a person forget his name when shaken.",
+      "An ornate lamp, swears when lit.",
+      "A rusty clockwork machine, allows a person to see in darkness when the lever is pulled.",
+      "A ticking clockwork machine, allows a person to breath under water when the lever is pulled.",
+      "A wall mirror, tells a story of the castle when looked in.",
+      "A bottomless pit, turns a person to stone if a coin is dropped into it.",
+      "An intricate puzzle, allows a person to breath under water when solved.",
+      "A stuffed sparrow, makes a person smaller when stroked.",
+      "A jeweled throne, drives a person mad when sat on.",
+      "A dusty tome on a lectern, drives a person mad when opened.",
+      "A fresco on the wall, ages a person when looked at.",
+      "A mural on the wall, turns out to be a mimic when examined.",
+      "A tapestry on the wall, makes a person forget his name when brushed.",
+      "A pool of dark water, teleports a person outside the stronghold when drank from.",
+      "A puddle of murky water, makes a person slightly bigger when drank from.",
+      "A bottomless well, bursts into flames if a coin is dropped into it.",
+    ]
+
+    test.each(curiousNoteTexts)("%s should be of type 'curious'", (text) => {
+      const parsedNote = parseNote({ ...minNote, text }) as Note
+      expect(parsedNote.type).toBe(NoteType.curious)
+      expect(parsedNote).toEqual(
+        expect.objectContaining({
+          action: expect.any(String),
+          feature: expect.any(String),
+          imperative: expect.any(String),
+          message: expect.any(String),
+          pristine: expect.any(String),
+          trigger: expect.any(String),
+        })
+      )
+    })
+
+    test("'A puddle of murky water, makes a person slightly bigger when drank from.' should parse correctly", () => {
+      const curiousNote = parseNote({
+        ...minNote,
+        text: "A puddle of murky water, makes a person slightly bigger when drank from.",
+      })
+      expect(curiousNote).toEqual(
+        expect.objectContaining({
+          action: "makes a person slightly bigger",
+          feature: "A puddle of murky water",
+          imperative: "Drink from the water",
+          message: "When you drink from the water, it makes you slightly bigger.",
+          object: "water",
+          pristine: "There is a puddle of murky water here.",
+          text: "A puddle of murky water, makes a person slightly bigger when drank from.",
+          trigger: "drank from",
+          type: "curious",
+        })
+      )
+    })
+
+    const notCuriousTexts = [
+      "A scorched double door with two keyholes to the south.",
+      "A crate holds a strange, unnaturally heavy tiara.",
+      "A corpse of a dwarf, rations close by.",
+      "A blade of health hovering in the middle of the small chamber.",
+      "A battered basket with a key in it.",
+      "A key in the middle of a pentagram on the ground.",
+      "A rear entrance into the manor.",
+      "A noble, lying in a corner.",
+      "A key in a glass trophy case.",
+    ]
+
+    test.each(notCuriousTexts)("%s should not be of type 'curious'", (text) => {
+      const parsedNote = parseNote({ ...minNote, text }) as Note
+      expect(parsedNote.type).not.toBe(NoteType.curious)
     })
   })
 })

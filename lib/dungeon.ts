@@ -2,7 +2,7 @@ export const exitDirections = ["north", "east", "south", "west"] as const
 export type ExitDirection = (typeof exitDirections)[number]
 
 export type Action = (typeof actions)[number] | ExitDirection
-export const actions = ["quit", "noop", "search", "init", "1", "2", "3", "4", "5", "6", "7", "8", "9"] as const
+export const actions = ["quit", "use", "noop", "search", "init", "1", "2", "3", "4", "5", "6", "7", "8", "9"] as const
 export const isAction = (x: string | Action): x is Action => [...actions, ...exitDirections].some((elem) => elem === x)
 
 /** Exit is derived from One-Page JSON data. Aids navigation. */
@@ -87,7 +87,6 @@ export type Dungeon = JsonDungeon & {
 
 // enum compatible with Jest
 export const NoteType = {
-  none: "none",
   body: "body",
   container: "container",
   corpse: "corpse",
@@ -97,12 +96,14 @@ export const NoteType = {
   hovering: "hovering",
   lockedcontainer: "lockedcontainer",
   more: "more",
+  none: "none",
   remains: "remains",
   secret: "secret",
+  curious: "curious",
 } as const
 
 export type NoteType = (typeof NoteType)[keyof typeof NoteType]
-export type NoteStatus = "searched"
+export type NoteStatus = "searched" | "used" | "gone"
 
 export type PlainNote = JsonNote & {
   id: number
@@ -149,9 +150,21 @@ export type DoorNote = PlainNote & {
   direction: ExitDirection
 }
 
-export const isDoorNote = (note: Note): note is DoorNote => note.type === NoteType.door
+export type CuriousNote = PlainNote & {
+  action: string
+  feature: string
+  imperative: string
+  message: string
+  object: string
+  pristine: string
+  trigger: string
+  type: "curious"
+}
 
-export type Note = Secret | Container | PlainNote | Body | DoorNote
+export const isDoorNote = (note: Note): note is DoorNote => note.type === NoteType.door
+export const isCuriousNote = (note: Note): note is CuriousNote => note.type === NoteType.curious
+
+export type Note = Secret | Container | PlainNote | Body | DoorNote | CuriousNote
 
 /** Room is an object derived from One-Page JSON data.
  * Aids navigation and presentation. */

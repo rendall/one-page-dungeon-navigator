@@ -1,11 +1,11 @@
 /** This node app will run a random walk through a random dungeon */
 
 import { Action, actions, DoorType, Dungeon, Exit, exitDirections } from "../lib/dungeon"
-import { inspect } from "util"
 import { readdir, readFile } from "fs"
 import { extname, join as pathjoin } from "path"
 import { parseDungeon } from "../lib/parseDungeon"
 import { DoorState, game, GameOutput } from "../lib/gameLoop"
+import { inspect } from "util"
 
 const jsonDirectory = "./static/dungeons"
 
@@ -34,7 +34,7 @@ const readJsonFilesDirectory = () =>
 
 const chooseFile = (jsonFiles: string[]) =>
   new Promise<string>((resolve, reject) => {
-    const chosen = jsonFile ? jsonFiles.find(file => file.includes(jsonFile)) : undefined
+    const chosen = jsonFile ? jsonFiles.find((file) => file.includes(jsonFile)) : undefined
     if (chosen) resolve(chosen)
     const index = Math.floor(Math.random() * jsonFiles.length)
     console.info(`Selected: ${jsonFiles[index]}`)
@@ -60,6 +60,7 @@ const loadJsonFile = (fileName: string) =>
 
 const gameLoop = async (inputToGame: (input: Action) => GameOutput, action: Action = "init"): Promise<void> => {
   const out: GameOutput = inputToGame(action)
+  // console.log(inspect(out, { depth: 6, colors: true }))
   console.info(out.message)
 
   if (!out.end) {
@@ -71,9 +72,9 @@ const gameLoop = async (inputToGame: (input: Action) => GameOutput, action: Acti
     const exitActions = out.exits.reduce((all: Action[], e, i) => [...all, e.towards, `${i + 1}` as Action], [])
     const leaveActions = doNotLeave
       ? out.exits.reduce(
-        (all: Action[], e, i) => (e.to === "outside" ? [...all, e.towards, `${i + 1}` as Action] : all),
-        []
-      )
+          (all: Action[], e, i) => (e.to === "outside" ? [...all, e.towards, `${i + 1}` as Action] : all),
+          []
+        )
       : []
 
     const possibleActions = exitActions.filter((action) => !leaveActions.includes(action)) as Action[]
@@ -87,17 +88,16 @@ const gameLoop = async (inputToGame: (input: Action) => GameOutput, action: Acti
     const fullSearchedMessage = /You find nothing( else)? of interest/.test(out.message)
     const doSearch = !fullSearchedMessage && !isVisited
 
-    const appropriateDoor = (exit: (Exit & { door: DoorState }), out:GameOutput, action:Action) => {
+    const appropriateDoor = (exit: Exit & { door: DoorState }, out: GameOutput, action: Action) => {
       const door = exit.door
       const isOpen = door.statuses?.includes("open")
       if (isOpen) return false
-
 
       const isLocked = (door.type === DoorType.steel || door.type === DoorType.portcullis) && exit.isFacing
 
       if (isLocked) return false
       const isKeyhole = exit.description.includes("keyhole") && exit.isFacing
-      if (isKeyhole && (action === out.action || out.action === "search") ) {
+      if (isKeyhole && (action === out.action || out.action === "search")) {
         return false
       }
 
@@ -105,15 +105,15 @@ const gameLoop = async (inputToGame: (input: Action) => GameOutput, action: Acti
     }
 
     const [unUsedExit, _] = possibleActions
-      .filter(action => parseInt(action))
-      .map<[Action, Exit]>(action => [action, out.exits[parseInt(action) - 1]])
+      .filter((action) => parseInt(action))
+      .map<[Action, Exit]>((action) => [action, out.exits[parseInt(action) - 1]])
       .find(([action, exit]) => appropriateDoor(exit, out, action)) ?? [undefined, undefined]
 
     const action = isQuit
       ? "quit"
       : doSearch
-        ? "search"
-        : unUsedExit ?? possibleActions[Math.floor(Math.random() * possibleActions.length)]
+      ? "search"
+      : unUsedExit ?? possibleActions[Math.floor(Math.random() * possibleActions.length)]
     console.info("> " + action)
 
     gameLoop(inputToGame, action)
@@ -121,7 +121,7 @@ const gameLoop = async (inputToGame: (input: Action) => GameOutput, action: Acti
 }
 
 const printDungeon = (dungeon: Dungeon) => {
-  // console.info(inspect(dungeon, { depth: 6, colors: true }))
+  console.info(inspect(dungeon, { depth: 6, colors: true }))
   return game(dungeon)
 }
 

@@ -32,6 +32,15 @@ export const replace = <T extends { id: number }>(e: T, arr: T[]) => arr.map((a)
 /** Remove duplicate elements */
 export const unique = <T>(arr: T[]) => arr.reduce((out: T[], e: T) => (out.includes(e) ? out : [...out, e]), [])
 
+const hasVerb = (str: string) => (/(holds|hides)/.test(str) ? "" : /^\w*s\s/.test(str) ? "are " : "is ")
+
+/** Add a 'Here is/are at the beginning of a sentence */
+export const hereIs = (str: string) => (str.startsWith("The") ? str : `Here ${hasVerb(str)}${deCapitalize(str)}.`)
+
+/** add a 'There is/are ... here. */
+export const thereIs = (str: string) =>
+  str.startsWith("The") ? str : `There ${hasVerb(str)}${deCapitalize(str)} here.`
+
 /** Make only the first letter lower-case */
 export const deCapitalize = (str: string) => `${str.charAt(0).toLowerCase() + str.slice(1)}`
 
@@ -92,3 +101,85 @@ export const doKeysMatchKeyholes = (keyholes: string, keys: string[]) => {
   if (keyholes.startsWith("four") && keys.length === 4) return true
   return false
 }
+
+/*
+    "A bottomless {well|pit}, #action# if a coin is dropped into it.",
+    "A {stone|iron|jeweled} throne, #action# when sat on.",
+    "A {simple|stone|wooden|blood-covered} altar, #action# when {the candles on it are lit|a sacrifice is made}.",
+    "A {dusty }{book|tome} on a lectern, #action# when opened.",
+    "A {mundane-looking|suspicious} door, #action# when the knob is touched.",
+    "A {burning }fire in a {brazier|fireplace}, #action# when touched.",
+    "A {pool|puddle} of {{dark|murky|clear} }water, #action# when drank from.",
+    "A fresco on the {ceiling|wall}, #action# when looked at.",
+    "A statue of a #creature#, #action# when touched.",
+    "{A brain|An eye|A heart} preserved in a jar, #action# when shaken.",
+    "A {rusty|ticking} {gearwork|clockwork} {machine|apparatus}, #action# when the lever is pulled.",
+    "The #room# is filled with {dense|swirly} {mist|fog|haze|vapour|smoke}. It #action# when {breathed in|inhaled}.",
+    "A {tapestry|mural|painting} on the wall, #action# when {brushed|examined}.",
+    "A {floor|wall} mirror, #action# when looked in.",
+    "A creepy doll, #action# when picked up.",
+    "An ornate {lantern|lamp}, #action# when lit.",
+    "An {intricate|impossible} puzzle, #action# when solved.",
+    "A skeleton on the ground, #action# if disturbed.",
+    "A {giant }stuffed #animal#, #action# when stroked.",
+    "An enormous {#color# }crystal, #action# if struck hard."*/
+
+type CuriousGroups = {
+  text: string
+  feature: string
+  action: string
+  trigger: string
+  object?: string
+}
+const pastToPreset = (verb: string) => {
+  switch (verb) {
+    case "examined":
+    case "stroked":
+    case "shaken":
+    case "solved":
+    case "inhaled":
+    case "breathed":
+      return verb.slice(0, -1)
+    case "lit":
+      return "light"
+    case "drank":
+      return "drink"
+    case "sat":
+      return "sit"
+    case "struck":
+      return "strike"
+
+    default:
+      return verb.replace(/(ed)$/, "")
+  }
+}
+export const curiousImperative = ({ text, feature, action, trigger, object }: { [key: string]: string }): string => {
+  const directObject = object ? `the ${object}` : feature
+  switch (trigger) {
+    case "the candles on it are lit":
+      return `Light the candles on ${toThe(directObject)}`
+    case "a sacrifice is made":
+      return `Make a sacrifice on ${toThe(directObject)}`
+    case "the lever is pulled":
+      return `Pull the lever of ${toThe(directObject)}`
+    case "the knob is touched":
+      return `Open ${toThe(directObject)}`
+    case "a coin is dropped into it":
+      return `Drop a coin into ${toThe(directObject)}`
+
+    default:
+      const [past, preposition] = trigger.split(" ")
+      const verb = pastToPreset(past)
+      const addSpace = (str: string) => (str ? `${str} ` : "")
+      return `${capitalize(verb)} ${addSpace(preposition)}${toThe(directObject)}`
+  }
+}
+
+export const curiousMessage = ({ trigger, action, feature, object }: { [key: string]: string }): string => {
+  const imperative = curiousImperative({ feature, action, trigger, object })
+  const actionResult = action.replace(/a person/, "you").replace(/\bhis\b/, "your")
+  if (trigger === "the knob is touched") return `When you touch the knob, ${toThe(feature)} ${actionResult}`
+  return `When you ${deCapitalize(imperative)}, it ${actionResult}.`
+}
+
+

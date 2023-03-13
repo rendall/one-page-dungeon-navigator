@@ -4,7 +4,7 @@ _Long after the Moon Prince's fall the citadel remained abandoned. Lately an und
 
 1. A mouth-shaped double door to the south.
 2. A wizard, resting in a corner.
-3. A knife of resurection at the bottom of a small pool.
+3. A knife of resurrection at the bottom of a small pool.
 4. Some gold in a box.
 5. A tapestry on the wall, makes a person forget his name when brushed.
 6. A dying orc, a crowbar, a vorpal mace and a shield among his belongings.

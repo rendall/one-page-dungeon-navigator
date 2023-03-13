@@ -89,7 +89,7 @@
   "notes": [
     { "text": "A mouth-shaped double door to the south.", "ref": "1", "pos": { "x": 3, "y": 0.5 } },
     { "text": "A wizard, resting in a corner.", "ref": "2", "pos": { "x": 3.5, "y": -6.5 } },
-    { "text": "A knife of resurection at the bottom of a small pool.", "ref": "3", "pos": { "x": 1.5, "y": 7.5 } },
+    { "text": "A knife of resurrection at the bottom of a small pool.", "ref": "3", "pos": { "x": 1.5, "y": 7.5 } },
     { "text": "Some gold in a box.", "ref": "4", "pos": { "x": 11.5, "y": 4.5 } },
     {
       "text": "A tapestry on the wall, makes a person forget his name when brushed.",

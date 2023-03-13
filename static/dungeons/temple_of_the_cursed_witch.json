@@ -1,7 +1,7 @@
 {
   "version": "1.2.4b",
   "title": "Temple of the Cursed Witch",
-  "story": "The Cursed Witch is long dead, but people are still reluctant to come close to the temple. These days it is overrun with turtles. The temple of the Cursed Witch is home to a valuable specie of blooms.",
+  "story": "The Cursed Witch is long dead, but people are still reluctant to come close to the temple. These days it is overrun with turtles. The temple of the Cursed Witch is home to a valuable species of bloom.",
   "rects": [
     { "x": 1, "y": -2, "w": 6, "h": 5 },
     { "x": 1, "y": 4, "w": 1, "h": 2 },

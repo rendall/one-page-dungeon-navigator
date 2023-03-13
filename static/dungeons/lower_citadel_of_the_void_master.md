@@ -1,6 +1,6 @@
 # Lower Citadel of the Void Master
 
-_The citadel of the Void Master is situated high in the Shedinn peaks. Now it is controlled by a gang of bandits. The citadel of the Void Master is home to a valuable specie of herbs._
+_The citadel of the Void Master is situated high in the Shedinn peaks. Now it is controlled by a gang of bandits. The citadel of the Void Master is home to a valuable species of herb._
 
 1. A battered stone gate with two keyholes to the east.
 2. A large chest holds a lamp.

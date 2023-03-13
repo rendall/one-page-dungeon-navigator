@@ -1,6 +1,6 @@
 # Temple of the Cursed Witch
 
-_The Cursed Witch is long dead, but people are still reluctant to come close to the temple. These days it is overrun with turtles. The temple of the Cursed Witch is home to a valuable specie of blooms._
+_The Cursed Witch is long dead, but people are still reluctant to come close to the temple. These days it is overrun with turtles. The temple of the Cursed Witch is home to a valuable species of bloom._
 
 1. A huge door with a keyhole to the north.
 2. A rear entrance into the temple.

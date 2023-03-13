@@ -1,6 +1,6 @@
 # Hidden Chambers of Leucistrinn
 
-_The chambers of Leucistrinn are situated high in the Bryseis mountains. Lately an undead hydra has made its home here. The chambers of Leucistrinn are home to a valuable specie of mushrooms._
+_The chambers of Leucistrinn are situated high in the Bryseis mountains. Lately an undead hydra has made its home here. The chambers of Leucistrinn are home to a valuable species of mushroom._
 
 1. Remains of a cultist apparently killed by humans, a weird, smoking pin clutched in his hands.
 2. A relief depicting a handsome elf.

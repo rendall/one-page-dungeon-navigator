@@ -1,7 +1,7 @@
 {
   "version": "1.2.4b",
   "title": "Lower Citadel of the Void Master",
-  "story": "The citadel of the Void Master is situated high in the Shedinn peaks. Now it is controlled by a gang of bandits. The citadel of the Void Master is home to a valuable specie of herbs.",
+  "story": "The citadel of the Void Master is situated high in the Shedinn peaks. Now it is controlled by a gang of bandits. The citadel of the Void Master is home to a valuable species of herb.",
   "rects": [
     { "x": -2, "y": 1, "w": 5, "h": 2 },
     { "x": -6, "y": 1, "w": 3, "h": 1 },

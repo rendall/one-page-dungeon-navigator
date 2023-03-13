@@ -1,6 +1,6 @@
 # Maze of the Demon Emperor
 
-_After being destroyed by a horrible flood a long time ago the maze of the Demon Emperor remained abandoned. Lately a terryfying venomous spider has made its lair here. Rumors say that Raia, a legendary coin, is still hidden here._
+_After being destroyed by a horrible flood a long time ago the maze of the Demon Emperor remained abandoned. Lately a terrifying venomous spider has made its lair here. Rumors say that Raia, a legendary coin, is still hidden here._
 
 1. A rear entrance into the maze.
 2. An intricate puzzle, ages a person when solved.

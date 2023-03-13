@@ -1,7 +1,7 @@
 {
   "version": "1.2.4b",
   "title": "Stormscar Maze",
-  "story": "The maze is situated on a lonely island. Recently a terryfying chimera has made its lair here.",
+  "story": "The maze is situated on a lonely island. Recently a terrifying chimera has made its lair here.",
   "rects": [
     { "x": -1, "y": 1, "w": 3, "h": 2 },
     { "x": -6, "y": 0, "w": 4, "h": 3 },

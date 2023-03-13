@@ -1,6 +1,6 @@
 # Catacombs of the Grey Lady
 
-_For a millenium the catacombs of the Grey Lady remained sealed. Lately a terryfying basilisk has made its home here._
+_For a millenium the catacombs of the Grey Lady remained sealed. Lately a terrifying basilisk has made its home here._
 
 1. A battered gate to the north.
 2. A hooded figure, resting on the ground.

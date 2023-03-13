@@ -1,6 +1,6 @@
 # Stormscar Maze
 
-_The maze is situated on a lonely island. Recently a terryfying chimera has made its lair here._
+_The maze is situated on a lonely island. Recently a terrifying chimera has made its lair here._
 
 1. A large wooden gate to the north.
 2. A painting, totally destroyed by fire.

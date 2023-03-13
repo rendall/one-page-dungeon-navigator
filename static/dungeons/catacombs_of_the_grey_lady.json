@@ -1,7 +1,7 @@
 {
   "version": "1.2.4b",
   "title": "Catacombs of the Grey Lady",
-  "story": "For a millenium the catacombs of the Grey Lady remained sealed. Lately a terryfying basilisk has made its home here.",
+  "story": "For a millenium the catacombs of the Grey Lady remained sealed. Lately a terrifying basilisk has made its home here.",
   "rects": [
     { "x": -3, "y": -2, "w": 3, "h": 5 },
     { "x": -10, "y": -4, "w": 6, "h": 7 },

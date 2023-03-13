@@ -1,7 +1,7 @@
 {
   "version": "1.2.4b",
   "title": "Maze of the Demon Emperor",
-  "story": "After being destroyed by a horrible flood a long time ago the maze of the Demon Emperor remained abandoned. Lately a terryfying venomous spider has made its lair here. Rumors say that Raia, a legendary coin, is still hidden here.",
+  "story": "After being destroyed by a horrible flood a long time ago the maze of the Demon Emperor remained abandoned. Lately a terrifying venomous spider has made its lair here. Rumors say that Raia, a legendary coin, is still hidden here.",
   "rects": [
     { "x": -1, "y": 1, "w": 3, "h": 3, "rotunda": true },
     { "x": -7, "y": 1, "w": 5, "h": 3 },

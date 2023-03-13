@@ -123,7 +123,7 @@ const addStatus = <T extends { id: number; statuses?: string[] }>(statusObj: T, 
   else return addStatus({ ...statusObj, statuses: [...(statusObj.statuses ?? []), status] }, ...statuses.slice(1))
 }
 
-const addStatusToRoom = (status: RoomStatus, roomId?: number) => (gameState: GameState) => {
+const addStatusToRoom = (status: RoomStatus, roomId?: number):GameStateModifier => (gameState: GameState) => {
   const id = roomId ?? gameState.id
   const room: RoomState = gameState.rooms?.find((room) => room.id === id) ?? { id, statuses: [] }
   const newState = compose(updateRoomState(addStatus(room, status)))(gameState)
@@ -131,7 +131,7 @@ const addStatusToRoom = (status: RoomStatus, roomId?: number) => (gameState: Gam
 }
 
 const addStatusToNote =
-  (noteId: number, ...statuses: NoteStatus[]) =>
+  (noteId: number, ...statuses: NoteStatus[]):GameStateModifier =>
     (gameState: GameState) => {
       const id = gameState.id
       const room: RoomState = gameState.rooms?.find((room) => room.id === id)
@@ -145,17 +145,17 @@ const addStatusToNote =
 
 const addStatusToDoor = (door: DoorState, ...statuses: string[]) => updateDoorState(addStatus(door, ...statuses))
 
-const addToInventory = (items: string[]) => (gameState: GameState) => {
+const addToInventory = (items: string[]):GameStateModifier => (gameState: GameState) => {
   const inventory = [...(gameState.inventory ?? []), ...items]
   return { ...gameState, inventory }
 }
 
-const addInventoryMessage = () => (gameState: GameState) => {
+const addInventoryMessage = ():GameStateModifier => (gameState: GameState) => {
   const inventory = inventoryMessage(gameState.inventory)
   return compose(addMessage(`You now have: ${inventory}`))(gameState)
 }
 
-const onUseCuriousNote = ({ action, message, id, feature, trigger, object }: CuriousNote) => (gameState: GameState) => {
+const onUseCuriousNote = ({ action, message, id, feature, trigger, object }: CuriousNote):GameStateModifier => (gameState: GameState) => {
   const isGone = ["bursts into flames", "turns into dust"].includes(action) || trigger === "picked up"
   const items = [
     ...(action.startsWith("spawns")? [ action.replace("spawns ", "") ] : []),
@@ -184,7 +184,7 @@ const moveTo =
     (gameState: GameState) => {
       return { ...gameState, id }
     }
-/** handleUse */
+
 const handleUse =
   (dungeon: Dungeon): GameStateModifier =>
     (gameState: GameState) => {
@@ -200,7 +200,6 @@ const handleUse =
       return { ...gameState, message: `There is nothing ${curiousNotes?.length ? "else " : ""}to use here.` }
     }
 
-/** handleSearch */
 const handleSearch =
   (dungeon: Dungeon): GameStateModifier =>
     (gameState: GameState) => {

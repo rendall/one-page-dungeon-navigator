@@ -1,6 +1,6 @@
 # Lower Lair of the Scarlet Knight
 
-_After the fall of the Scarlet Knight the lair has changed hands many times. Lately a terryfying man-eating pig has made its lair here. It is said that Pelech-Ahari, a legendary book, is still hidden here._
+_After the fall of the Scarlet Knight the lair has changed hands many times. Lately a terrifying man-eating pig has made its lair here. It is said that Pelech-Ahari, a legendary book, is still hidden here._
 
 1. A rear entrance into the lair.
 2. A lantern of intellect in the middle of a pentagram on the ground.

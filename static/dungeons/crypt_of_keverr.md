@@ -1,6 +1,6 @@
 # Crypt of Keverr
 
-_Keverr is long dead, but people are still afraid to come close to the crypt. Lately a fearsome wyrm has made its lair here. The crypt of Keverr is home to a highly valued specie of plants._
+_Keverr is long dead, but people are still afraid to come close to the crypt. Lately a fearsome wyrm has made its lair here. The crypt of Keverr is home to a highly valued species of plant._
 
 1. A rear entrance into the crypt.
 2. A reinforced chest with a strange, humming object.

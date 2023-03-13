@@ -1,6 +1,6 @@
 # Bloodmist Chambers
 
-_For a long time the chambers were considered lost. Now they are controlled by a party of thugs. The chambers are a place of growth of a highly valued specie of herbs._
+_For a long time the chambers were considered lost. Now they are controlled by a party of thugs. The chambers are a place of growth of a highly valued species of herb._
 
 1. An old dwarf. Has an axe of life stealing for trade.
 2. A scorched iron door with a keyhole to the north.

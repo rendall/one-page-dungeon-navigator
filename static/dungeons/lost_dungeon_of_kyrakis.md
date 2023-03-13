@@ -1,6 +1,6 @@
 # Lost Dungeon of Kyrakis
 
-_After being destroyed in a horrible battle years ago the dungeon of Kyrakis remained uninhabited. Recently it was squatted by a band of cultists. The dungeon of Kyrakis is home to a highly valued specie of berries._
+_After being destroyed in a horrible battle years ago the dungeon of Kyrakis remained uninhabited. Recently it was squatted by a band of cultists. The dungeon of Kyrakis is home to a highly valued species of berry._
 
 1. A mosaic of a bird pattern on the ceiling
 2. A battered gate with a keyhole to the south.

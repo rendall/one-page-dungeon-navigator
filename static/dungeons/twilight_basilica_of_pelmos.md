@@ -1,6 +1,6 @@
 # Twilight Basilica of Pelmos
 
-_For centuries the basilica of Pelmos remained sealed. Lately it was squatted by a party of cultists. The basilica of Pelmos is home to a valuable specie of plants._
+_For centuries the basilica of Pelmos remained sealed. Lately it was squatted by a party of cultists. The basilica of Pelmos is home to a valuable species of plant._
 
 1. A medium chest containing a breastplate and some gold.
 2. A key tucked under some debris.

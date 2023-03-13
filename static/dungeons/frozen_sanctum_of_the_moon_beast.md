@@ -1,6 +1,6 @@
 # Frozen Sanctum of the Moon Beast
 
-_For many years the sanctum of the Moon Beast was considered lost. Lately an undead manticore has made its home here. The sanctum of the Moon Beast is a place of growth of a highly valued specie of blooms._
+_For many years the sanctum of the Moon Beast was considered lost. Lately an undead manticore has made its home here. The sanctum of the Moon Beast is a place of growth of a highly valued species of bloom._
 
 1. A rear entrance into the sanctum.
 2. A large chest with a leather armor, some gold and a torch.

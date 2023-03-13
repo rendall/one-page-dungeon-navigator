@@ -1,6 +1,6 @@
 # Citadel of Tears
 
-_After being destroyed by a great flood several centuries ago the citadel remained uninhabited. Recently a pack of dragons have made its lair here. The citadel is a place of growth of a valuable specie of plants._
+_After being destroyed by a great flood several centuries ago the citadel remained uninhabited. Recently a pack of dragons have made its lair here. The citadel is a place of growth of a valuable species of plant._
 
 1. A skeleton on the ground, ages a person if disturbed.
 2. A rotten strongbox containing lockpicks and an axe.

@@ -1,3 +1,58 @@
+import { DoorType, Room } from "./dungeon"
+
+/**
+ * TODO: Deterministic RNG based on seed
+ */
+export const getRandomNumber = () => Math.random()
+
+/** Get locked rooms: rooms behind the keyhole door */
+export const getLockedRooms = (rooms: Room[]): Room[] => {
+  const keyholeRoom = rooms
+    .filter((room) => room.notes)
+    .find((room) => room.notes.some((note) => note.text.match(/keyhole/)))
+  if (!keyholeRoom) return []
+
+  const endRoom: Room = rooms.find((room) => room.ending)
+  if (!endRoom) return []
+
+  const visited = new Set()
+  const queue: Room[] = [endRoom]
+  const lockedRooms = []
+
+  while (queue.length) {
+    const currentRoom = queue.shift()
+
+    if (!currentRoom || !currentRoom?.exits) {
+      console.error(JSON.stringify({ rooms, queue, currentRoom }, null, 2))
+      throw new Error(`Bad room data`)
+    }
+
+    if (!visited.has(currentRoom)) {
+      visited.add(currentRoom)
+      lockedRooms.push(currentRoom)
+      const connectedRooms: Room[] = currentRoom.exits
+        .filter(
+          (exit) =>
+            exit.to !== "outside" &&
+            !(
+              (exit.type === DoorType.steel || exit.type === DoorType.portcullis || exit.type === DoorType.double) &&
+              !exit.isFacing
+            )
+        )
+        .map((exit) => rooms.find((room) => room.id === exit.to))
+        .filter((x) => x)
+
+      connectedRooms.forEach((room) => {
+        if (!visited.has(room)) {
+          queue.push(room)
+        }
+      })
+    }
+  }
+
+  return lockedRooms
+}
+
 /**
  * Composes one or more functions together and returns a new function that applies each function in order
  * to the previous function's result.
@@ -23,6 +78,9 @@ export const arrEqual = (a: unknown[], b: unknown[]): boolean => {
   return arrEqual(a.slice(1), bStripped)
 }
 
+/** Randomly choose one of the element's members */
+export const randomElement = <T>(arr: T[]) => arr[Math.floor(getRandomNumber() * arr.length)]
+
 /** Compare two arrays and return true if all elements of a are contained in b. Does not accommodate duplicates */
 export const containsElementsOf = (a: unknown[], b: unknown[]): boolean => a.every((e) => b.includes(e))
 
@@ -33,6 +91,9 @@ export const replace = <T extends { id: number }>(e: T, arr: T[]) => arr.map((a)
 export const unique = <T>(arr: T[]) => arr.reduce((out: T[], e: T) => (out.includes(e) ? out : [...out, e]), [])
 
 const hasVerb = (str: string) => (/(holds|hides)/.test(str) ? "" : /^\w*s\s/.test(str) ? "are " : "is ")
+
+/** Add a 'is/are here at the end of a sentence */
+export const isHere = (str: string) => (str.startsWith("The") ? str : `${capitalize(str)} ${hasVerb(str)} here`)
 
 /** Add a 'Here is/are at the beginning of a sentence */
 export const hereIs = (str: string) => (str.startsWith("The") ? str : `Here ${hasVerb(str)}${deCapitalize(str)}.`)
@@ -124,6 +185,7 @@ const pastToPreset = (verb: string) => {
       return verb.replace(/(ed)$/, "")
   }
 }
+
 export const curiousImperative = ({ feature, trigger, object }: { [key: string]: string }): string => {
   const directObject = object ? `the ${object}` : feature
   switch (trigger) {

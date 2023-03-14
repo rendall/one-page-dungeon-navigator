@@ -1,4 +1,4 @@
-import { Dungeon, Action } from "../lib/dungeon"
+import { Dungeon, Action, exitDirections, Exit, isEnemy } from "../lib/dungeon"
 import { parseDungeon } from "../lib/parseDungeon"
 import { game, GameOutput } from "../lib/gameLoop"
 
@@ -160,6 +160,7 @@ const printMessage = (message: string, type = "message") => {
 
 const addTouchControls = (result: GameOutput) => {
   const exits = result.exits
+  const enemies = result.agents.filter(isEnemy).filter((enemy) => !enemy.statuses.includes("dead"))
   const turn = result.turn
   const messageScroll = document.getElementById("message-scroll")
   const ul = document.createElement("ul") as HTMLUListElement
@@ -179,6 +180,11 @@ const addTouchControls = (result: GameOutput) => {
 
   result.imperatives?.forEach(([text]: [string, string]) => {
     const li = createCommandLi(text, "u")
+    ul.appendChild(li)
+  })
+
+  enemies.forEach((enemy) => {
+    const li = createCommandLi(`Attack ${enemy.name}`, `attack ${enemy.id}`)
     ul.appendChild(li)
   })
 
@@ -208,8 +214,7 @@ const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (resul
       if (/^\d$/.test(result.action)) {
       } else printMessage(result.action, "action")
       const message = result.message.replace(/\n/g, "<br>")
-      if (message.startsWith("You leave the dungeon")) printMessage("You attempt to leave the dungeon.")
-      else printMessage(message)
+      printMessage(message)
       break
     }
   }
@@ -227,6 +232,8 @@ const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (resul
 
   const description = result.description.replace(/\n/g, "<br>")
   printMessage(description, "description")
+  result.agents.filter((agent) => agent.message).forEach((agent) => printMessage(agent.message, "agent-message"))
+
   addTouchControls(result)
 
   const roomId = result.room
@@ -423,22 +430,31 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
       return await Promise.race([keyboardPromise, touchPromise])
     }
 
-    const key = await getNextInput()
-    const action = getAction(key)
-    if (key === "#") paths.forEach((_, i) => revealRoom(i))
-    else if (key === "?") printMessage(INSTRUCTIONS, "html")
+    const input = await getNextInput()
+    const isKey = input.length === 1 || input.startsWith("arrow")
+    const action = isKey ? getAction(input) : input
+
+    if (input === "#") paths.forEach((_, i) => revealRoom(i))
+    else if (input === "?") printMessage(INSTRUCTIONS, "html")
     else if (action === "noop") {
-      printMessage(`<p class="error">Unknown command '${key}'</p>${INSTRUCTIONS}`, "html")
+      printMessage(`<p class="error">Unknown command '${input}'</p>${INSTRUCTIONS}`, "html")
     }
 
-    const result = inputToGame(action)
+    // Prevent the user from accidentally quitting by pressing the key to go outside.
+    const pressedOutKey = (input: string, exits: Exit[]) => {
+      const isExitKey = isKey && (input.match(/\d$/) || exitDirections.some((direction) => action === direction))
+      if (!isExitKey) return false
+      const exit = input.match(/\d$/) ? exits[parseInt(input)] : exits.find((exit) => exit.towards === action)
+      return exit?.to === "outside"
+    }
+    const isOutKeyPressed = pressedOutKey(input, oldResult.exits)
+    if (isOutKeyPressed) printMessage("You attempt to leave the dungeon. Press 'q' to quit.")
+    const inputAction = isOutKeyPressed ? "noop" : action
+
+    const result: GameOutput = inputToGame(inputAction)
     presentResult(result)
 
-    if (result.end && result.action !== "quit") {
-      printMessage("You attempt to leave the dungeon. Press 'q' to quit.")
-    }
-
-    if (result.end && result.action === "quit") {
+    if (result.end) {
       window.removeEventListener("resize", resizeEventListener)
       return result
     } else {

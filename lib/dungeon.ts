@@ -2,8 +2,26 @@ export const exitDirections = ["north", "east", "south", "west"] as const
 export type ExitDirection = (typeof exitDirections)[number]
 
 export type Action = (typeof actions)[number] | ExitDirection
-export const actions = ["quit", "use", "noop", "search", "init", "1", "2", "3", "4", "5", "6", "7", "8", "9"] as const
-export const isAction = (x: string | Action): x is Action => [...actions, ...exitDirections].some((elem) => elem === x)
+export const actions = [
+  "quit",
+  "attack",
+  "use",
+  "noop",
+  "search",
+  "init",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+] as const
+export const isAction = (input: string | Action): input is Action =>
+  [...actions, ...exitDirections].some((elem) => elem === input) ||
+  (input.includes(" ") && isAction(input.split(" ")[0]))
 
 /** Exit is derived from One-Page JSON data. Aids navigation. */
 export type Exit = {
@@ -113,7 +131,7 @@ export type PlainNote = JsonNote & {
   statuses?: NoteStatus[]
 }
 
-export type Secret = PlainNote & {
+export type SecretNote = PlainNote & {
   type: "secret"
   message: string
   item: string
@@ -121,7 +139,7 @@ export type Secret = PlainNote & {
   hidden: string
 }
 
-export type Container = PlainNote & {
+export type ContainerNote = PlainNote & {
   type: "container"
   message: string
   item: string
@@ -132,7 +150,7 @@ export type Container = PlainNote & {
   empty: string
 }
 
-export type Body = PlainNote & {
+export type BodyNote = PlainNote & {
   type: "body" | "remains" | "dying"
   message: string
   item: string
@@ -163,8 +181,9 @@ export type CuriousNote = PlainNote & {
 
 export const isDoorNote = (note: Note): note is DoorNote => note.type === NoteType.door
 export const isCuriousNote = (note: Note): note is CuriousNote => note.type === NoteType.curious
+export const isItemNote = (note: Note): note is SecretNote | ContainerNote | BodyNote => "items" in note
 
-export type Note = Secret | Container | PlainNote | Body | DoorNote | CuriousNote
+export type Note = SecretNote | ContainerNote | PlainNote | BodyNote | DoorNote | CuriousNote
 
 /** Room is an object derived from One-Page JSON data.
  * Aids navigation and presentation. */
@@ -175,3 +194,29 @@ export type Room = Rect & {
   exits: Exit[]
   notes?: PlainNote[]
 }
+
+export type MortalStatus = "dead"
+
+export type Mortal = {
+  health: number
+  attack: number
+  defense: number
+  statuses: MortalStatus[]
+}
+
+export type Player = Mortal
+
+export type Agent = Mortal & {
+  id: number
+  name: string
+  room: number
+  message?: string
+}
+
+export type Enemy = Agent & {
+  isEnemy: true
+}
+
+export const isPlayer = (mortal: Mortal): mortal is Player => !("id" in mortal)
+export const isAgent = (mortal: Mortal): mortal is Agent => "id" in mortal
+export const isEnemy = (agent: Agent): agent is Enemy => "isEnemy" in agent && agent.isEnemy === true

@@ -4,19 +4,25 @@
  * Dungeon data and used to determine the result of the player action. */
 import {
   Action,
-  Body,
-  Container,
+  Agent,
+  BodyNote,
+  ContainerNote,
+  CuriousNote,
   Door,
   Dungeon,
+  Enemy,
   Exit,
   ExitDirection,
-  isCuriousNote,
+  Mortal,
   Note,
   NoteStatus,
   NoteType,
   Room,
-  Secret,
-  CuriousNote,
+  SecretNote,
+  isAgent,
+  isCuriousNote,
+  isEnemy,
+  isPlayer,
 } from "./dungeon"
 import { exitDirections, DoorType, isAction } from "./dungeon"
 import {
@@ -24,11 +30,15 @@ import {
   compose,
   deCapitalize,
   doKeysMatchKeyholes as haveEnoughKeys,
+  getRandomNumber,
   hereIs,
   inventoryMessage,
+  isHere,
   replace,
   toThe,
 } from "./utilties"
+import { createAgents } from "./createAgents"
+
 type GameState = {
   id: number
   action?: Action
@@ -37,6 +47,8 @@ type GameState = {
   message: string
   rooms?: RoomState[]
   inventory?: string[]
+  player: Mortal
+  agents: Agent[]
   turn: number
   end: boolean
 }
@@ -44,6 +56,7 @@ type GameState = {
 export type GameOutput = {
   action: Action // This is the last action of the user
   message: string
+  agents: { id: number; name: string; message?: string }[]
   room: number
   description: string
   exits: (Exit & { door: DoorState })[]
@@ -69,8 +82,18 @@ const initState: GameState = {
   end: false,
   rooms: [],
   doors: [],
+  player: {
+    health: 3,
+    attack: 3,
+    defense: 3,
+    statuses: [],
+  },
+  agents: [],
 }
 
+/** GameStateModifiers are functions that take an old game state,
+ * modify it, and return the new game state. GameStateModifier is
+ * how all changes to the game state should be made. */
 type GameStateModifier = (gameState: GameState) => GameState
 
 type GameStateEntry = [keyof GameState, GameState[keyof GameState]]
@@ -78,13 +101,19 @@ type GameStateEntry = [keyof GameState, GameState[keyof GameState]]
 const clearProps: (keyof GameState)[] = ["error", "message", "end"]
 
 /** Remove properties from GameState */
-const resetState: GameStateModifier = (gameState: GameState): GameState =>
-  Object.entries<GameState[keyof GameState]>(gameState)
+const resetState: GameStateModifier = (gameState: GameState): GameState => {
+  const cleanSlate = Object.entries<GameState[keyof GameState]>(gameState)
     .filter((entry: GameStateEntry) => !clearProps.includes(entry[0]))
     .reduce<Partial<GameState>>(
       (gs: GameState, kv: GameStateEntry) => ({ ...gs, [kv[0]]: kv[1] } as GameState),
       {}
     ) as GameState
+
+  // clean messages from agents
+  const agents = cleanSlate.agents.map(({ message, ...rest }) => rest)
+
+  return { ...cleanSlate, agents }
+}
 
 /** Add a message to GameState */
 const addMessage =
@@ -112,7 +141,7 @@ const updateRoomState =
     return { ...gameState, rooms }
   }
 
-/** Add one or more statuses to a Room or Door
+/** Add one or more statuses to an object such as a Door or Room or Enemy
  *  @example addStatus(door, "unlocked", "open")
  */
 const addStatus = <T extends { id: number; statuses?: string[] }>(statusObj: T, ...statuses: string[]): T => {
@@ -210,7 +239,7 @@ const handleSearch =
 
     const unopenedContainer = currentRoom.notes?.find(
       (note) => note.type === NoteType.container && !note.statuses?.includes("searched")
-    ) as Container
+    ) as ContainerNote
 
     if (unopenedContainer) {
       const newGameState = compose(
@@ -234,7 +263,7 @@ const handleSearch =
 
     const unAcquiredItem = currentRoom.notes?.find(
       (note) => itemNoteTypes.includes(note.type) && !note.statuses?.includes("searched")
-    ) as Body
+    ) as BodyNote
 
     if (unAcquiredItem) {
       const newGameState = compose(
@@ -249,7 +278,7 @@ const handleSearch =
 
     const undiscoveredSecret = currentRoom.notes?.find(
       (note) => note.type === NoteType.secret && !note.statuses?.includes("searched")
-    ) as Secret
+    ) as SecretNote
 
     if (undiscoveredSecret) {
       const newGameState = compose(
@@ -285,6 +314,30 @@ const handleSearch =
       return newState
     }
   }
+
+const handleAttack = (gameState: GameState) => {
+  const [_, enemyId] = gameState.action.split(" ").map((x) => parseInt(x))
+  const enemies = gameState.agents.filter(isEnemy)
+  const enemy = enemies.find((enemy) => enemy.id === enemyId)
+
+  if (!enemy) return compose(addMessage("That enemy is unknown"))(gameState)
+  if (enemy.statuses.includes("dead"))
+    return compose(addMessage(`${capitalize(toThe(enemy.name))} is dead.`))(gameState)
+
+  const { defender, result } = attackBy(gameState.player, enemy)
+
+  if (defender.health < 0) {
+    if (!isAgent(defender)) throw new Error("Mortal is not of type Agent in 'handleAttack'")
+    const deadEnemy = addStatus(defender, "dead")
+    const agents = replace(deadEnemy, gameState.agents)
+    return compose(
+      addMessage(result),
+      addMessage(`${capitalize(toThe(enemy.name))} is dead.`)
+    )({ ...gameState, agents })
+  }
+
+  return compose(addMessage(result))(gameState)
+}
 
 const getCurrentRoom = (dungeon: Dungeon, gameState: GameState) => {
   const dungeonCurrentRoom = dungeon.rooms.find((room) => room.id === gameState.id)
@@ -392,7 +445,8 @@ const handleActionFunc =
   (dungeon: Dungeon): GameStateModifier =>
   (gameState: GameState): GameState => {
     if (gameState === undefined) throw Error("gameState is undefined in handleAction")
-    switch (gameState.action) {
+    const action = gameState.action.split(" ")[0]
+    switch (action) {
       case "east":
       case "west":
       case "north":
@@ -402,16 +456,78 @@ const handleActionFunc =
         return handleSearch(dungeon)(gameState)
       case "use":
         return handleUse(dungeon)(gameState)
+      case "attack":
+        return handleAttack(gameState)
       case "noop":
         return gameState
       case "quit":
         return { ...gameState, message: "You quit.", end: true }
       default:
-        if (/\d/.test(gameState.action)) {
+        if (/^\d$/.test(action)) {
           return handleExit(dungeon)(gameState)
         } else return { ...gameState, message: "Not understood.", error: "syntax" }
     }
   }
+
+type AttackResult = {
+  attacker: Mortal
+  defender: Mortal
+  result: string
+}
+
+const attackBy = (attacker: Mortal, _defender: Mortal): AttackResult => {
+  const attackPower = attacker.attack
+  const defensePower = _defender.defense
+
+  const defenderName = isPlayer(_defender) ? "you" : toThe((_defender as Agent).name)
+  const attackerName = isPlayer(attacker) ? "You" : capitalize(toThe((attacker as Agent).name))
+
+  const attack = getRandomNumber() * attackPower
+  const defense = getRandomNumber() * defensePower
+
+  const isSuccess = attack > defense
+
+  const defender = isSuccess ? { ..._defender, health: -1 } : _defender
+
+  if (isPlayer(attacker)) {
+    if (!isAgent(defender)) throw new Error("Defender is unknown agent")
+    const successResult = `You attack ${toThe(defender.name)} and hit!`
+    const failResult = `You attack ${toThe(defender.name)} and miss!`
+    return { attacker, defender, result: isSuccess ? successResult : failResult }
+  } else {
+    const successResult = `${toThe(attackerName)} attacks ${defenderName} and hits!`
+    const failResult = `${toThe(attackerName)} attacks ${defenderName} and misses!`
+    return { attacker, defender, result: isSuccess ? successResult : failResult }
+  }
+}
+
+const enemiesAttack: GameStateModifier = (gameState: GameState) => {
+  const { player, agents } = gameState
+  const enemiesHere = agents
+    .filter(isEnemy)
+    .filter((agent) => agent.room === gameState.id)
+    .filter((agent) => agent.isEnemy)
+    .filter((enemy) => !enemy.statuses.includes("dead"))
+
+  if (enemiesHere.length === 0) return gameState
+
+  const attacksResults = enemiesHere.map((enemy) => attackBy(enemy, player))
+
+  const attackers = attacksResults.map(({ attacker, result }) => ({ ...attacker, message: result })) as Agent[]
+  const defender = attacksResults.reduce(
+    (result, { defender }) => ({ ...result, health: result.health + defender.health }),
+    player
+  )
+
+  console.log({ attackers, defender })
+
+  const updatedAgents = attackers.reduce((all, attacker) => replace(attacker, all), agents)
+  const newGameState = { ...gameState, player: defender, agents: updatedAgents }
+
+  if (defender.health < 0)
+    return compose(addMessage("You succumb to the attack and die."))({ ...newGameState, end: true })
+  else return newGameState
+}
 
 const advanceTurn: GameStateModifier = (gameState: GameState) => ({ ...gameState, turn: gameState.turn + 1 })
 
@@ -432,8 +548,8 @@ export const describeNote = (note: Note) => {
       return `There is ${deCapitalize(note.text)}`
 
     default:
-      if (note.statuses?.includes("searched")) return (note as Container).empty
-      else return (note as Container).pristine
+      if (note.statuses?.includes("searched")) return (note as ContainerNote).empty
+      else return (note as ContainerNote).pristine
   }
 }
 
@@ -441,6 +557,12 @@ const describeNotes = (notes: Note[]): string =>
   notes
     .filter((note) => !note.statuses?.includes("gone"))
     .reduce((description: string, note: Note) => `${description}${describeNote(note)}`, "")
+
+const describeAgent = (agent: Agent): string =>
+  agent.statuses.includes("dead") ? isHere(`the dead body of ${toThe(agent.name)}`) : isHere(agent.name)
+
+const describeAgents = (agents: Enemy[]): string =>
+  agents.reduce((all, agent) => `${all} ${describeAgent(agent)}`, "\n\n")
 
 const getExitDescription = (exit: Exit, i: number, all: Exit[]) => {
   const exitNumber = (doShow: boolean, index: number) => (doShow ? ` - ${index + 1}` : "")
@@ -501,9 +623,12 @@ const describeRoomFunc =
         description: getExitDescription(exit, i, all),
       }))
 
+    const enemies = gameState.agents.filter(isEnemy).filter((agent) => agent.room === gameState.id)
+    const notes = currentRoom.notes ?? []
+
     const description = `You are in a ${currentRoom.area} ${currentRoom.description} ${describeNotes(
-      currentRoom.notes ?? []
-    )}`
+      notes
+    )} ${describeAgents(enemies)}`
 
     const room: RoomState = { ...currentRoom, exits, description }
 
@@ -523,7 +648,7 @@ const describeRoomFunc =
 const inputFunc =
   (dungeon: Dungeon): GameStateModifier =>
   (oldGameState: GameState): GameState =>
-    compose(resetState, handleActionFunc(dungeon), describeRoomFunc(dungeon), advanceTurn)(oldGameState)
+    compose(resetState, handleActionFunc(dungeon), describeRoomFunc(dungeon), enemiesAttack, advanceTurn)(oldGameState)
 
 /** This gives an expected order to the exits when using numbers to specify them */
 const sortExitsClockwise =
@@ -567,6 +692,7 @@ const toOutput = (gameState: GameState): GameOutput => {
     action: gameState.action,
     exits: room.exits,
     statuses: room.statuses,
+    agents: gameState.agents.filter((agent) => agent.room === gameState.id),
     ...(imperatives && imperatives.length > 0 && { imperatives }),
   }
   return output
@@ -591,7 +717,9 @@ export const game = (dungeon: Dungeon): GameInterface => {
     action: "init",
   }
 
-  let gameState: GameState = { ...initState, ...initMessage }
+  const initAgents = createAgents(dungeon)
+
+  let gameState: GameState = { ...initState, ...initMessage, ...initAgents }
 
   const gameInterface = (action: Action | string) => {
     if (!isAction(action)) {

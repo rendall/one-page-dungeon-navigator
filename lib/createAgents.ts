@@ -3,7 +3,7 @@
  * allies */
 
 import { Dungeon, isItemNote, Note, Enemy, Room, Agent, Mortal, isEnemy, isAgent } from "./dungeon"
-import { getLockedRooms, getRandomNumber, randomElement } from "./utilties"
+import { aAn, randomElement } from "./utilties"
 
 const bossPatterns = [
   /[A-Za-z/s]+ of (?<boss>the [A-Za-z-]+ (?!Cross|Skull|Moon|Star|Eye|Arrow|Fish|Crown|Bat|Heart|Bird|Lily|Leaf|Palm|Claw|Seashell|Snail|Fist)[A-Za-z]+)$/,
@@ -214,7 +214,7 @@ const getRandomAnimalMonster = (animal?: string) => {
   return randomElement(["huge", "giant", "terrifying", "fearsome", "undead"]) + ` ${animal}`
 }
 
-const getRandomMonster = () => `${randomElement(monsterAdjs)} ${randomElement(monsters)}`
+const getRandomMonster = () => aAn(`${randomElement(monsterAdjs)} ${randomElement(monsters)}`)
 
 const getRandomBoss = () => {
   const adjs = [
@@ -297,7 +297,7 @@ type Analysis = {
 
 export const createAgents = ({ title, story, rooms }: Dungeon): Analysis => {
   const deadBoss = getDeadBoss(story)
-  const endMonsterName = deadBoss ? `the ghost of ${deadBoss}` : getBoss(title) ?? getMonster(story)
+  const endMonsterName = deadBoss ? `the ghost of ${deadBoss}` : getBoss(title) ?? getMonster(story) ?? getRandomMonster()
   const endRoom = rooms.find((room) => room.ending)?.id
 
   const boss: Enemy = {

@@ -201,10 +201,10 @@ const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (resul
     case "quit":
     // eslint-disable-next-line no-fallthrough
     case "noop":
-    // eslint-disable-next-line no-empty
+      // eslint-disable-next-line no-empty
       break
     default: {
-    // eslint-disable-next-line no-empty
+      // eslint-disable-next-line no-empty
       if (/^\d$/.test(result.action)) {
       } else printMessage(result.action, "action")
       const message = result.message.replace(/\n/g, "<br>")
@@ -470,7 +470,8 @@ const startGame = async () => {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const gameEnd = (result: GameOutput) => { //TODO: use result to show end result to user
+const gameEnd = (result: GameOutput) => {
+  //TODO: use result to show end result to user
   const gameSection = document.querySelector("section#game")
   gameSection.classList.add("hide")
 

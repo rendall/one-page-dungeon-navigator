@@ -68,8 +68,8 @@ export const isLockedContainer = (note: null | RegExpMatchArray) =>
 
 const matchNoteFunc =
   (patterns: RegExp[]) =>
-    (note: string): RegExpMatchArray | null =>
-      patterns.reduce<RegExpMatchArray | null>((out, pattern) => (out ? out : note.match(pattern)), null)
+  (note: string): RegExpMatchArray | null =>
+    patterns.reduce<RegExpMatchArray | null>((out, pattern) => (out ? out : note.match(pattern)), null)
 
 export const matchNote = matchNoteFunc(notePatterns)
 
@@ -205,7 +205,6 @@ export const parseNote = (note: JsonNote & { id: number }): Note | [Note, Note] 
         empty: "",
       }
       return { ...note, type, ...match.groups, items, ...curiousStates }
-
     }
     default:
       return { ...note, type, contains: note.text, ...match?.groups, items } as Note

@@ -35,7 +35,7 @@ export const notePatterns = [
   /(?<item>[A-Za-z-,\s]+) in a (?<locked>magically locked )(?<feature>(?:display|trophy|curio) case)./,
   /(?<item>[A-Za-z-,\s]+) on a (?<feature>pedestal(?: table)?)./,
   /(?<item>[A-Za-z-,\s]+) on an altar./,
-  /A (?<corpse>[A-Za-z-,\s]+), (?<item>[A-Za-z-,\s]+) (nearby|close to it|close by)./,
+  /A (?<corpse>[A-Za-z-\s]+), (?<item>[A-Za-z-,\s]+) (nearby|close to it|close by)./,
   /(?<dying>A dying (?<creature>[A-Za-z-\s]+)), (?<item>[A-Za-z-,\s]+) among his belongings./,
   /(?<body>A [A-Za-z-,\s]+)(?: (?<npc_class>[A-Za-z-,\s]+)) with (?<item>[A-Za-z-,\s]+) in their hands./,
   /(?<hidden>A [A-Za-z-,\s]+) (conceals|hides) (?<item>[A-Za-z-,\s]+)./,

@@ -1,4 +1,4 @@
-const fs = require("fs")
+import fs from "fs"
 import { DoorNote, Note, NoteType, PlainNote, Secret } from "./dungeon"
 import { parseNote, parseItems } from "./parseNote"
 import { toThe } from "./utilties"

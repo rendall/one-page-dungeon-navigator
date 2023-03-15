@@ -102,35 +102,6 @@ export const doKeysMatchKeyholes = (keyholes: string, keys: string[]) => {
   return false
 }
 
-/*
-    "A bottomless {well|pit}, #action# if a coin is dropped into it.",
-    "A {stone|iron|jeweled} throne, #action# when sat on.",
-    "A {simple|stone|wooden|blood-covered} altar, #action# when {the candles on it are lit|a sacrifice is made}.",
-    "A {dusty }{book|tome} on a lectern, #action# when opened.",
-    "A {mundane-looking|suspicious} door, #action# when the knob is touched.",
-    "A {burning }fire in a {brazier|fireplace}, #action# when touched.",
-    "A {pool|puddle} of {{dark|murky|clear} }water, #action# when drank from.",
-    "A fresco on the {ceiling|wall}, #action# when looked at.",
-    "A statue of a #creature#, #action# when touched.",
-    "{A brain|An eye|A heart} preserved in a jar, #action# when shaken.",
-    "A {rusty|ticking} {gearwork|clockwork} {machine|apparatus}, #action# when the lever is pulled.",
-    "The #room# is filled with {dense|swirly} {mist|fog|haze|vapour|smoke}. It #action# when {breathed in|inhaled}.",
-    "A {tapestry|mural|painting} on the wall, #action# when {brushed|examined}.",
-    "A {floor|wall} mirror, #action# when looked in.",
-    "A creepy doll, #action# when picked up.",
-    "An ornate {lantern|lamp}, #action# when lit.",
-    "An {intricate|impossible} puzzle, #action# when solved.",
-    "A skeleton on the ground, #action# if disturbed.",
-    "A {giant }stuffed #animal#, #action# when stroked.",
-    "An enormous {#color# }crystal, #action# if struck hard."*/
-
-type CuriousGroups = {
-  text: string
-  feature: string
-  action: string
-  trigger: string
-  object?: string
-}
 const pastToPreset = (verb: string) => {
   switch (verb) {
     case "examined":
@@ -153,7 +124,7 @@ const pastToPreset = (verb: string) => {
       return verb.replace(/(ed)$/, "")
   }
 }
-export const curiousImperative = ({ text, feature, action, trigger, object }: { [key: string]: string }): string => {
+export const curiousImperative = ({ feature, trigger, object }: { [key: string]: string }): string => {
   const directObject = object ? `the ${object}` : feature
   switch (trigger) {
     case "the candles on it are lit":
@@ -167,11 +138,12 @@ export const curiousImperative = ({ text, feature, action, trigger, object }: { 
     case "a coin is dropped into it":
       return `Drop a coin into ${toThe(directObject)}`
 
-    default:
+    default: {
       const [past, preposition] = trigger.split(" ")
       const verb = pastToPreset(past)
       const addSpace = (str: string) => (str ? `${str} ` : "")
       return `${capitalize(verb)} ${addSpace(preposition)}${toThe(directObject)}`
+    }
   }
 }
 
@@ -181,5 +153,3 @@ export const curiousMessage = ({ trigger, action, feature, object }: { [key: str
   if (trigger === "the knob is touched") return `When you touch the knob, ${toThe(feature)} ${actionResult}`
   return `When you ${deCapitalize(imperative)}, it ${actionResult}.`
 }
-
-

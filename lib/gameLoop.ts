@@ -377,7 +377,7 @@ const handleExit =
             )(gameState)
           } else return { ...gameState, message: `${capitalize(toThe(exit.note.door))} is locked.` }
         }
-        break
+      // eslint-disable-next-line no-fallthrough
       default:
         return compose(
           addStatusToDoor(door, "open"),

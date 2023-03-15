@@ -33,18 +33,6 @@ const minimalRoom: Room = {
   ...minRect,
 }
 
-const otherRoom: Room = {
-  id: 1,
-  description: "other minimal room.",
-  area: "1x1",
-  exits: [],
-  notes: [],
-  x: 2,
-  y: 0,
-  w: 1,
-  h: 1
-}
-
 const minimalWorkingDungeon: Dungeon = {
   ...minimalDungeon,
   rooms: [minimalRoom],
@@ -80,40 +68,38 @@ describe("gameLoop good game()", () => {
       statuses: ["visited"],
     })
     const searchOutput = input("search")
-    expect(searchOutput).toMatchObject(
-      {
-        action: "search",
-        message: "You find nothing of interest.",
-        turn: 2,
-        statuses: expect.arrayContaining(["searched"])
-      }
-    )
+    expect(searchOutput).toMatchObject({
+      action: "search",
+      message: "You find nothing of interest.",
+      turn: 2,
+      statuses: expect.arrayContaining(["searched"]),
+    })
   })
 
   test("Test 'use' action", () => {
     const curiousNote: CuriousNote = {
       id: 0,
-      text: 'A bottomless well, bursts into flames if a coin is dropped into it.',
-      ref: '',
+      text: "A bottomless well, bursts into flames if a coin is dropped into it.",
+      ref: "",
       pos: { x: 0, y: 0 },
-      type: 'curious',
-      feature: 'A bottomless well',
-      object: 'well',
-      action: 'bursts into flames',
-      trigger: 'a coin is dropped into it',
-      message: 'When you drop a coin into the well, it bursts into flames.',
-      imperative: 'Drop a coin into the well',
-      pristine: 'There is a bottomless well here.',
+      type: "curious",
+      feature: "A bottomless well",
+      object: "well",
+      action: "bursts into flames",
+      trigger: "a coin is dropped into it",
+      message: "When you drop a coin into the well, it bursts into flames.",
+      imperative: "Drop a coin into the well",
+      pristine: "There is a bottomless well here.",
     }
 
     const noteRoom = {
       ...minimalRoom,
-      notes: [curiousNote]
+      notes: [curiousNote],
     }
 
     const useDungeon = {
       ...minimalWorkingDungeon,
-      rooms: [noteRoom]
+      rooms: [noteRoom],
     }
 
     const input = game(useDungeon)
@@ -131,43 +117,41 @@ describe("gameLoop good game()", () => {
       statuses: ["visited"],
     })
     const useOutput = input("use")
-    expect(useOutput).toMatchObject(
-      {
-        action: "use",
-        message: curiousNote.message,
-      }
-    )
+    expect(useOutput).toMatchObject({
+      action: "use",
+      message: curiousNote.message,
+    })
 
     // imperatives should be gone
     expect(useOutput).not.toMatchObject({
-      imperatives: expect.anything()
+      imperatives: expect.anything(),
     })
   })
 
   test("Test 'use' action that disappears", () => {
     const curiousNote: CuriousNote = {
       id: 0,
-      text: 'A puddle of water, turns into dust when drank from.',
-      ref: '',
+      text: "A puddle of water, turns into dust when drank from.",
+      ref: "",
       pos: { x: 0, y: 0 },
-      type: 'curious',
-      feature: 'A puddle of water',
-      object: 'water',
-      action: 'turns into dust',
-      trigger: 'drank from',
-      message: 'When you drink from the water, it turns into dust.',
-      imperative: 'Drink from the water',
-      pristine: 'There is a puddle of water here.',
+      type: "curious",
+      feature: "A puddle of water",
+      object: "water",
+      action: "turns into dust",
+      trigger: "drank from",
+      message: "When you drink from the water, it turns into dust.",
+      imperative: "Drink from the water",
+      pristine: "There is a puddle of water here.",
     }
 
     const noteRoom = {
       ...minimalRoom,
-      notes: [curiousNote]
+      notes: [curiousNote],
     }
 
     const useDungeon = {
       ...minimalWorkingDungeon,
-      rooms: [noteRoom]
+      rooms: [noteRoom],
     }
 
     const input = game(useDungeon)
@@ -185,13 +169,11 @@ describe("gameLoop good game()", () => {
       statuses: ["visited"],
     })
     const useOutput = input("use")
-    expect(useOutput).toMatchObject(
-      {
-        action: "use",
-        message: curiousNote.message,
-        description: "You are in a 1x1 minimal room. "
-      }
-    )
+    expect(useOutput).toMatchObject({
+      action: "use",
+      message: curiousNote.message,
+      description: "You are in a 1x1 minimal room. ",
+    })
   })
 
   const minNote = {
@@ -200,69 +182,76 @@ describe("gameLoop good game()", () => {
     ref: "",
     pos: {
       x: 0,
-      y: 0
-    }
+      y: 0,
+    },
   }
 
   test("Test 'use' action that spawns", () => {
-    const curiousNote = parseNote({ ...minNote, text: "A creepy doll, spawns a book of protection when picked up." }) as CuriousNote
+    const curiousNote = parseNote({
+      ...minNote,
+      text: "A creepy doll, spawns a book of protection when picked up.",
+    }) as CuriousNote
 
     const noteRoom = {
       ...minimalRoom,
-      notes: [curiousNote]
+      notes: [curiousNote],
     }
 
     const useDungeon = {
       ...minimalWorkingDungeon,
-      rooms: [noteRoom]
+      rooms: [noteRoom],
     }
 
     const input = game(useDungeon)
     const initOutput = input("init")
     expect(initOutput).toMatchObject({
-      description: 'You are in a 1x1 minimal room. There is a creepy doll here.',
+      description: "You are in a 1x1 minimal room. There is a creepy doll here.",
     })
 
     const useOutput = input("use")
-    expect(useOutput).toMatchObject(
-      {
-        action: "use",
-        message: `${curiousNote.message}\nYou now have: a book of protection and a creepy doll`,
-        description: "You are in a 1x1 minimal room. "
-      }
-    )
+    expect(useOutput).toMatchObject({
+      action: "use",
+      message: `${curiousNote.message}\nYou now have: a book of protection and a creepy doll`,
+      description: "You are in a 1x1 minimal room. ",
+    })
   })
 
   test("Test 'use' action that teleports", () => {
-    const curiousNote = parseNote({ text: "A pool of dark water, teleports a person outside the stronghold when drank from.", pos: { x: 5, y: 1 }, ref: "1", id: 0 }) as CuriousNote
+    const curiousNote = parseNote({
+      text: "A pool of dark water, teleports a person outside the stronghold when drank from.",
+      pos: { x: 5, y: 1 },
+      ref: "1",
+      id: 0,
+    }) as CuriousNote
 
-    const twoRoomDungeon:JsonDungeon = {
+    const twoRoomDungeon: JsonDungeon = {
       ...minimalDungeon,
       rects: [
         { x: 0, y: 0, w: 3, h: 3 },
-        { x: 4, y: 0, w: 3, h: 3, rotunda:true }, // east room
-        { x: 3, y: 2, w: 1, h: 1 }], // door
+        { x: 4, y: 0, w: 3, h: 3, rotunda: true }, // east room
+        { x: 3, y: 2, w: 1, h: 1 },
+      ], // door
       doors: [{ x: 3, y: 2, dir: { x: 1, y: 0 }, type: 0, id: 2 }] as Door[],
-      notes: [curiousNote]
+      notes: [curiousNote],
     }
 
     const teleportDungeon = parseDungeon(twoRoomDungeon)
 
     const input = game(teleportDungeon)
     const initOutput = input("init")
-    expect(initOutput).toMatchObject({ description: 'You are in a 3m x 3m square room. ', })
+    expect(initOutput).toMatchObject({ description: "You are in a 3m x 3m square room. " })
 
     const eastOutput = input("east")
-    expect(eastOutput).toMatchObject({ description: 'You are in a 3m across round room. There is a pool of dark water here.', })
+    expect(eastOutput).toMatchObject({
+      description: "You are in a 3m across round room. There is a pool of dark water here.",
+    })
 
     const useOutput = input("use")
-    expect(useOutput).toMatchObject(
-      {
-        action: "use",
-        message: `${curiousNote.message}\nYou return, and enter.`,
-        description: "You are in a 3m x 3m square room. "
-      }
-    )
+    expect(useOutput).toMatchObject({
+      action: "use",
+      message: `${curiousNote.message}\nYou return, and enter.`,
+      description: "You are in a 3m x 3m square room. ",
+    })
   })
 
   test("Loading dungeon should not throw an error", () => {
@@ -395,8 +384,8 @@ describe("gameLoop good game()", () => {
       const output: GameOutput = input("east")
       const westExit = output.exits.find((exit) => exit.towards === "west")
       expect(westExit).toBeDefined()
-      expect(westExit!.door.statuses).toContain("open")
-      expect(westExit!.description).toBe("To the west is an open door")
+      expect(westExit?.door.statuses).toContain("open")
+      expect(westExit?.description).toBe("To the west is an open door")
     })
   })
 

@@ -37,7 +37,7 @@ import {
   replace,
   toThe,
 } from "./utilties"
-import { createAgents } from "./createAgents"
+import { createAgents } from "./agentKeeper"
 
 type GameState = {
   id: number

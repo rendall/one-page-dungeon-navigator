@@ -18,9 +18,9 @@ const INSTRUCTIONS = `
 </ul>
 <hr/>`
 
-const loadFiles = (dungeonName: string, onProgress?: (progress: number) => void): Promise<[string, Dungeon]> => {
-  const imageUrl: string = `dungeons/${dungeonName}.svg`
-  const jsonDataUrl: string = `dungeons/${dungeonName}.json`
+const loadFiles = (dungeonName: string): Promise<[string, Dungeon]> => {
+  const imageUrl = `dungeons/${dungeonName}.svg`
+  const jsonDataUrl = `dungeons/${dungeonName}.json`
 
   return Promise.all([fetch(imageUrl), fetch(jsonDataUrl)]).then(async (responses) => {
     const [imageResponse, jsonResponse] = responses
@@ -42,7 +42,6 @@ const loadFiles = (dungeonName: string, onProgress?: (progress: number) => void)
 }
 
 const startButton = document.getElementById("start-button")
-const onProgress = (value: number) => console.info(`progress: ${value}`)
 
 const displayMap = (svgData: string, mapContainer: HTMLDivElement): SVGElement => {
   mapContainer.innerHTML = svgData
@@ -136,7 +135,7 @@ const updateMessageScroll = () => {
   messageScroll.scrollTop = messageScroll.scrollHeight
 }
 
-const printMessage = (message: string, type: string = "message") => {
+const printMessage = (message: string, type = "message") => {
   const messageScroll = document.getElementById("message-scroll")
   switch (type) {
     case "init":
@@ -148,12 +147,13 @@ const printMessage = (message: string, type: string = "message") => {
     case "html":
       messageScroll.insertAdjacentHTML("beforeend", message)
       break
-    default:
+    default: {
       const messageP = document.createElement("p") as HTMLParagraphElement
       messageP.classList.add(type)
       messageP.innerHTML = message
       messageScroll.appendChild(messageP)
       break
+    }
   }
   requestAnimationFrame(updateMessageScroll)
 }
@@ -177,7 +177,7 @@ const addTouchControls = (result: GameOutput) => {
     ul.appendChild(li)
   })
 
-  result.imperatives?.forEach(([text, _command]: [string, string]) => {
+  result.imperatives?.forEach(([text]: [string, string]) => {
     const li = createCommandLi(text, "u")
     ul.appendChild(li)
   })
@@ -192,21 +192,26 @@ const addTouchControls = (result: GameOutput) => {
 
 const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (result: GameOutput) => {
   switch (result.action) {
-    case "init":
+    case "init": {
       const [title, subtitle] = result.message.split("\n")
       printMessage(`<h1 class="title">${title}</h1><p class="story">${subtitle}</p>`, "init")
       printMessage(INSTRUCTIONS)
       break
+    }
     case "quit":
+    // eslint-disable-next-line no-fallthrough
     case "noop":
-      break // Do not print these messages. They will be handled below.
-    default:
+    // eslint-disable-next-line no-empty
+      break
+    default: {
+    // eslint-disable-next-line no-empty
       if (/^\d$/.test(result.action)) {
       } else printMessage(result.action, "action")
       const message = result.message.replace(/\n/g, "<br>")
       if (message.startsWith("You leave the dungeon")) printMessage("You attempt to leave the dungeon.")
       else printMessage(message)
       break
+    }
   }
   if (result.error) {
     switch (result.error) {
@@ -456,7 +461,7 @@ const getSelectedDungeon = (selectId: string) => {
 const startGame = async () => {
   const selectedDungeon = getSelectedDungeon("dungeon-select")
   try {
-    const gameDataFiles = await loadFiles(selectedDungeon, onProgress)
+    const gameDataFiles = await loadFiles(selectedDungeon)
     const result = await gameLoop(gameDataFiles)
     return gameEnd(result)
   } catch (error) {
@@ -464,7 +469,8 @@ const startGame = async () => {
   }
 }
 
-const gameEnd = (result: GameOutput) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const gameEnd = (result: GameOutput) => { //TODO: use result to show end result to user
   const gameSection = document.querySelector("section#game")
   gameSection.classList.add("hide")
 

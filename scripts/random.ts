@@ -1,6 +1,6 @@
 /** This node app will run a random walk through a random dungeon */
 
-import { Action, actions, DoorType, Dungeon, Exit, exitDirections } from "../lib/dungeon"
+import { Action, DoorType, Dungeon, Exit, exitDirections } from "../lib/dungeon"
 import { readdir, readFile } from "fs"
 import { extname, join as pathjoin } from "path"
 import { parseDungeon } from "../lib/parseDungeon"
@@ -33,7 +33,7 @@ const readJsonFilesDirectory = () =>
   )
 
 const chooseFile = (jsonFiles: string[]) =>
-  new Promise<string>((resolve, reject) => {
+  new Promise<string>((resolve) => {
     const chosen = jsonFile ? jsonFiles.find((file) => file.includes(jsonFile)) : undefined
     if (chosen) resolve(chosen)
     const index = Math.floor(Math.random() * jsonFiles.length)
@@ -104,7 +104,7 @@ const gameLoop = async (inputToGame: (input: Action) => GameOutput, action: Acti
       return true
     }
 
-    const [unUsedExit, _] = possibleActions
+    const [unUsedExit] = possibleActions
       .filter((action) => parseInt(action))
       .map<[Action, Exit]>((action) => [action, out.exits[parseInt(action) - 1]])
       .find(([action, exit]) => appropriateDoor(exit, out, action)) ?? [undefined, undefined]

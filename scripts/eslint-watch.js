@@ -14,6 +14,15 @@ function runESLint() {
   })
 }
 
+function clearTerminal() {
+  const clearCommand = process.platform === 'win32' ? 'cls' : 'clear';
+  const clear = spawn(clearCommand, [], { stdio: 'inherit' });
+
+  clear.on('error', (error) => {
+    console.error(`Failed to clear the terminal: ${error.message}`);
+  });
+}
+
 function watchFolder(folderPath) {
   fs.readdirSync(folderPath).forEach((file) => {
     const fullPath = path.join(folderPath, file)
@@ -24,6 +33,7 @@ function watchFolder(folderPath) {
     } else if (path.extname(fullPath) === ".ts") {
       fs.watchFile(fullPath, () => {
         console.log(`File changed: ${fullPath}`)
+        clearTerminal()
         runESLint()
       })
     }

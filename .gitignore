@@ -3,7 +3,6 @@ RAW
 coverage/*
 dist/*
 lib/*.js
-scripts/notes-checker.mjs
-scripts/random.js
+scripts/*.mjs
 scripts/node.js
-scripts/notes-checker.mjs
+scripts/random.js

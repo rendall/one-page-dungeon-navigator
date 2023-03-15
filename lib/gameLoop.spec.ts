@@ -62,7 +62,8 @@ describe("gameLoop good game()", () => {
       end: false,
       error: undefined,
       turn: 1,
-      description: "You are in a 1x1 minimal room. ",
+      description: expect.stringContaining("You are in a 1x1 minimal room."),
+      agents:[],
       action: "init",
       exits: [],
       statuses: ["visited"],
@@ -110,7 +111,8 @@ describe("gameLoop good game()", () => {
       end: false,
       error: undefined,
       turn: 1,
-      description: "You are in a 1x1 minimal room. There is a bottomless well here.",
+      description: expect.stringContaining("You are in a 1x1 minimal room. There is a bottomless well here."),
+      agents:[],
       action: "init",
       exits: [],
       imperatives: [["Drop a coin into the well", "use well"]],
@@ -162,7 +164,8 @@ describe("gameLoop good game()", () => {
       end: false,
       error: undefined,
       turn: 1,
-      description: "You are in a 1x1 minimal room. There is a puddle of water here.",
+      description: expect.stringContaining("You are in a 1x1 minimal room. There is a puddle of water here."),
+      agents:[],
       action: "init",
       exits: [],
       imperatives: [["Drink from the water", "use water"]],
@@ -172,7 +175,7 @@ describe("gameLoop good game()", () => {
     expect(useOutput).toMatchObject({
       action: "use",
       message: curiousNote.message,
-      description: "You are in a 1x1 minimal room. ",
+      description: expect.stringContaining("You are in a 1x1 minimal room."),
     })
   })
 
@@ -205,14 +208,14 @@ describe("gameLoop good game()", () => {
     const input = game(useDungeon)
     const initOutput = input("init")
     expect(initOutput).toMatchObject({
-      description: "You are in a 1x1 minimal room. There is a creepy doll here.",
+      description: expect.stringContaining("You are in a 1x1 minimal room. There is a creepy doll here."),
     })
 
     const useOutput = input("use")
     expect(useOutput).toMatchObject({
       action: "use",
       message: `${curiousNote.message}\nYou now have: a book of protection and a creepy doll`,
-      description: "You are in a 1x1 minimal room. ",
+      description: expect.stringContaining("You are in a 1x1 minimal room."),
     })
   })
 
@@ -239,18 +242,18 @@ describe("gameLoop good game()", () => {
 
     const input = game(teleportDungeon)
     const initOutput = input("init")
-    expect(initOutput).toMatchObject({ description: "You are in a 3m x 3m square room. " })
+    expect(initOutput).toMatchObject({ description: expect.stringContaining("You are in a 3m x 3m square room.") })
 
     const eastOutput = input("east")
     expect(eastOutput).toMatchObject({
-      description: "You are in a 3m across round room. There is a pool of dark water here.",
+      description: expect.stringContaining("You are in a 3m across round room. There is a pool of dark water here."),
     })
 
     const useOutput = input("use")
     expect(useOutput).toMatchObject({
       action: "use",
       message: `${curiousNote.message}\nYou return, and enter.`,
-      description: "You are in a 3m x 3m square room. ",
+      description: expect.stringContaining("You are in a 3m x 3m square room."),
     })
   })
 
@@ -276,7 +279,8 @@ describe("gameLoop good game()", () => {
       room: 0,
       end: false,
       turn: 1,
-      description: "You are in a 3m x 4m room. ",
+      description: expect.stringContaining("You are in a 3m x 4m room."),
+      agents:[],
       action: "init",
       exits: [
         {

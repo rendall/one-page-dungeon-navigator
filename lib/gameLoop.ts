@@ -2,7 +2,6 @@
  * GameState holds all of the changes or status updates. On user
  * input, the GameState is merged or compared with data from
  * Dungeon data and used to determine the result of the player action. */
-import { inspect } from "util"
 import {
   Action,
   Body,
@@ -90,28 +89,28 @@ const resetState: GameStateModifier = (gameState: GameState): GameState =>
 /** Add a message to GameState */
 const addMessage =
   (message: string): GameStateModifier =>
-    (gameState: GameState) => {
-      const hasOldMessage = gameState.message && gameState.message.length > 0
-      const newMessage = hasOldMessage ? `${gameState.message}\n${message}` : message
-      return { ...gameState, message: newMessage }
-    }
+  (gameState: GameState) => {
+    const hasOldMessage = gameState.message && gameState.message.length > 0
+    const newMessage = hasOldMessage ? `${gameState.message}\n${message}` : message
+    return { ...gameState, message: newMessage }
+  }
 
 /** Insert or update a door in GameState */
 const updateDoorState =
   (door: DoorState): GameStateModifier =>
-    (gameState: GameState): GameState => {
-      const amendDoors = gameState.doors?.filter((d) => d.id !== door.id) ?? []
-      const doors = [...amendDoors, door]
-      return { ...gameState, doors }
-    }
+  (gameState: GameState): GameState => {
+    const amendDoors = gameState.doors?.filter((d) => d.id !== door.id) ?? []
+    const doors = [...amendDoors, door]
+    return { ...gameState, doors }
+  }
 
 const updateRoomState =
   (room: RoomState): GameStateModifier =>
-    (gameState: GameState): GameState => {
-      const amendRooms = gameState.rooms?.filter((d) => d.id !== room.id) ?? []
-      const rooms = [...amendRooms, room]
-      return { ...gameState, rooms }
-    }
+  (gameState: GameState): GameState => {
+    const amendRooms = gameState.rooms?.filter((d) => d.id !== room.id) ?? []
+    const rooms = [...amendRooms, room]
+    return { ...gameState, rooms }
+  }
 
 /** Add one or more statuses to a Room or Door
  *  @example addStatus(door, "unlocked", "open")
@@ -123,165 +122,169 @@ const addStatus = <T extends { id: number; statuses?: string[] }>(statusObj: T, 
   else return addStatus({ ...statusObj, statuses: [...(statusObj.statuses ?? []), status] }, ...statuses.slice(1))
 }
 
-const addStatusToRoom = (status: RoomStatus, roomId?: number):GameStateModifier => (gameState: GameState) => {
-  const id = roomId ?? gameState.id
-  const room: RoomState = gameState.rooms?.find((room) => room.id === id) ?? { id, statuses: [] }
-  const newState = compose(updateRoomState(addStatus(room, status)))(gameState)
-  return newState
-}
+const addStatusToRoom =
+  (status: RoomStatus, roomId?: number): GameStateModifier =>
+  (gameState: GameState) => {
+    const id = roomId ?? gameState.id
+    const room: RoomState = gameState.rooms?.find((room) => room.id === id) ?? { id, statuses: [] }
+    const newState = compose(updateRoomState(addStatus(room, status)))(gameState)
+    return newState
+  }
 
 const addStatusToNote =
-  (noteId: number, ...statuses: NoteStatus[]):GameStateModifier =>
-    (gameState: GameState) => {
-      const id = gameState.id
-      const room: RoomState = gameState.rooms?.find((room) => room.id === id)
-      const note = room.notes.find((note) => note.id === noteId)
-      const updatedNote = addStatus(note, ...statuses)
-      const notes = replace(updatedNote, room.notes)
-      const updatedRoom = { ...room, notes }
-      const rooms = replace(updatedRoom, gameState.rooms)
-      return { ...gameState, rooms }
-    }
+  (noteId: number, ...statuses: NoteStatus[]): GameStateModifier =>
+  (gameState: GameState) => {
+    const id = gameState.id
+    const room: RoomState = gameState.rooms?.find((room) => room.id === id)
+    const note = room.notes.find((note) => note.id === noteId)
+    const updatedNote = addStatus(note, ...statuses)
+    const notes = replace(updatedNote, room.notes)
+    const updatedRoom = { ...room, notes }
+    const rooms = replace(updatedRoom, gameState.rooms)
+    return { ...gameState, rooms }
+  }
 
 const addStatusToDoor = (door: DoorState, ...statuses: string[]) => updateDoorState(addStatus(door, ...statuses))
 
-const addToInventory = (items: string[]):GameStateModifier => (gameState: GameState) => {
-  const inventory = [...(gameState.inventory ?? []), ...items]
-  return { ...gameState, inventory }
-}
+const addToInventory =
+  (items: string[]): GameStateModifier =>
+  (gameState: GameState) => {
+    const inventory = [...(gameState.inventory ?? []), ...items]
+    return { ...gameState, inventory }
+  }
 
-const addInventoryMessage = ():GameStateModifier => (gameState: GameState) => {
+const addInventoryMessage = (): GameStateModifier => (gameState: GameState) => {
   const inventory = inventoryMessage(gameState.inventory)
   return compose(addMessage(`You now have: ${inventory}`))(gameState)
 }
 
-const onUseCuriousNote = ({ action, message, id, feature, trigger, object }: CuriousNote):GameStateModifier => (gameState: GameState) => {
-  const isGone = ["bursts into flames", "turns into dust"].includes(action) || trigger === "picked up"
-  const items = [
-    ...(action.startsWith("spawns")? [ action.replace("spawns ", "") ] : []),
-    ...(object === "doll")? [feature] : []
-  ]
+const onUseCuriousNote =
+  ({ action, message, id, feature, trigger, object }: CuriousNote): GameStateModifier =>
+  (gameState: GameState) => {
+    const isGone = ["bursts into flames", "turns into dust"].includes(action) || trigger === "picked up"
+    const items = [
+      ...(action.startsWith("spawns") ? [action.replace("spawns ", "")] : []),
+      ...(object === "doll" ? [feature] : []),
+    ]
 
-  const isTeleporter = action.startsWith("teleports")
+    const isTeleporter = action.startsWith("teleports")
 
-  const composeParams = [
-    addMessage(message),
-    addStatusToNote(id, "used"),
-    ...(isTeleporter ? [moveTo(0), addMessage("You return, and enter.")] : []),
-    ...(isGone? [addStatusToNote(id, "gone")]:[]),
-    ...(items.length? [addToInventory(items)] : []),
-    ...(items.length? [addInventoryMessage()] : []),
-  ]
+    const composeParams = [
+      addMessage(message),
+      addStatusToNote(id, "used"),
+      ...(isTeleporter ? [moveTo(0), addMessage("You return, and enter.")] : []),
+      ...(isGone ? [addStatusToNote(id, "gone")] : []),
+      ...(items.length ? [addToInventory(items)] : []),
+      ...(items.length ? [addInventoryMessage()] : []),
+    ]
 
-  return compose(
-    ...composeParams
-  )(gameState)
-}
+    return compose(...composeParams)(gameState)
+  }
 
 /** Set current room id to id */
 const moveTo =
   (id: number): GameStateModifier =>
-    (gameState: GameState) => {
-      return { ...gameState, id }
-    }
+  (gameState: GameState) => {
+    return { ...gameState, id }
+  }
 
 const handleUse =
   (dungeon: Dungeon): GameStateModifier =>
-    (gameState: GameState) => {
-      const currentRoom = getCurrentRoom(dungeon, gameState)
-      const curiousNotes = currentRoom.notes?.filter((note: CuriousNote) => note.type === "curious") as CuriousNote[]
+  (gameState: GameState) => {
+    const currentRoom = getCurrentRoom(dungeon, gameState)
+    const curiousNotes = currentRoom.notes?.filter((note: CuriousNote) => note.type === "curious") as CuriousNote[]
 
-      const unusedNote = curiousNotes?.find(
-        (note: CuriousNote) => note.imperative && !note.statuses?.includes("used")
-      ) as CuriousNote
+    const unusedNote = curiousNotes?.find(
+      (note: CuriousNote) => note.imperative && !note.statuses?.includes("used")
+    ) as CuriousNote
 
-      if (unusedNote) return onUseCuriousNote(unusedNote)(gameState)
+    if (unusedNote) return onUseCuriousNote(unusedNote)(gameState)
 
-      return { ...gameState, message: `There is nothing ${curiousNotes?.length ? "else " : ""}to use here.` }
-    }
+    return { ...gameState, message: `There is nothing ${curiousNotes?.length ? "else " : ""}to use here.` }
+  }
 
 const handleSearch =
   (dungeon: Dungeon): GameStateModifier =>
-    (gameState: GameState) => {
-      const currentRoom = getCurrentRoom(dungeon, gameState)
+  (gameState: GameState) => {
+    const currentRoom = getCurrentRoom(dungeon, gameState)
 
-      const unopenedContainer = currentRoom.notes?.find(
-        (note) => note.type === NoteType.container && !note.statuses?.includes("searched")
-      ) as Container
+    const unopenedContainer = currentRoom.notes?.find(
+      (note) => note.type === NoteType.container && !note.statuses?.includes("searched")
+    ) as Container
 
-      if (unopenedContainer) {
-        const newGameState = compose(
-          addMessage(unopenedContainer.message),
-          addStatusToNote(unopenedContainer.id, "searched"),
-          addToInventory(unopenedContainer.items),
-          addInventoryMessage()
-        )(gameState)
+    if (unopenedContainer) {
+      const newGameState = compose(
+        addMessage(unopenedContainer.message),
+        addStatusToNote(unopenedContainer.id, "searched"),
+        addToInventory(unopenedContainer.items),
+        addInventoryMessage()
+      )(gameState)
 
-        return newGameState
-      }
-
-      const itemNoteTypes: NoteType[] = [
-        NoteType.feature,
-        NoteType.corpse,
-        NoteType.hovering,
-        NoteType.body,
-        NoteType.remains,
-        NoteType.dying,
-      ]
-
-      const unAcquiredItem = currentRoom.notes?.find(
-        (note) => itemNoteTypes.includes(note.type) && !note.statuses?.includes("searched")
-      ) as Body
-
-      if (unAcquiredItem) {
-        const newGameState = compose(
-          addMessage(unAcquiredItem.message),
-          addStatusToNote(unAcquiredItem.id, "searched"),
-          addToInventory(unAcquiredItem.items),
-          addInventoryMessage()
-        )(gameState)
-
-        return newGameState
-      }
-
-      const undiscoveredSecret = currentRoom.notes?.find(
-        (note) => note.type === NoteType.secret && !note.statuses?.includes("searched")
-      ) as Secret
-
-      if (undiscoveredSecret) {
-        const newGameState = compose(
-          addMessage(undiscoveredSecret.message),
-          addStatusToNote(undiscoveredSecret.id, "searched"),
-          addToInventory(undiscoveredSecret.items),
-          addInventoryMessage()
-        )(gameState)
-
-        return newGameState
-      }
-
-      const undiscoveredSecretDoor = currentRoom.exits.find(
-        (exit) =>
-          exit.door.type === 6 &&
-          !gameState.doors.find((door) => door.id === exit.door.id)?.statuses.includes("discovered")
-      )
-
-      if (undiscoveredSecretDoor) {
-        const doors: DoorState[] = [...gameState.doors, { ...undiscoveredSecretDoor.door, statuses: ["discovered"] }]
-        return {
-          ...gameState,
-          doors,
-          message: `You discover a secret door to the ${undiscoveredSecretDoor.towards}!`,
-        }
-      } else {
-        const hadInterest =
-          currentRoom.notes?.length || currentRoom.exits.some((exit) => exit.door.type === DoorType.secret)
-        const newState = compose(
-          addMessage(`You find nothing ${hadInterest ? "else " : ""}of interest.`),
-          addStatusToRoom("searched")
-        )(gameState)
-        return newState
-      }
+      return newGameState
     }
+
+    const itemNoteTypes: NoteType[] = [
+      NoteType.feature,
+      NoteType.corpse,
+      NoteType.hovering,
+      NoteType.body,
+      NoteType.remains,
+      NoteType.dying,
+    ]
+
+    const unAcquiredItem = currentRoom.notes?.find(
+      (note) => itemNoteTypes.includes(note.type) && !note.statuses?.includes("searched")
+    ) as Body
+
+    if (unAcquiredItem) {
+      const newGameState = compose(
+        addMessage(unAcquiredItem.message),
+        addStatusToNote(unAcquiredItem.id, "searched"),
+        addToInventory(unAcquiredItem.items),
+        addInventoryMessage()
+      )(gameState)
+
+      return newGameState
+    }
+
+    const undiscoveredSecret = currentRoom.notes?.find(
+      (note) => note.type === NoteType.secret && !note.statuses?.includes("searched")
+    ) as Secret
+
+    if (undiscoveredSecret) {
+      const newGameState = compose(
+        addMessage(undiscoveredSecret.message),
+        addStatusToNote(undiscoveredSecret.id, "searched"),
+        addToInventory(undiscoveredSecret.items),
+        addInventoryMessage()
+      )(gameState)
+
+      return newGameState
+    }
+
+    const undiscoveredSecretDoor = currentRoom.exits.find(
+      (exit) =>
+        exit.door.type === 6 &&
+        !gameState.doors.find((door) => door.id === exit.door.id)?.statuses.includes("discovered")
+    )
+
+    if (undiscoveredSecretDoor) {
+      const doors: DoorState[] = [...gameState.doors, { ...undiscoveredSecretDoor.door, statuses: ["discovered"] }]
+      return {
+        ...gameState,
+        doors,
+        message: `You discover a secret door to the ${undiscoveredSecretDoor.towards}!`,
+      }
+    } else {
+      const hadInterest =
+        currentRoom.notes?.length || currentRoom.exits.some((exit) => exit.door.type === DoorType.secret)
+      const newState = compose(
+        addMessage(`You find nothing ${hadInterest ? "else " : ""}of interest.`),
+        addStatusToRoom("searched")
+      )(gameState)
+      return newState
+    }
+  }
 
 const getCurrentRoom = (dungeon: Dungeon, gameState: GameState) => {
   const dungeonCurrentRoom = dungeon.rooms.find((room) => room.id === gameState.id)
@@ -303,109 +306,112 @@ const getCurrentRoom = (dungeon: Dungeon, gameState: GameState) => {
 /** handleExit handles status changes when the character exits a room */
 const handleExit =
   (dungeon: Dungeon): GameStateModifier =>
-    (gameState: GameState): GameState => {
-      const currentRoom = getCurrentRoom(dungeon, gameState)
-      const isVisible = isVisibleExitFunc(gameState)
-      const isByDirection = exitDirections.includes(gameState.action as ExitDirection)
-      const isByNumber = /^\d$/.test(gameState.action)
-      const visibleExits = currentRoom.exits.filter(isVisible)
-      const exit = isByDirection
-        ? visibleExits.find((e) => e.towards === gameState.action)
-        : isByNumber
-          ? visibleExits.sort(sortExitsClockwise(currentRoom))[parseInt(gameState.action) - 1]
-          : false
-      if (!exit) return { ...gameState, message: "You cannot go that way" }
-      if (exit.to === "outside") return { ...gameState, message: "You leave the dungeon", end: true }
-      const dungeonDoor = (dungeon.doors as Door[]).find((door) => door.id === exit.door.id)
-      const door: DoorState = {
-        ...dungeonDoor,
-        ...gameState.doors.find((door) => door.id === exit.door.id),
-      }
-      switch (door.type) {
-        // steel doors can only be opened from one direction
-        case DoorType.steel:
-          const isSteelUnlocked = door?.statuses?.find((s) => s === "unlocked")
-          if (isSteelUnlocked)
-            return compose(addMessage(`You go ${exit.towards}`), addStatusToRoom("visited"), moveTo(exit.to))(gameState)
-          if (exit.isFacing) return { ...gameState, message: "The steel door does not open." }
-          else {
-            return compose(
-              addStatusToDoor(door, "unlocked", "open"),
-              addMessage(`You shove against the steel door and it opens. You go ${exit.towards}.`),
-              addStatusToRoom("visited"),
-              moveTo(exit.to)
-            )(gameState)
-          }
-        // portcullises can only be opened from one direction
-        case DoorType.portcullis:
-          const isPortcullisUnlocked = door?.statuses?.find((s) => s === "unlocked")
-          if (isPortcullisUnlocked)
-            return compose(addMessage(`You go ${exit.towards}`), addStatusToRoom("visited"), moveTo(exit.to))(gameState)
-          if (exit.isFacing) return { ...gameState, message: "The portcullis bars your way." }
-          else {
-            return compose(
-              addStatusToDoor(door, "unlocked", "open"),
-              addMessage(`You pull the lever. The portcullis opens. You go ${exit.towards}.`),
-              addStatusToRoom("visited"),
-              moveTo(exit.to)
-            )(gameState)
-          }
-        case DoorType.double:
-          // This door type falls through if there is no associated note
-          if (exit.note && exit.note.keyholes) {
-            if (door.statuses?.includes("open"))
-              return compose(addMessage(`You go ${exit.towards}`), addStatusToRoom("visited"), moveTo(exit.to))(gameState)
-
-            const keys = gameState.inventory?.filter((item) => item.endsWith("key")) ?? []
-
-            if (haveEnoughKeys(exit.note.keyholes, keys)) {
-              const whichKeys = inventoryMessage(gameState.inventory).match(/^[\w\s-]+? keys?/)
-              return compose(
-                addStatusToDoor(door, "unlocked", "open"),
-                addMessage(
-                  `You insert ${whichKeys} into ${toThe(exit.note.keyholes)} of ${toThe(
-                    exit.note.door
-                  )}. It grinds open. You go ${exit.towards}.`
-                ),
-                addStatusToRoom("visited"),
-                moveTo(exit.to)
-              )(gameState)
-            } else return { ...gameState, message: `${capitalize(toThe(exit.note.door))} is locked.` }
-          }
-        default:
+  (gameState: GameState): GameState => {
+    const currentRoom = getCurrentRoom(dungeon, gameState)
+    const isVisible = isVisibleExitFunc(gameState)
+    const isByDirection = exitDirections.includes(gameState.action as ExitDirection)
+    const isByNumber = /^\d$/.test(gameState.action)
+    const visibleExits = currentRoom.exits.filter(isVisible)
+    const exit = isByDirection
+      ? visibleExits.find((e) => e.towards === gameState.action)
+      : isByNumber
+      ? visibleExits.sort(sortExitsClockwise(currentRoom))[parseInt(gameState.action) - 1]
+      : false
+    if (!exit) return { ...gameState, message: "You cannot go that way" }
+    if (exit.to === "outside") return { ...gameState, message: "You leave the dungeon", end: true }
+    const dungeonDoor = (dungeon.doors as Door[]).find((door) => door.id === exit.door.id)
+    const door: DoorState = {
+      ...dungeonDoor,
+      ...gameState.doors.find((door) => door.id === exit.door.id),
+    }
+    switch (door.type) {
+      // steel doors can only be opened from one direction
+      case DoorType.steel: {
+        const isSteelUnlocked = door?.statuses?.find((s) => s === "unlocked")
+        if (isSteelUnlocked)
+          return compose(addMessage(`You go ${exit.towards}`), addStatusToRoom("visited"), moveTo(exit.to))(gameState)
+        if (exit.isFacing) return { ...gameState, message: "The steel door does not open." }
+        else {
           return compose(
-            addStatusToDoor(door, "open"),
-            addMessage(`You go ${exit.towards}`),
+            addStatusToDoor(door, "unlocked", "open"),
+            addMessage(`You shove against the steel door and it opens. You go ${exit.towards}.`),
             addStatusToRoom("visited"),
             moveTo(exit.to)
           )(gameState)
+        }
       }
+      // portcullises can only be opened from one direction
+      case DoorType.portcullis: {
+        const isPortcullisUnlocked = door?.statuses?.find((s) => s === "unlocked")
+        if (isPortcullisUnlocked)
+          return compose(addMessage(`You go ${exit.towards}`), addStatusToRoom("visited"), moveTo(exit.to))(gameState)
+        if (exit.isFacing) return { ...gameState, message: "The portcullis bars your way." }
+        else {
+          return compose(
+            addStatusToDoor(door, "unlocked", "open"),
+            addMessage(`You pull the lever. The portcullis opens. You go ${exit.towards}.`),
+            addStatusToRoom("visited"),
+            moveTo(exit.to)
+          )(gameState)
+        }
+      }
+      case DoorType.double:
+        // This door type falls through if there is no associated note
+        if (exit.note && exit.note.keyholes) {
+          if (door.statuses?.includes("open"))
+            return compose(addMessage(`You go ${exit.towards}`), addStatusToRoom("visited"), moveTo(exit.to))(gameState)
+
+          const keys = gameState.inventory?.filter((item) => item.endsWith("key")) ?? []
+
+          if (haveEnoughKeys(exit.note.keyholes, keys)) {
+            const whichKeys = inventoryMessage(gameState.inventory).match(/^[\w\s-]+? keys?/)
+            return compose(
+              addStatusToDoor(door, "unlocked", "open"),
+              addMessage(
+                `You insert ${whichKeys} into ${toThe(exit.note.keyholes)} of ${toThe(
+                  exit.note.door
+                )}. It grinds open. You go ${exit.towards}.`
+              ),
+              addStatusToRoom("visited"),
+              moveTo(exit.to)
+            )(gameState)
+          } else return { ...gameState, message: `${capitalize(toThe(exit.note.door))} is locked.` }
+        }
+        break
+      default:
+        return compose(
+          addStatusToDoor(door, "open"),
+          addMessage(`You go ${exit.towards}`),
+          addStatusToRoom("visited"),
+          moveTo(exit.to)
+        )(gameState)
     }
+  }
 
 const handleActionFunc =
   (dungeon: Dungeon): GameStateModifier =>
-    (gameState: GameState): GameState => {
-      if (gameState === undefined) throw Error("gameState is undefined in handleAction")
-      switch (gameState.action) {
-        case "east":
-        case "west":
-        case "north":
-        case "south":
+  (gameState: GameState): GameState => {
+    if (gameState === undefined) throw Error("gameState is undefined in handleAction")
+    switch (gameState.action) {
+      case "east":
+      case "west":
+      case "north":
+      case "south":
+        return handleExit(dungeon)(gameState)
+      case "search":
+        return handleSearch(dungeon)(gameState)
+      case "use":
+        return handleUse(dungeon)(gameState)
+      case "noop":
+        return gameState
+      case "quit":
+        return { ...gameState, message: "You quit.", end: true }
+      default:
+        if (/\d/.test(gameState.action)) {
           return handleExit(dungeon)(gameState)
-        case "search":
-          return handleSearch(dungeon)(gameState)
-        case "use":
-          return handleUse(dungeon)(gameState)
-        case "noop":
-          return gameState
-        case "quit":
-          return { ...gameState, message: "You quit.", end: true }
-        default:
-          if (/\d/.test(gameState.action)) {
-            return handleExit(dungeon)(gameState)
-          } else return { ...gameState, message: "Not understood.", error: "syntax" }
-      }
+        } else return { ...gameState, message: "Not understood.", error: "syntax" }
     }
+  }
 
 const advanceTurn: GameStateModifier = (gameState: GameState) => ({ ...gameState, turn: gameState.turn + 1 })
 
@@ -432,7 +438,9 @@ export const describeNote = (note: Note) => {
 }
 
 const describeNotes = (notes: Note[]): string =>
-  notes.filter(note => !note.statuses?.includes("gone")).reduce((description: string, note: Note) => `${description}${describeNote(note)}`, "")
+  notes
+    .filter((note) => !note.statuses?.includes("gone"))
+    .reduce((description: string, note: Note) => `${description}${describeNote(note)}`, "")
 
 const getExitDescription = (exit: Exit, i: number, all: Exit[]) => {
   const exitNumber = (doShow: boolean, index: number) => (doShow ? ` - ${index + 1}` : "")
@@ -467,40 +475,40 @@ const getExitDescription = (exit: Exit, i: number, all: Exit[]) => {
 }
 const describeRoomFunc =
   (dungeon: Dungeon): GameStateModifier =>
-    (gameState: GameState): GameState => {
-      if (gameState === undefined) throw Error("gameState is undefined!")
-      const currentRoom = getCurrentRoom(dungeon, gameState)
-      const isVisible = isVisibleExitFunc(gameState)
-      const getDoorStatuses = ((gs: GameState) => (id: number) => {
-        return gs.doors.find((door) => door.id === id)?.statuses
-      })(gameState)
+  (gameState: GameState): GameState => {
+    if (gameState === undefined) throw Error("gameState is undefined!")
+    const currentRoom = getCurrentRoom(dungeon, gameState)
+    const isVisible = isVisibleExitFunc(gameState)
+    const getDoorStatuses = ((gs: GameState) => (id: number) => {
+      return gs.doors.find((door) => door.id === id)?.statuses
+    })(gameState)
 
-      const exits = currentRoom.exits
-        .filter(isVisible)
-        .slice(0)
-        .sort(sortExitsClockwise(currentRoom))
-        .map((exit) => [exit, getDoorStatuses(exit.door.id)])
-        .map(([exit, statuses]: [Exit, DoorStatus[]]) => ({
-          ...exit,
-          door: {
-            ...exit.door,
-            // update exit door with statuses if it exists
-            ...(statuses && { statuses }),
-          },
-        }))
-        .map((exit, i, all) => ({
-          ...exit,
-          description: getExitDescription(exit, i, all),
-        }))
+    const exits = currentRoom.exits
+      .filter(isVisible)
+      .slice(0)
+      .sort(sortExitsClockwise(currentRoom))
+      .map((exit) => [exit, getDoorStatuses(exit.door.id)])
+      .map(([exit, statuses]: [Exit, DoorStatus[]]) => ({
+        ...exit,
+        door: {
+          ...exit.door,
+          // update exit door with statuses if it exists
+          ...(statuses && { statuses }),
+        },
+      }))
+      .map((exit, i, all) => ({
+        ...exit,
+        description: getExitDescription(exit, i, all),
+      }))
 
-      const description = `You are in a ${currentRoom.area} ${currentRoom.description} ${describeNotes(
-        currentRoom.notes ?? []
-      )}`
+    const description = `You are in a ${currentRoom.area} ${currentRoom.description} ${describeNotes(
+      currentRoom.notes ?? []
+    )}`
 
-      const room: RoomState = { ...currentRoom, exits, description }
+    const room: RoomState = { ...currentRoom, exits, description }
 
-      return updateRoomState(room)(gameState)
-    }
+    return updateRoomState(room)(gameState)
+  }
 
 /** inputFunc is a higher order function that accepts a Dungeon and
  * returns a function that accepts a GameState and returns a new
@@ -514,28 +522,29 @@ const describeRoomFunc =
  */
 const inputFunc =
   (dungeon: Dungeon): GameStateModifier =>
-    (oldGameState: GameState): GameState =>
-      compose(resetState, handleActionFunc(dungeon), describeRoomFunc(dungeon), advanceTurn)(oldGameState)
+  (oldGameState: GameState): GameState =>
+    compose(resetState, handleActionFunc(dungeon), describeRoomFunc(dungeon), advanceTurn)(oldGameState)
 
 /** This gives an expected order to the exits when using numbers to specify them */
 const sortExitsClockwise =
   (room: { x: number; y: number }) =>
-    (aExit: Exit, bExit: Exit): 1 | 0 | -1 => {
-      const a = aExit.door
-      const b = bExit.door
-      const [ax, ay] = [a.x - room.x, a.y - room.y]
-      const [bx, by] = [b.x - room.x, b.y - room.y]
-      const angleA = Math.atan2(ay, ax)
-      const angleB = Math.atan2(by, bx)
-      return angleA < angleB ? -1 : angleA > angleB ? 1 : 0
-    }
+  (aExit: Exit, bExit: Exit): 1 | 0 | -1 => {
+    const a = aExit.door
+    const b = bExit.door
+    const [ax, ay] = [a.x - room.x, a.y - room.y]
+    const [bx, by] = [b.x - room.x, b.y - room.y]
+    const angleA = Math.atan2(ay, ax)
+    const angleB = Math.atan2(by, bx)
+    return angleA < angleB ? -1 : angleA > angleB ? 1 : 0
+  }
 
 const isVisibleExitFunc = (gameState: GameState) => (exit: Exit) => {
   switch (exit.type) {
-    case 6:
+    case 6: {
       const exitDoor = gameState.doors.find((door) => door.id === exit.door.id)
       if (exitDoor && exitDoor.statuses.some((s) => s === "discovered")) return true
       return !exit.isFacing
+    }
     default:
       return true
   }

@@ -324,11 +324,13 @@ const handleAttack = (gameState: GameState) => {
   if (enemy.statuses.includes("dead"))
     return compose(addMessage(`${capitalize(toThe(enemy.name))} is dead.`))(gameState)
 
-  const { defender, result } = attackBy(gameState.player, enemy)
+  const { loss, result } = attackBy(gameState.player, enemy)
 
-  if (defender.health < 0) {
-    if (!isAgent(defender)) throw new Error("Mortal is not of type Agent in 'handleAttack'")
-    const deadEnemy = addStatus(defender, "dead")
+  const health = enemy.health - loss
+
+  if (health < 0) {
+    if (!isAgent(enemy)) throw new Error("Mortal is not of type Agent in 'handleAttack'")
+    const deadEnemy = addStatus(enemy, "dead")
     const agents = replace(deadEnemy, gameState.agents)
     return compose(
       addMessage(result),
@@ -336,7 +338,8 @@ const handleAttack = (gameState: GameState) => {
     )({ ...gameState, agents })
   }
 
-  return compose(addMessage(result))(gameState)
+  const agents = replace({ ...enemy, health }, gameState.agents)
+  return compose(addMessage(result))({ ...gameState, agents })
 }
 
 const getCurrentRoom = (dungeon: Dungeon, gameState: GameState) => {
@@ -470,34 +473,34 @@ const handleActionFunc =
   }
 
 type AttackResult = {
-  attacker: Mortal
-  defender: Mortal
+  loss: number
   result: string
 }
 
-const attackBy = (attacker: Mortal, _defender: Mortal): AttackResult => {
+const attackBy = (attacker: Mortal, defender: Mortal): AttackResult => {
   const attackPower = attacker.attack
-  const defensePower = _defender.defense
+  const defensePower = defender.defense
 
-  const defenderName = isPlayer(_defender) ? "you" : toThe((_defender as Agent).name)
+  const defenderName = isPlayer(defender) ? "you" : toThe((defender as Agent).name)
   const attackerName = isPlayer(attacker) ? "You" : capitalize(toThe((attacker as Agent).name))
 
   const attack = getRandomNumber() * attackPower
   const defense = getRandomNumber() * defensePower
 
   const isSuccess = attack > defense
+  const loss = isSuccess? 1 : 0
 
-  const defender = isSuccess ? { ..._defender, health: -1 } : _defender
+  console.log({ [attackerName]: attacker, [defenderName]: defender, isSuccess })
 
   if (isPlayer(attacker)) {
     if (!isAgent(defender)) throw new Error("Defender is unknown agent")
     const successResult = `You attack ${toThe(defender.name)} and hit!`
     const failResult = `You attack ${toThe(defender.name)} and miss!`
-    return { attacker, defender, result: isSuccess ? successResult : failResult }
+    return { loss, result: isSuccess ? successResult : failResult }
   } else {
     const successResult = `${toThe(attackerName)} attacks ${defenderName} and hits!`
     const failResult = `${toThe(attackerName)} attacks ${defenderName} and misses!`
-    return { attacker, defender, result: isSuccess ? successResult : failResult }
+    return { loss, result: isSuccess ? successResult : failResult }
   }
 }
 
@@ -511,20 +514,15 @@ const enemiesAttack: GameStateModifier = (gameState: GameState) => {
 
   if (enemiesHere.length === 0) return gameState
 
-  const attacksResults = enemiesHere.map((enemy) => attackBy(enemy, player))
+  const attacksResults = enemiesHere.map((enemy) => ( {enemy, ...attackBy(enemy, player)} ))
+  const enemies = attacksResults.map(({ enemy, result }) => ({ ...enemy, message: result })) as Agent[]
 
-  const attackers = attacksResults.map(({ attacker, result }) => ({ ...attacker, message: result })) as Agent[]
-  const defender = attacksResults.reduce(
-    (result, { defender }) => ({ ...result, health: result.health + defender.health }),
-    player
-  )
+  const health = attacksResults.reduce((health, { loss }) => health - loss, player.health)
 
-  console.log({ attackers, defender })
+  const updatedAgents = enemies.reduce((all, attacker) => replace(attacker, all), agents)
+  const newGameState = { ...gameState, player: {...player, health}, agents: updatedAgents }
 
-  const updatedAgents = attackers.reduce((all, attacker) => replace(attacker, all), agents)
-  const newGameState = { ...gameState, player: defender, agents: updatedAgents }
-
-  if (defender.health < 0)
+  if (health < 0)
     return compose(addMessage("You succumb to the attack and die."))({ ...newGameState, end: true })
   else return newGameState
 }

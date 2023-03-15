@@ -1,4 +1,4 @@
-import { inventoryMessage, pluralize } from "./utilties"
+import { inventoryMessage } from "./utilties"
 
 describe("inventoryMessage()", () => {
   it("should count ordinary items", () => {

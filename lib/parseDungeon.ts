@@ -28,10 +28,11 @@ export const facingDirection = (door: Door): ExitDirection => {
 const describeDoor = (door: Door, direction: ExitDirection, destination: Rect | "outside"): string | number => {
   const isFacing = facingDirection(door) === direction
   switch (door.type) {
-    case 0:
+    case 0: {
       // These are open entrances where the area beyond is clearly visible
       const roomBeyond = getRoomNoun(destination, [])
       return roomBeyond
+    }
     case 1:
       return "door"
     case 2:
@@ -141,13 +142,14 @@ const getRoomNoun = (room: Rect | "outside", exits: Exit[]): string => {
     switch (exitsLength) {
       case 1:
         return "alcove"
-      case 2:
+      case 2: {
         const [dir1, dir2] = exits.map((exit) => exit.towards)
         if (areOpposite(dir1, dir2)) {
           return random(["entranceway", "archway"])
         } else {
           return "bend"
         }
+      }
       case 3:
         return "three-way intersection"
       case 4:

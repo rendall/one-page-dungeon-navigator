@@ -37,12 +37,12 @@ import {
   replace,
   toThe,
 } from "./utilties"
-import { createAgents } from "./agentKeeper"
+import { Analysis, createAgents } from "./agentKeeper"
 
-type GameState = {
+export type GameState = {
   id: number
   action?: Action
-  doors?: DoorState[]
+  doors: DoorState[]
   error?: string
   message: string
   rooms?: RoomState[]
@@ -101,7 +101,7 @@ type GameStateEntry = [keyof GameState, GameState[keyof GameState]]
 const clearProps: (keyof GameState)[] = ["error", "message", "end"]
 
 /** Remove properties from GameState */
-const resetState: GameStateModifier = (gameState: GameState): GameState => {
+export const resetState: GameStateModifier = (gameState: GameState): GameState => {
   const cleanSlate = Object.entries<GameState[keyof GameState]>(gameState)
     .filter((entry: GameStateEntry) => !clearProps.includes(entry[0]))
     .reduce<Partial<GameState>>(
@@ -109,7 +109,8 @@ const resetState: GameStateModifier = (gameState: GameState): GameState => {
       {}
     ) as GameState
 
-  // clean messages from agents
+  // clean `messages` from agents
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const agents = cleanSlate.agents.map(({ message, ...rest }) => rest)
 
   return { ...cleanSlate, agents }
@@ -140,6 +141,11 @@ const updateRoomState =
     const rooms = [...amendRooms, room]
     return { ...gameState, rooms }
   }
+
+const removeKeys:GameStateModifier = (gameState:GameState):GameState => {
+  const inventory = gameState.inventory.filter(item => !item.endsWith("key"))
+  return {...gameState, inventory}
+}
 
 /** Add one or more statuses to an object such as a Door or Room or Enemy
  *  @example addStatus(door, "unlocked", "open")
@@ -316,7 +322,7 @@ const handleSearch =
   }
 
 const handleAttack = (gameState: GameState) => {
-  const [_, enemyId] = gameState.action.split(" ").map((x) => parseInt(x))
+  const [, enemyId] = gameState.action.split(" ").map((x) => parseInt(x))
   const enemies = gameState.agents.filter(isEnemy)
   const enemy = enemies.find((enemy) => enemy.id === enemyId)
 
@@ -428,6 +434,7 @@ const handleExit =
                   exit.note.door
                 )}. It grinds open. You go ${exit.towards}.`
               ),
+              removeKeys,
               addStatusToRoom("visited"),
               moveTo(exit.to)
             )(gameState)
@@ -489,8 +496,6 @@ const attackBy = (attacker: Mortal, defender: Mortal): AttackResult => {
 
   const isSuccess = attack > defense
   const loss = isSuccess? 1 : 0
-
-  console.log({ [attackerName]: attacker, [defenderName]: defender, isSuccess })
 
   if (isPlayer(attacker)) {
     if (!isAgent(defender)) throw new Error("Defender is unknown agent")
@@ -643,7 +648,7 @@ const describeRoomFunc =
  * @param dungeon
  * @returns (gameState) => gameState
  */
-const inputFunc =
+export const inputFunc =
   (dungeon: Dungeon): GameStateModifier =>
   (oldGameState: GameState): GameState =>
     compose(resetState, handleActionFunc(dungeon), describeRoomFunc(dungeon), enemiesAttack, advanceTurn)(oldGameState)
@@ -698,6 +703,10 @@ const toOutput = (gameState: GameState): GameOutput => {
 
 type GameInterface = (input: string) => GameOutput
 
+type GameOptions = {
+  initGameState?:GameState
+  noCombat?:boolean
+}
 /** `game` is a higher-order function that accepts a Dungeon and returns a GameInterface.
  * A GameInterface is a function that accepts user input and returns the result.
  * The result is structured in a way suitable for use in presentation, called GameOutput.
@@ -706,7 +715,7 @@ type GameInterface = (input: string) => GameOutput
  * @param dungeon:Dungeon
  * @returns gameInterface: (input:string) => GameOutput
  */
-export const game = (dungeon: Dungeon): GameInterface => {
+export const game = (dungeon: Dungeon, options?:GameOptions): GameInterface => {
   // init game interface
   const interpretInput: GameStateModifier = inputFunc(dungeon)
 
@@ -715,9 +724,20 @@ export const game = (dungeon: Dungeon): GameInterface => {
     action: "init",
   }
 
-  const initAgents = createAgents(dungeon)
+  const minAnalysis:Analysis = {
+    needsBoss:0,
+    player: {
+      health: 0,
+      attack: 0,
+      defense: 0,
+      statuses: []
+    },
+    agents: []
+  }
 
-  let gameState: GameState = { ...initState, ...initMessage, ...initAgents }
+  const initAgents = options?.noCombat ? minAnalysis : createAgents(dungeon)
+
+  let gameState: GameState = options?.initGameState ?? { ...initState, ...initMessage, ...initAgents }
 
   const gameInterface = (action: Action | string) => {
     if (!isAction(action)) {

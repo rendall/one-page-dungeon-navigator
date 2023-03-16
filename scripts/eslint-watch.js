@@ -15,12 +15,12 @@ function runESLint() {
 }
 
 function clearTerminal() {
-  const clearCommand = process.platform === 'win32' ? 'cls' : 'clear';
-  const clear = spawn(clearCommand, [], { stdio: 'inherit' });
+  const clearCommand = process.platform === "win32" ? "cls" : "clear"
+  const clear = spawn(clearCommand, [], { stdio: "inherit" })
 
-  clear.on('error', (error) => {
-    console.error(`Failed to clear the terminal: ${error.message}`);
-  });
+  clear.on("error", (error) => {
+    console.error(`Failed to clear the terminal: ${error.message}`)
+  })
 }
 
 function watchFolder(folderPath) {

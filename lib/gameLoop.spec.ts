@@ -1,5 +1,5 @@
-import { actions, CuriousNote, Door, Dungeon, exitDirections, JsonDungeon, Rect, Room } from "./dungeon"
-import { game, GameOutput } from "./gameLoop"
+import { actions, CuriousNote, Door, Dungeon, Enemy, exitDirections, JsonDungeon, Rect, Room } from "./dungeon"
+import { game, GameOutput, GameState } from "./gameLoop"
 import { parseDungeon } from "./parseDungeon"
 import testDungeon from "../tests/dungeons/house_of_the_immortal_lord.json"
 import dungeonRun from "../tests/dungeons/chambers_of_the_red_master.json"
@@ -38,11 +38,20 @@ const minimalWorkingDungeon: Dungeon = {
   rooms: [minimalRoom],
 }
 
+const twoRoomDungeon: JsonDungeon = {
+  ...minimalDungeon,
+  rects: [
+    { x: 0, y: 0, w: 3, h: 3 },
+    { x: 4, y: 0, w: 3, h: 3, rotunda: true }, // east room
+    { x: 3, y: 2, w: 1, h: 1 },
+  ], // door
+  doors: [{ x: 3, y: 2, dir: { x: 1, y: 0 }, type: 0, id: 2 }] as Door[],
+}
 const parsedDungeon = parseDungeon(testDungeon)
 
 describe("gameLoop bad game()", () => {
   test("Dungeon with no rooms should error with 'Bad Data'", () => {
-    expect(() => game(minimalDungeon)("init")).toThrow("Bad data: room 0 not found")
+    expect(() => game(minimalDungeon)("init")).toThrow("Bad data: no rooms found")
   })
 
   test("Good dungeon with bad input should throw", () => {
@@ -54,7 +63,7 @@ describe("gameLoop bad game()", () => {
 
 describe("gameLoop good game()", () => {
   test("minimal working dungeon", () => {
-    const input = game(minimalWorkingDungeon)
+    const input = game(minimalWorkingDungeon, { noCombat: true })
     const initOutput = input("init")
     expect(initOutput).toEqual({
       message: "Minimal Title\nMinimal Story",
@@ -63,7 +72,7 @@ describe("gameLoop good game()", () => {
       error: undefined,
       turn: 1,
       description: expect.stringContaining("You are in a 1x1 minimal room."),
-      agents:[],
+      agents: [],
       action: "init",
       exits: [],
       statuses: ["visited"],
@@ -103,7 +112,7 @@ describe("gameLoop good game()", () => {
       rooms: [noteRoom],
     }
 
-    const input = game(useDungeon)
+    const input = game(useDungeon, { noCombat: true })
     const initOutput = input("init")
     expect(initOutput).toEqual({
       message: "Minimal Title\nMinimal Story",
@@ -112,7 +121,7 @@ describe("gameLoop good game()", () => {
       error: undefined,
       turn: 1,
       description: expect.stringContaining("You are in a 1x1 minimal room. There is a bottomless well here."),
-      agents:[],
+      agents: [],
       action: "init",
       exits: [],
       imperatives: [["Drop a coin into the well", "use well"]],
@@ -156,7 +165,7 @@ describe("gameLoop good game()", () => {
       rooms: [noteRoom],
     }
 
-    const input = game(useDungeon)
+    const input = game(useDungeon, { noCombat: true })
     const initOutput = input("init")
     expect(initOutput).toEqual({
       message: "Minimal Title\nMinimal Story",
@@ -165,7 +174,7 @@ describe("gameLoop good game()", () => {
       error: undefined,
       turn: 1,
       description: expect.stringContaining("You are in a 1x1 minimal room. There is a puddle of water here."),
-      agents:[],
+      agents: [],
       action: "init",
       exits: [],
       imperatives: [["Drink from the water", "use water"]],
@@ -205,7 +214,7 @@ describe("gameLoop good game()", () => {
       rooms: [noteRoom],
     }
 
-    const input = game(useDungeon)
+    const input = game(useDungeon, { noCombat: true })
     const initOutput = input("init")
     expect(initOutput).toMatchObject({
       description: expect.stringContaining("You are in a 1x1 minimal room. There is a creepy doll here."),
@@ -227,20 +236,9 @@ describe("gameLoop good game()", () => {
       id: 0,
     }) as CuriousNote
 
-    const twoRoomDungeon: JsonDungeon = {
-      ...minimalDungeon,
-      rects: [
-        { x: 0, y: 0, w: 3, h: 3 },
-        { x: 4, y: 0, w: 3, h: 3, rotunda: true }, // east room
-        { x: 3, y: 2, w: 1, h: 1 },
-      ], // door
-      doors: [{ x: 3, y: 2, dir: { x: 1, y: 0 }, type: 0, id: 2 }] as Door[],
-      notes: [curiousNote],
-    }
+    const teleportDungeon = parseDungeon({ ...twoRoomDungeon, notes: [curiousNote] })
 
-    const teleportDungeon = parseDungeon(twoRoomDungeon)
-
-    const input = game(teleportDungeon)
+    const input = game(teleportDungeon, { noCombat: true })
     const initOutput = input("init")
     expect(initOutput).toMatchObject({ description: expect.stringContaining("You are in a 3m x 3m square room.") })
 
@@ -272,7 +270,7 @@ describe("gameLoop good game()", () => {
   })
 
   test("First output should welcome properly", () => {
-    const input = game(parsedDungeon)
+    const input = game(parsedDungeon, { noCombat: true })
     const firstOutput = {
       message:
         "House of the Immortal Lord\nThe house of the Immortal Lord is situated high in the Mondjit mountains. Lately a huge mutant rabbit has made its lair here. It is rumored that the house is rich with gold and jewels and magical artifacts.",
@@ -280,7 +278,7 @@ describe("gameLoop good game()", () => {
       end: false,
       turn: 1,
       description: expect.stringContaining("You are in a 3m x 4m room."),
-      agents:[],
+      agents: [],
       action: "init",
       exits: [
         {
@@ -317,7 +315,7 @@ describe("gameLoop good game()", () => {
   describe.each([...exitDirections, ...actions])("Action %s:", (action) => {
     let input
     beforeEach(() => {
-      input = game(parsedDungeon)
+      input = game(parsedDungeon, { noCombat: true })
       input("init")
     })
 
@@ -330,7 +328,7 @@ describe("gameLoop good game()", () => {
   describe("search action", () => {
     let input
     beforeEach(() => {
-      input = game(parsedDungeon)
+      input = game(parsedDungeon, { noCombat: true })
       input("init")
     })
 
@@ -374,7 +372,7 @@ describe("gameLoop good game()", () => {
   describe("door status", () => {
     let input
     beforeEach(() => {
-      input = game(parsedDungeon)
+      input = game(parsedDungeon, { noCombat: true })
     })
 
     test("un-entered door should not have 'open' status", () => {
@@ -390,6 +388,58 @@ describe("gameLoop good game()", () => {
       expect(westExit).toBeDefined()
       expect(westExit?.door.statuses).toContain("open")
       expect(westExit?.description).toBe("To the west is an open door")
+    })
+  })
+
+  describe("combat", () => {
+    const enemy: Enemy = {
+      id: 0,
+      room: 1,
+      name: "an enemy",
+      health: 0,
+      attack: 0,
+      class: "monster",
+      inventory: [],
+      defense: 0,
+      statuses: [],
+      isEnemy: true,
+    }
+    const initGameState: GameState = {
+      id: 0,
+      message: "Minimal Title\nMinimal Story",
+      turn: 0,
+      end: false,
+      rooms: [],
+      doors: [],
+      player: {
+        health: 1000,
+        defense: 1000,
+        attack: 1000,
+        statuses: [],
+      },
+      agents: [enemy],
+    }
+
+    const combatDungeon = parseDungeon(twoRoomDungeon)
+    const input = game(combatDungeon, { initGameState, noCombat: true })
+    input("init")
+    const eastOutput = input("east")
+    expect(eastOutput).toMatchObject({
+      agents: expect.arrayContaining([
+        expect.objectContaining({
+          id: 0,
+          isEnemy: true,
+          message: expect.stringContaining("The enemy attacks you and"),
+        }),
+      ]),
+    })
+    const attackOutput = input("attack 0")
+    expect(attackOutput).toMatchObject({
+      message: expect.stringContaining("The enemy is dead."),
+      description: expect.stringContaining("The dead body of the enemy is  here"),
+      agents: expect.arrayContaining([
+        expect.objectContaining({ id: 0, isEnemy: true, statuses: expect.arrayContaining(["dead"]) }),
+      ]),
     })
   })
 

@@ -35,9 +35,11 @@ import {
   inventoryMessage,
   isHere,
   replace,
+  sortExitsClockwise,
   toThe,
 } from "./utilties"
-import { Analysis, createAgents } from "./agentKeeper"
+import { MenaceManifest, createAgents } from "./agentKeeper"
+import { analyzeDungeon } from "./parseDungeon"
 
 export type GameState = {
   id: number
@@ -142,9 +144,9 @@ const updateRoomState =
     return { ...gameState, rooms }
   }
 
-const removeKeys:GameStateModifier = (gameState:GameState):GameState => {
-  const inventory = gameState.inventory.filter(item => !item.endsWith("key"))
-  return {...gameState, inventory}
+const removeKeys: GameStateModifier = (gameState: GameState): GameState => {
+  const inventory = gameState.inventory.filter((item) => !item.endsWith("key"))
+  return { ...gameState, inventory }
 }
 
 /** Add one or more statuses to an object such as a Door or Room or Enemy
@@ -322,9 +324,20 @@ const handleSearch =
   }
 
 const handleAttack = (gameState: GameState) => {
-  const [, enemyId] = gameState.action.split(" ").map((x) => parseInt(x))
-  const enemies = gameState.agents.filter(isEnemy)
-  const enemy = enemies.find((enemy) => enemy.id === enemyId)
+  const [, toAttackId] = gameState.action.split(" ").map((x) => parseInt(x))
+  const agentsHere = gameState.agents.filter((agent) => agent.room === gameState.id)
+  const enemiesHere = agentsHere.filter(isEnemy)
+
+  if (enemiesHere.length === 0) return compose(addMessage(`There is nothing here to attack.`))(gameState)
+
+  const liveEnemies = enemiesHere.filter((enemy) => !enemy.statuses.includes("dead"))
+
+  if (liveEnemies.length === 0 && toAttackId === undefined)
+    return compose(addMessage(`There is nothing here to attack.`))(gameState)
+
+  const enemyId = toAttackId ?? liveEnemies[0].id
+
+  const enemy = enemiesHere.find((enemy) => enemy.id === enemyId)
 
   if (!enemy) return compose(addMessage("That enemy is unknown"))(gameState)
   if (enemy.statuses.includes("dead"))
@@ -495,7 +508,7 @@ const attackBy = (attacker: Mortal, defender: Mortal): AttackResult => {
   const defense = getRandomNumber() * defensePower
 
   const isSuccess = attack > defense
-  const loss = isSuccess? 1 : 0
+  const loss = isSuccess ? 1 : 0
 
   if (isPlayer(attacker)) {
     if (!isAgent(defender)) throw new Error("Defender is unknown agent")
@@ -519,16 +532,15 @@ const enemiesAttack: GameStateModifier = (gameState: GameState) => {
 
   if (enemiesHere.length === 0) return gameState
 
-  const attacksResults = enemiesHere.map((enemy) => ( {enemy, ...attackBy(enemy, player)} ))
+  const attacksResults = enemiesHere.map((enemy) => ({ enemy, ...attackBy(enemy, player) }))
   const enemies = attacksResults.map(({ enemy, result }) => ({ ...enemy, message: result })) as Agent[]
 
   const health = attacksResults.reduce((health, { loss }) => health - loss, player.health)
 
   const updatedAgents = enemies.reduce((all, attacker) => replace(attacker, all), agents)
-  const newGameState = { ...gameState, player: {...player, health}, agents: updatedAgents }
+  const newGameState = { ...gameState, player: { ...player, health }, agents: updatedAgents }
 
-  if (health < 0)
-    return compose(addMessage("You succumb to the attack and die."))({ ...newGameState, end: true })
+  if (health < 0) return compose(addMessage("You succumb to the attack and die."))({ ...newGameState, end: true })
   else return newGameState
 }
 
@@ -653,19 +665,6 @@ export const inputFunc =
   (oldGameState: GameState): GameState =>
     compose(resetState, handleActionFunc(dungeon), describeRoomFunc(dungeon), enemiesAttack, advanceTurn)(oldGameState)
 
-/** This gives an expected order to the exits when using numbers to specify them */
-const sortExitsClockwise =
-  (room: { x: number; y: number }) =>
-  (aExit: Exit, bExit: Exit): 1 | 0 | -1 => {
-    const a = aExit.door
-    const b = bExit.door
-    const [ax, ay] = [a.x - room.x, a.y - room.y]
-    const [bx, by] = [b.x - room.x, b.y - room.y]
-    const angleA = Math.atan2(ay, ax)
-    const angleB = Math.atan2(by, bx)
-    return angleA < angleB ? -1 : angleA > angleB ? 1 : 0
-  }
-
 const isVisibleExitFunc = (gameState: GameState) => (exit: Exit) => {
   switch (exit.type) {
     case 6: {
@@ -704,8 +703,8 @@ const toOutput = (gameState: GameState): GameOutput => {
 type GameInterface = (input: string) => GameOutput
 
 type GameOptions = {
-  initGameState?:GameState
-  noCombat?:boolean
+  initGameState?: GameState
+  noCombat?: boolean
 }
 /** `game` is a higher-order function that accepts a Dungeon and returns a GameInterface.
  * A GameInterface is a function that accepts user input and returns the result.
@@ -715,7 +714,7 @@ type GameOptions = {
  * @param dungeon:Dungeon
  * @returns gameInterface: (input:string) => GameOutput
  */
-export const game = (dungeon: Dungeon, options?:GameOptions): GameInterface => {
+export const game = (dungeon: Dungeon, options?: GameOptions): GameInterface => {
   // init game interface
   const interpretInput: GameStateModifier = inputFunc(dungeon)
 
@@ -724,18 +723,19 @@ export const game = (dungeon: Dungeon, options?:GameOptions): GameInterface => {
     action: "init",
   }
 
-  const minAnalysis:Analysis = {
-    needsBoss:0,
+  const minManifest: MenaceManifest = {
     player: {
       health: 0,
       attack: 0,
       defense: 0,
-      statuses: []
+      statuses: [],
     },
-    agents: []
+    agents: [],
   }
+  if (!dungeon.rooms || dungeon.rooms.length === 0) throw "Bad data: no rooms found"
 
-  const initAgents = options?.noCombat ? minAnalysis : createAgents(dungeon)
+  const dungeonAnalysis = analyzeDungeon(dungeon)
+  const initAgents = options?.noCombat ? minManifest : createAgents(dungeonAnalysis)
 
   let gameState: GameState = options?.initGameState ?? { ...initState, ...initMessage, ...initAgents }
 

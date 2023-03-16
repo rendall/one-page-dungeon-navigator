@@ -2,317 +2,139 @@
  * dungeon for current info and placing appropriate enemies or
  * allies */
 
-import { Dungeon, isItemNote, Note, Enemy, Room, Agent, Mortal, isEnemy, isAgent } from "./dungeon"
-import { aAn, randomElement } from "./utilties"
+import { Enemy, Room, Agent, Mortal } from "./dungeon"
+import { DungeonAnalysis } from "./parseDungeon"
+import { randomElement, getRandomNumber, keysRepeated, sortByExits, shuffleArray } from "./utilties"
 
-const bossPatterns = [
-  /[A-Za-z/s]+ of (?<boss>the [A-Za-z-]+ (?!Cross|Skull|Moon|Star|Eye|Arrow|Fish|Crown|Bat|Heart|Bird|Lily|Leaf|Palm|Claw|Seashell|Snail|Fist)[A-Za-z]+)$/,
-  /[A-Za-z/s]+ of (?<boss>[A-Za-z-]+)$/,
-]
-
-const deadBossPatterns = [
-  /(?<boss>[\w\s]+) is long (dead|gone), but people are still (reluctant|afraid) to come close to the/,
-  /(Since|After) the (demise|death|fall|defeat) of (?<boss>[\w\s]+) the [\w\s]+ has changed hands many times./,
-  /Long after (?<boss>[\w\s]+)'s (demise|death|fall|defeat) the (?:[\w\s]+) remained/,
-]
-
-const monsterPatterns = [/(?:Recently|Lately) (?<beast>an? [A-Za-z-\s]+) has made its (?:home|lair) here/]
-
-const animalPatterns = [
-  /(?:(badly )?infested by|overrun with) (?<animal>(?!rabbit|sparrow|turtle|pig|pigeon|goat|chicken|cat)\w+)s/, // even giant versions of some of these animals will just never be scary
-]
-
-const enemyPatterns = [
-  /(?:Recently|Lately) a pack of (?<enemies>[\w\s-]+) have made its (?:home|lair) here/,
-  /(?:Recently|Lately) a (?:gang|party|band) of (?<enemies>[\w]+) rediscovered/,
-  /(?:Recently|Lately|Now) [\w\s]+ (squatted|controlled) by a (?:gang|party|band) of (?<enemies>[\w]+)/,
-]
-
-const artifactPatterns = [/[\w\s]+that (?<artifact>[\w\s,-]+) is (?:still )?hidden here/]
-
-const raiders = ["orc", "goblin", "hobgoblin", "kobold", "gnoll", "pirate", "bandit", "cultist", "thug", "ogre"]
-
-const getBoss = (title: string): string | undefined =>
-  bossPatterns
-    .reduce<[RegExpMatchArray] | [null]>(
-      (all, regex) => (all[0] ? all : regex.test(title) ? [title.match(regex)] : [null]),
-      [null]
-    )
-    .flatMap((o) => o?.groups?.boss)[0]
-const getDeadBoss = (story: string) =>
-  deadBossPatterns
-    .reduce<[RegExpMatchArray] | [null]>(
-      (all, regex) => (all[0] ? all : regex.test(story) ? [story.match(regex)] : [null]),
-      [null]
-    )
-    .flatMap((o) => o?.groups?.boss)[0]
-
-const getMonster = (story: string): string | undefined =>
-  monsterPatterns
-    .reduce<[RegExpMatchArray] | [null]>(
-      (all, regex) => (all[0] ? all : regex.test(story) ? [story.match(regex)] : [null]),
-      [null]
-    )
-    .flatMap((o) => o?.groups?.beast)[0]
-const getEnemies = (story: string): string | undefined =>
-  enemyPatterns
-    .reduce<[RegExpMatchArray] | [null]>(
-      (all, regex) => (all[0] ? all : regex.test(story) ? [story.match(regex)] : [null]),
-      [null]
-    )
-    .flatMap((o) => o?.groups?.enemies)[0]
-const getAnimal = (story: string): string | undefined =>
-  animalPatterns
-    .reduce<[RegExpMatchArray] | [null]>(
-      (all, regex) => (all[0] ? all : regex.test(story) ? [story.match(regex)] : [null]),
-      [null]
-    )
-    .flatMap((o) => o?.groups?.animal)[0]
-const getArtifact = (story: string): string | undefined =>
-  artifactPatterns
-    .reduce<[RegExpMatchArray] | [null]>(
-      (all, regex) => (all[0] ? all : regex.test(story) ? [story.match(regex)] : [null]),
-      [null]
-    )
-    .flatMap((o) => o?.groups?.artifact)[0]
-
-const isWeapon = (item: string) =>
-  [
-    "axe",
-    "dagger",
-    "flail",
-    "glaive",
-    "halberd",
-    "hammer",
-    "javelin",
-    "katana",
-    "mace",
-    "rapier",
-    "scimitar",
-    "spear",
-    "staff",
-    "sword",
-  ].some((weapon) => item.includes(weapon))
-
-const isArmor = (item: string) =>
-  [
-    "breastplate",
-    "cape",
-    "chainmail",
-    "cloak",
-    "helm",
-    "leather armor",
-    "mantle",
-    "robe",
-    "scale mail",
-    "scarf",
-    "shield",
-  ].some((armor) => item.includes(armor))
-
-const isMagic = (item: string) =>
-  [
-    "amulet",
-    "ball",
-    "blade",
-    "book",
-    "bow",
-    "cape",
-    "carpet",
-    "censer",
-    "coin",
-    "compass",
-    "cube",
-    "doll",
-    "eldritch",
-    "enchanted",
-    "flask",
-    "flute",
-    "gem",
-    "grimoire",
-    "holy",
-    "horn",
-    "hourglass",
-    "knife",
-    "lamp",
-    "lantern",
-    "life stealing",
-    "lightning",
-    "looking glass",
-    "magic",
-    "needle",
-    "orb",
-    "potion",
-    "quill",
-    "relic",
-    "rod",
-    "scroll",
-    "skull",
-    "slaying",
-    "smiting",
-    "spellbook",
-    "staff",
-    "stone",
-    "tablet",
-    "tarot deck",
-    "tome",
-    "unholy",
-    "vengeance",
-    "venom",
-    "vorpal",
-    "wand",
-  ].some((magic) => item.includes(magic))
-
-const isTreasure = (item: string) =>
-  [
-    "box",
-    "bracelet",
-    "brooch",
-    "chain",
-    "chess piece",
-    "comb",
-    "crown",
-    "dice",
-    "egg",
-    "figurine",
-    "gems",
-    "idol",
-    "mask",
-    "medallion",
-    "mirror",
-    "necklace",
-    "pin",
-    "ring",
-    "some gold",
-    "statuette",
-    "tiara",
-  ].some((treasure) => item.includes(treasure))
-
-const getItems = (rooms: Room[]) =>
-  rooms
-    .flatMap<Note>((room) => room.notes)
-    .filter(isItemNote)
-    .flatMap((note) => note.items)
-    .sort()
-
-const monsterAdjs = [
-  "venomous",
-  "mutant",
-  "man-eating",
-  "albino",
-  "blood-sucking",
-  "spectral",
-  "soul-eating",
-  "intelligent",
-  "fire-breathing",
-  "invisible",
-]
-
-const monsters = ["dragon", "basilisk", "manticore", "beholder", "sphinx", "chimera", "hydra", "wyvern", "wyrm"]
-
-const getRandomAnimalMonster = (animal?: string) => {
-  if (!animal) return undefined
-  return randomElement(["huge", "giant", "terrifying", "fearsome", "undead"]) + ` ${animal}`
-}
-
-const getRandomMonster = () => aAn(`${randomElement(monsterAdjs)} ${randomElement(monsters)}`)
-
-const getRandomBoss = () => {
-  const adjs = [
-    "serpent",
-    "viper",
-    "spider",
-    "raven",
-    "dread",
-    "mad",
-    "shadow",
-    "dark",
-    "blood",
-    "cursed",
-    "iron",
-    "golden",
-    "diamond",
-    "jade",
-    "storm",
-    "fire",
-    "ice",
-    "void",
-    "purple",
-    "black",
-    "red",
-    "white",
-    "vampire",
-    "undead",
-    "zombie",
-    "silent",
-    "moon",
-    "immortal",
-    "shadow",
-    "fallen",
-    "obsidian",
-    "scarlet",
-    "great",
-    "one-eyed",
-    "lich",
-    "amber",
-    "leper",
-    "grey",
-    "blind",
-    "demon",
-    "blasphemous",
-  ]
-
-  const nouns = [
-    "king",
-    "queen",
-    "prince",
-    "emperor",
-    "lord",
-    "lady",
-    "baron",
-    "magus",
-    "savant",
-    "titan",
-    "god",
-    "dragon",
-    "one",
-    "master",
-    "general",
-    "beast",
-    "knight",
-    "witch",
-    "lady",
-    "reaper",
-    "messiah",
-    "priest",
-    "oracle",
-  ]
-
-  return `${randomElement(adjs)} ${randomElement(nouns)}`
-}
-
-type Analysis = {
+export type MenaceManifest = {
   player: Mortal
   agents: Agent[]
 }
 
-export const createAgents = ({ title, story, rooms }: Dungeon): Analysis => {
-  const deadBoss = getDeadBoss(story)
-  const endMonsterName = deadBoss ? `the ghost of ${deadBoss}` : getBoss(title) ?? getMonster(story) ?? getRandomMonster()
-  const endRoom = rooms.find((room) => room.ending)?.id
+type EnemyClass = Enemy["class"]
 
-  const boss: Enemy = {
-    id: 0,
-    health: 3,
-    attack: 3,
-    defense: 3,
-    statuses: [],
-    name: endMonsterName,
-    room: endRoom,
-    isEnemy: true,
+type AdversaryAnalysis = {
+  [key in EnemyClass]: number
+}
+
+/** This is where encounter difficulty is determined.
+ * If encounters need to be buffed or nerfed, do it here */
+const createEncounter = (enemyClass: EnemyClass, id: number): Enemy | Enemy[] => ({
+  id,
+  name: enemyClass,
+  class: enemyClass,
+  room: -1,
+  health: 0,
+  attack: 0,
+  defense: 0,
+  statuses: [],
+  inventory: [],
+  isEnemy: true,
+})
+
+/** This is where balancing of _pacing_ of encounters happens.
+ * If there are too many or too few encounters, these are the numbers to adjust. */
+export const getAdversaryAnalysis = ({
+  rooms,
+  veryLargeRooms,
+  numKeys,
+  emptyRooms,
+  largeRooms,
+  mediumRooms,
+  lockedRooms,
+}: DungeonAnalysis): AdversaryAnalysis => {
+  const emptyRoomsCount = emptyRooms.length
+  const veryLargeRoomsCount = veryLargeRooms.length
+  const largeRoomsCount = largeRooms.length + mediumRooms.length
+  const lockedRoomsCount = lockedRooms.length === rooms.length ? 0 : lockedRooms.length
+
+  const bossChance = numKeys * 0.25 + emptyRoomsCount * 0.01
+  const boss = bossChance > getRandomNumber() ? 1 : 0
+  const monster = Math.max(Math.floor(veryLargeRoomsCount / 2.5 + largeRoomsCount / 20 + (1 - bossChance)), 0)
+  const elite = Math.max(Math.floor(lockedRoomsCount * 0.15 + (1 - bossChance)), 0)
+  const peon = Math.max(Math.floor((rooms.length - lockedRoomsCount) * 0.15), 0)
+
+  return {
+    boss,
+    monster,
+    elite,
+    peon,
+  }
+}
+/** This is where placement of encounters is determined. If the
+ * encounters need to be distributed differently, this is where that
+ * happens */
+const placeEnemies =
+  ({
+    rooms,
+    unlockedNonsecretTreasureRooms,
+    unlockedNonsecretRooms,
+    endingRoom,
+    lockedRooms,
+    largeRooms,
+    veryLargeRooms,
+    mediumRooms,
+    justInsideRoom,
+    treasureRooms,
+    unlockedRooms,
+  }: DungeonAnalysis) =>
+  (placedEnemies: Enemy[], enemy: Enemy): Enemy[] => {
+    const placedRoomIds = placedEnemies.map((enemy) => enemy.room) ?? []
+    const availableRooms = rooms.filter((room) => !(placedRoomIds.includes(room.id) || room.id === 0)) // let's also reserve the front room
+    const getRandomRoom = (rooms: Room[]) => randomElement(rooms)
+    const firstAvailable = (rooms: Room[]) => rooms.find((room) => availableRooms.includes(room))
+
+    switch (enemy.class) {
+      case "boss": {
+        // Boss is always in the ending room if it exists, otherwise the highest id room with area 9 or more
+        const placed = firstAvailable([endingRoom, ...lockedRooms]) ?? getRandomRoom(availableRooms)
+        const room = placed.id
+        const boss = { ...enemy, room }
+        return [...placedEnemies, boss]
+      }
+
+      // Monsters prefer large rooms with lots of exits
+      case "monster": {
+        // boss room if available
+        // otherwise only unlocked rooms
+        const unlockedLargeRooms =
+          veryLargeRooms.filter((room) => !lockedRooms.some((locked) => locked.id === room.id)) ??
+          largeRooms.filter((room) => !lockedRooms.some((locked) => locked.id === room.id)) ??
+          mediumRooms.filter((room) => !lockedRooms.some((locked) => locked.id === room.id))
+        const sorted = unlockedLargeRooms.sort(sortByExits)
+        const room = firstAvailable([endingRoom, ...sorted, ...shuffleArray(unlockedRooms)]).id
+        const monster = { ...enemy, room }
+        return [...placedEnemies, monster]
+      }
+
+      // Elites only exist in the locked back rooms but never in the ending room
+      case "elite": {
+        // Locked rooms with treasure
+        const lockedTreasureRooms = lockedRooms.filter((room) => treasureRooms.some((tRoom) => tRoom.id === room.id))
+        // Just inside the gate room
+        const anywhere = lockedRooms.filter((room) => room.id !== endingRoom.id)
+        const room = firstAvailable([...lockedTreasureRooms, justInsideRoom, ...anywhere].filter((x) => x)).id
+        const elite = { ...enemy, room }
+        return [...placedEnemies, elite]
+      }
+      default: {
+        // anywhere that is not a locked room, nor secret room
+        // prefer treasure rooms
+        const room = firstAvailable([
+          ...unlockedNonsecretTreasureRooms,
+          ...unlockedNonsecretRooms,
+          ...shuffleArray(unlockedRooms),
+        ]).id
+        return [...placedEnemies, { ...enemy, room }]
+      }
+    }
   }
 
-  const agents: Agent[] = [boss].filter(isAgent) ?? []
-
+export const createAgents = (dungeonAnalysis: DungeonAnalysis): MenaceManifest => {
+  const adversaryAnalysis = getAdversaryAnalysis(dungeonAnalysis)
+  const agents = keysRepeated(adversaryAnalysis)
+    .flatMap((encounterType, i) => createEncounter(encounterType, i))
+    .reduce(placeEnemies(dungeonAnalysis), [])
   const player: Mortal = {
     health: 3,
     defense: 3,
@@ -321,3 +143,4 @@ export const createAgents = ({ title, story, rooms }: Dungeon): Analysis => {
   }
   return { player, agents }
 }
+

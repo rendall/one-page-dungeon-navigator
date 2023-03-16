@@ -211,9 +211,12 @@ export type Agent = Mortal & {
   name: string
   room: number
   message?: string
+  inventory: string[]
+  isEnemy?: boolean
 }
 
 export type Enemy = Agent & {
+  class: "boss" | "monster" | "elite" | "peon"
   isEnemy: true
 }
 

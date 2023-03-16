@@ -1,9 +1,39 @@
 import { Exit, Room } from "./dungeon"
 
 /**
- * TODO: Deterministic RNG based on seed
+ * Deterministic RNG based on seed
  */
-export const getRandomNumber = () => Math.random()
+class RandomNumberGenerator {
+  private static instance: RandomNumberGenerator;
+  private state: number;
+
+  private constructor(seed: number) {
+    this.state = seed;
+  }
+
+  public static setSeed(seed: number): void {
+    if (!RandomNumberGenerator.instance) {
+      RandomNumberGenerator.instance = new RandomNumberGenerator(seed);
+    }
+    else throw new Error("Call RandomNumberGenerator.setSeed(<seed>) only once")
+  }
+
+  public static getInstance(): RandomNumberGenerator {
+    if (!RandomNumberGenerator.instance) throw new Error("Call RandomNumberGenerator.setSeed(<seed>) before getInstance()")
+    return RandomNumberGenerator.instance;
+  }
+
+  public getNext(): number {
+    const x = Math.sin(this.state++) * 10000;
+    return x - Math.floor(x);
+  }
+}
+
+/**TODO: Set this based on map seeds */
+RandomNumberGenerator.setSeed(12345)
+
+export const getRandomNumber = (): number => RandomNumberGenerator.getInstance().getNext();
+
 
 /**
  * Composes one or more functions together and returns a new function that applies each function in order

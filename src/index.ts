@@ -182,15 +182,16 @@ const addTouchControls = (result: GameOutput) => {
     ul.appendChild(li)
   })
 
+  if (!result.statuses?.includes("searched")) {
+    const searchLi = createCommandLi("You can also search.", "x")
+    ul.appendChild(searchLi)
+  }
+
   enemies.forEach((enemy) => {
     const li = createCommandLi(`Attack ${enemy.name}`, `attack ${enemy.id}`)
     ul.appendChild(li)
   })
 
-  if (!result.statuses?.includes("searched")) {
-    const searchLi = createCommandLi("You can also search.", "x")
-    ul.appendChild(searchLi)
-  }
   messageScroll.appendChild(ul)
   updateMessageScroll()
 }

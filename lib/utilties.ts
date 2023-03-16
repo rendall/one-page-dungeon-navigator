@@ -1,57 +1,9 @@
-import { DoorType, Room } from "./dungeon"
+import { Exit, Room } from "./dungeon"
 
 /**
  * TODO: Deterministic RNG based on seed
  */
 export const getRandomNumber = () => Math.random()
-
-/** Get locked rooms: rooms behind the keyhole door */
-export const getLockedRooms = (rooms: Room[]): Room[] => {
-  const keyholeRoom = rooms
-    .filter((room) => room.notes)
-    .find((room) => room.notes.some((note) => note.text.match(/keyhole/)))
-  if (!keyholeRoom) return []
-
-  const endRoom: Room = rooms.find((room) => room.ending)
-  if (!endRoom) return []
-
-  const visited = new Set()
-  const queue: Room[] = [endRoom]
-  const lockedRooms = []
-
-  while (queue.length) {
-    const currentRoom = queue.shift()
-
-    if (!currentRoom || !currentRoom?.exits) {
-      console.error(JSON.stringify({ rooms, queue, currentRoom }, null, 2))
-      throw new Error(`Bad room data`)
-    }
-
-    if (!visited.has(currentRoom)) {
-      visited.add(currentRoom)
-      lockedRooms.push(currentRoom)
-      const connectedRooms: Room[] = currentRoom.exits
-        .filter(
-          (exit) =>
-            exit.to !== "outside" &&
-            !(
-              (exit.type === DoorType.steel || exit.type === DoorType.portcullis || exit.type === DoorType.double) &&
-              !exit.isFacing
-            )
-        )
-        .map((exit) => rooms.find((room) => room.id === exit.to))
-        .filter((x) => x)
-
-      connectedRooms.forEach((room) => {
-        if (!visited.has(room)) {
-          queue.push(room)
-        }
-      })
-    }
-  }
-
-  return lockedRooms
-}
 
 /**
  * Composes one or more functions together and returns a new function that applies each function in order
@@ -78,6 +30,52 @@ export const arrEqual = (a: unknown[], b: unknown[]): boolean => {
   return arrEqual(a.slice(1), bStripped)
 }
 
+/** Durstenfeld shuffle */
+export const shuffleArray = <T>(array: T[]): T[] =>
+  array.reverse().reduce(
+    (acc, _, i) => {
+      const j = Math.floor(getRandomNumber() * (i + 1))
+      ;[acc[i], acc[j]] = [acc[j], acc[i]]
+      return acc
+    },
+    [...array]
+  )
+/** call arr.sort() on anything that has an id, such as a room, note or enemy */
+export const sortById = <T extends { id: number }>(a: T, b: T) => (a.id > b.id ? 1 : b.id > a.id ? -1 : 0)
+
+/** sort by the number of exits */
+export const sortByExits = (a: Room, b: Room) =>
+  a.exits.length > b.exits.length ? 1 : b.exits.length > a.exits.length ? -1 : 0
+
+/** This gives an expected order to the exits when using numbers to specify them */
+export const sortExitsClockwise =
+  (room: { x: number; y: number }) =>
+  (aExit: Exit, bExit: Exit): 1 | 0 | -1 => {
+    const a = aExit.door
+    const b = bExit.door
+    const [ax, ay] = [a.x - room.x, a.y - room.y]
+    const [bx, by] = [b.x - room.x, b.y - room.y]
+    const angleA = Math.atan2(ay, ax)
+    const angleB = Math.atan2(by, bx)
+    return angleA < angleB ? -1 : angleA > angleB ? 1 : 0
+  }
+
+/** Take an object of the form { key: n } where n is a number, and
+ * return an array of keys repeated n times. 
+ * 
+ * @example {a: 1, b: 3, c: 2} => ["a", "b", "b", "b", "c", "c"]
+*/
+export const keysRepeated = <T extends string>(obj: { [key in T]: number }): T[] => {
+  Object.entries(obj).forEach(([key, value]) => {
+    if (typeof value !== "number")
+      throw new Error(`Invalid value type '${typeof value}' in keysRepeated ${key}:${value}`)
+    if (value < 0) throw new Error(`Invalid value range '${value}' in keysRepeated ${key}:${value}`)
+  })
+
+  return Object.entries(obj).reduce((arr, [key, value]) => [...arr, ...Array(value).fill(key)], [])
+}
+/** Given an value with an id, return the id. Otherwise return the value */
+export const toId = (value: Room | number | string) => (value && hasProperty(value, "id") ? (value as Room).id : value)
 /** Randomly choose one of the element's members */
 export const randomElement = <T>(arr: T[]) => arr[Math.floor(getRandomNumber() * arr.length)]
 
@@ -91,6 +89,8 @@ export const replace = <T extends { id: number }>(e: T, arr: T[]) => arr.map((a)
 export const unique = <T>(arr: T[]) => arr.reduce((out: T[], e: T) => (out.includes(e) ? out : [...out, e]), [])
 
 const hasVerb = (str: string) => (/(holds|hides)/.test(str) ? "" : /^\w*s\s/.test(str) ? "are " : "is ")
+
+export const hasProperty = (obj: unknown, property: string) => Object.prototype.hasOwnProperty.call(obj, property)
 
 /** Add a 'is/are here at the end of a sentence */
 export const isHere = (str: string) => (str.startsWith("The") ? str : `${capitalize(str)} ${hasVerb(str)} here`)

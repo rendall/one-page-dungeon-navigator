@@ -10,6 +10,7 @@ const INSTRUCTIONS = `
   <li>To move down, or south, press <span>s</span> or <span>down arrow</span></li>
   <li>To move left, or west, press <span>a</span> or <span>left arrow</span></li>
   <li>To search for secrets, press <span>x</span></li>
+  <li>To attack, press <span>v</span></li>
   <li>To use curious features in a room, press <span>u</span></li>
   <li>To quit to main menu, press <span>q</span></li>
   <!--<li>To view entire dungeon, press <span>#</span></li>-->
@@ -161,7 +162,6 @@ const printMessage = (message: string, type = "message") => {
 const addTouchControls = (result: GameOutput) => {
   const exits = result.exits
   const enemies = result.agents.filter(isEnemy).filter((enemy) => !enemy.statuses.includes("dead"))
-  const turn = result.turn
   const messageScroll = document.getElementById("message-scroll")
   const ul = document.createElement("ul") as HTMLUListElement
   const createCommandLi = (text: string, command: string) => {
@@ -169,7 +169,6 @@ const addTouchControls = (result: GameOutput) => {
     li.textContent = text
     li.classList.add("control")
     li.dataset.command = command
-    li.dataset.turn = turn.toString()
     return li
   }
   exits.forEach((exit, i) => {
@@ -343,16 +342,17 @@ const normalizeMapSvg = (svg: SVGElement) => {
 /** Map user input to gameLoop actions */
 const getAction = (key: string): Action => {
   const mapping: { [key: string]: Action } = {
-    w: "north",
-    a: "west",
-    s: "south",
-    d: "east",
-    arrowup: "north",
     arrowdown: "south",
     arrowleft: "west",
     arrowright: "east",
-    u: "use",
+    arrowup: "north",
+    a: "west",
+    d: "east",
     q: "quit",
+    s: "south",
+    u: "use",
+    v: "attack",
+    w: "north",
     x: "search",
   }
   if (/^\d$/.test(key)) return key as Action
@@ -442,10 +442,11 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
 
     // Prevent the user from accidentally quitting by pressing the key to go outside.
     const pressedOutKey = (input: string, exits: Exit[]) => {
-      const isExitKey = isKey && (input.match(/\d$/) || exitDirections.some((direction) => action === direction))
+      const isExitKey = isKey && exitDirections.some((direction) => action === direction)
       if (!isExitKey) return false
-      const exit = input.match(/\d$/) ? exits[parseInt(input)] : exits.find((exit) => exit.towards === action)
-      return exit?.to === "outside"
+      const outExits = exits.filter((exit) => exit.to === "outside")
+      if (!outExits) return false
+      return outExits.some((exit) => exit.towards === action)
     }
     const isOutKeyPressed = pressedOutKey(input, oldResult.exits)
     if (isOutKeyPressed) printMessage("You attempt to leave the dungeon. Press 'q' to quit.")

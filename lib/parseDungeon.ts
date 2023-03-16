@@ -3,6 +3,7 @@
  */
 import {
   Column,
+  CuriousNote,
   Direction,
   Door,
   DoorType,
@@ -10,6 +11,7 @@ import {
   Exit,
   ExitDirection,
   isDoorNote,
+  isItemNote,
   JsonDungeon,
   JsonNote,
   Rect,
@@ -17,6 +19,7 @@ import {
   Water,
 } from "./dungeon"
 import { parseNote } from "./parseNote"
+import { hasProperty, sortById, sortExitsClockwise, toId } from "./utilties"
 
 export const facingDirection = (door: Door): ExitDirection => {
   if (door.dir.x === -1) return "west"
@@ -252,32 +255,34 @@ export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
       const notes = dungeonNotes.filter((note) => isInside(note.pos, fullRoom)).flatMap(parseNote)
       const columns = dungeon.columns.filter((column) => isInside(column, fullRoom))
       const water = dungeon.water.filter((column) => isInside(column, fullRoom))
-      const exits: Exit[] = getAdjacent(fullRoom, rectsWithId).map((exit) => {
-        const door = getDoor(exit)
-        const direction = getDir(fullRoom, exit)
-        if (door) {
-          // If the exit is a door, include the "to"
-          const destination = rectsWithId.find((x) => isAdjacent(x, exit) && x.id !== fullRoom.id)
-          const to = destination?.id ?? "outside"
-          const isFacing = facingDirection(door) === direction
+      const exits: Exit[] = getAdjacent(fullRoom, rectsWithId)
+        .map((exit) => {
+          const door = getDoor(exit)
+          const direction = getDir(fullRoom, exit)
+          if (door) {
+            // If the exit is a door, include the "to"
+            const destination = rectsWithId.find((x) => isAdjacent(x, exit) && x.id !== fullRoom.id)
+            const to = destination?.id ?? "outside"
+            const isFacing = facingDirection(door) === direction
 
-          // If the door isFacing and it's of type double, then it might have an associated note.
-          const note =
-            isFacing && door.type === DoorType.double
-              ? notes.filter(isDoorNote).find((doorNote) => doorNote.direction === direction)
-              : undefined
+            // If the door isFacing and it's of type double, then it might have an associated note.
+            const note =
+              isFacing && door.type === DoorType.double
+                ? notes.filter(isDoorNote).find((doorNote) => doorNote.direction === direction)
+                : undefined
 
-          return {
-            towards: direction,
-            isFacing,
-            to,
-            type: door.type,
-            door,
-            ...(note && { note }),
-            description: destination ? describeDoor(door, direction, destination) : "way out of the dungeon",
-          } as Exit
-        } else return { towards: direction, to: exit.id } as Exit
-      })
+            return {
+              towards: direction,
+              isFacing,
+              to,
+              type: door.type,
+              door,
+              ...(note && { note }),
+              description: destination ? describeDoor(door, direction, destination) : "way out of the dungeon",
+            } as Exit
+          } else return { towards: direction, to: exit.id } as Exit
+        })
+        .sort(sortExitsClockwise(fullRoom))
       const description = describeRoom(fullRoom, exits, columns, water)
       const room: Room = {
         id: fullRoom.id,
@@ -297,4 +302,376 @@ export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
     })
 
   return { ...dungeon, rooms, doors: doorsWithId, rects: rectsWithId }
+}
+
+export type DungeonAnalysis = ReturnType<typeof analyzeDungeon>
+
+/** These are expensive calculations that can be done once and passed around */
+export const analyzeDungeon = (dungeon: Dungeon) => {
+  const bossPatterns = [
+    /[A-Za-z/s]+ of (?<boss>the [A-Za-z-]+ (?!Cross|Skull|Moon|Star|Eye|Arrow|Fish|Crown|Bat|Heart|Bird|Lily|Leaf|Palm|Claw|Seashell|Snail|Fist)[A-Za-z]+)$/,
+    /[A-Za-z/s]+ of (?<boss>[A-Za-z-]+)$/,
+  ]
+
+  const deadBossPatterns = [
+    /(?<boss>[\w\s]+) is long (dead|gone), but people are still (reluctant|afraid) to come close to the/,
+    /(Since|After) the (demise|death|fall|defeat) of (?<boss>[\w\s]+) the [\w\s]+ has changed hands many times./,
+    /Long after (?<boss>[\w\s]+)'s (demise|death|fall|defeat) the (?:[\w\s]+) remained/,
+  ]
+
+  const monsterPatterns = [/(?:Recently|Lately) (?<beast>an? [A-Za-z-\s]+) has made its (?:home|lair) here/]
+
+  const animalPatterns = [
+    /(?:(badly )?infested by|overrun with) (?<animal>(?!rabbit|sparrow|turtle|pig|pigeon|goat|chicken|cat)\w+)s/, // even giant versions of some of these animals will just never be scary
+  ]
+
+  const enemyPatterns = [
+    /(?:Recently|Lately) a pack of (?<enemies>[\w\s-]+) have made its (?:home|lair) here/,
+    /(?:Recently|Lately) a (?:gang|party|band) of (?<enemies>[\w]+) rediscovered/,
+    /(?:Recently|Lately|Now) [\w\s]+ (squatted|controlled) by a (?:gang|party|band) of (?<enemies>[\w]+)/,
+  ]
+
+  const artifactPatterns = [/[\w\s]+that (?<artifact>[\w\s,-]+) is (?:still )?hidden here/]
+
+  const { title, story } = dungeon
+
+  const getBoss = (title: string): string | undefined =>
+    bossPatterns
+      .reduce((all, regex) => (all[0] ? all : regex.test(title) ? [title.match(regex)] : [undefined]), [undefined])
+      .flatMap((o) => o?.groups?.boss)[0]
+  const getDeadBoss = (title: string): string | undefined =>
+    deadBossPatterns
+      .reduce((all, regex) => (all[0] ? all : regex.test(title) ? [title.match(regex)] : [undefined]), [undefined])
+      .flatMap((o) => o?.groups?.boss)[0]
+  const getMonster = (story: string): string | undefined =>
+    monsterPatterns
+      .reduce((all, regex) => (all[0] ? all : regex.test(story) ? [story.match(regex)] : [undefined]), [undefined])
+      .filter((o) => o !== undefined)
+      .flatMap((o) => o.groups.beast)[0]
+  const getEnemies = (story: string): string | undefined =>
+    enemyPatterns
+      .reduce((all, regex) => (all[0] ? all : regex.test(story) ? [story.match(regex)] : [undefined]), [undefined])
+      .filter((o) => o !== undefined)
+      .flatMap((o) => o.groups.enemies)[0]
+  const getAnimal = (story: string): string | undefined =>
+    animalPatterns
+      .reduce((all, regex) => (all[0] ? all : regex.test(story) ? [story.match(regex)] : [undefined]), [undefined])
+      .filter((o) => o !== undefined)
+      .flatMap((o) => o.groups.animal)[0]
+  const getArtifact = (story: string): string | undefined =>
+    artifactPatterns
+      .reduce((all, regex) => (all[0] ? all : regex.test(story) ? [story.match(regex)] : [undefined]), [undefined])
+      .filter((o) => o !== undefined)
+      .flatMap((o) => o.groups.artifact)[0]
+
+  const isWeapon = (item: string) =>
+    [
+      "axe",
+      "dagger",
+      "flail",
+      "glaive",
+      "halberd",
+      "hammer",
+      "javelin",
+      "katana",
+      "mace",
+      "rapier",
+      "scimitar",
+      "spear",
+      "staff",
+      "sword",
+    ].some((weapon) => item.match(new RegExp(`/\\b${weapon}\\b/`)))
+
+  const isArmor = (item: string) =>
+    [
+      "breastplate",
+      "cape",
+      "chainmail",
+      "cloak",
+      "helm",
+      "leather armor",
+      "mantle",
+      "robe",
+      "scale mail",
+      "scarf",
+      "shield",
+    ].some((armor) => item.match(new RegExp(`/\\b${armor}\\b/`)))
+
+  const isMagic = (item: string) =>
+    [
+      "amulet",
+      "ball",
+      "blade",
+      "book",
+      "bow",
+      "cape",
+      "carpet",
+      "censer",
+      "coin",
+      "compass",
+      "cube",
+      "doll",
+      "eldritch",
+      "enchanted",
+      "flask",
+      "flute",
+      "gem",
+      "grimoire",
+      "holy",
+      "horn",
+      "hourglass",
+      "knife",
+      "lamp",
+      "lantern",
+      "life stealing",
+      "lightning",
+      "looking glass",
+      "magic",
+      "mysterious",
+      "needle",
+      "orb",
+      "potion",
+      "quill",
+      "relic",
+      "rod",
+      "scroll",
+      "skull",
+      "slaying",
+      "smiting",
+      "spellbook",
+      "staff",
+      "stone",
+      "strange",
+      "tablet",
+      "tarot deck",
+      "tome",
+      "uncanny",
+      "unholy",
+      "vengeance",
+      "venom",
+      "vorpal",
+      "wand",
+      "weird",
+    ].some((magic) => item.match(new RegExp(`\\b${magic}\\b`)))
+
+  const isTreasure = (item: string) =>
+    [
+      "box",
+      "bracelet",
+      "brooch",
+      "chain",
+      "chess piece",
+      "comb",
+      "crown",
+      "dice",
+      "egg",
+      "figurine",
+      "gems",
+      "idol",
+      "mask",
+      "medallion",
+      "mirror",
+      "necklace",
+      "pin",
+      "ring",
+      "some gold",
+      "statuette",
+      "tiara",
+    ].some((treasure) => item.match(new RegExp(`\\b${treasure}\\b`)))
+
+  const notes = dungeon.rooms.filter((room) => room.notes).flatMap((room) => room.notes)
+  const bossName = getBoss(title)
+  const deadBoss = getDeadBoss(story)
+  const monsterName = getMonster(story)
+  const enemies = getEnemies(story)
+  const animal = getAnimal(story)
+  const artifact = getArtifact(story)
+  const items = notes
+    .filter(isItemNote)
+    .filter((note) => note.items)
+    .flatMap((note) => note.items)
+    .sort()
+  const effects = notes.filter((note) => note.type === "curious").map((note: CuriousNote) => note.action)
+  const weapons = items.filter(isWeapon)
+  const armor = items.filter(isArmor)
+  const magic = items.filter(isMagic)
+  const treasure = items.filter(isTreasure)
+  const endingRoom = dungeon.rooms.find((room) => room.ending)
+  const treasureRooms =
+    dungeon.rooms.filter((room) =>
+      room.notes
+        .filter((note) => note)
+        .flatMap((note) => note)
+        .filter(isItemNote)
+        .flatMap((note) => note.items)
+        .filter((items) => items)
+        .some((item) => isTreasure(item) || isMagic(item))
+    ) ?? []
+  /** Start with a room and include rooms that pass the predicate */
+  const getConnectedRooms = (rooms: Room[], startRoom: Room, predicate: (exit: Exit) => boolean): Room[] => {
+    const visited = new Set()
+    const queue: Room[] = [startRoom]
+    const connectedRooms = []
+
+    while (queue.length) {
+      const currentRoom = queue.shift()
+
+      if (!currentRoom || !currentRoom?.exits) {
+        console.error(JSON.stringify({ rooms, queue, currentRoom }, undefined, 2))
+        throw new Error(`Bad room data`)
+      }
+
+      if (!visited.has(currentRoom)) {
+        visited.add(currentRoom)
+        connectedRooms.push(currentRoom)
+        const neighboringRooms: Room[] = currentRoom.exits
+          .filter(predicate)
+          .map((exit) => rooms.find((room) => room.id === exit.to))
+          .filter((x) => x)
+
+        neighboringRooms.forEach((room) => {
+          if (!visited.has(room)) {
+            queue.push(room)
+          }
+        })
+      }
+    }
+
+    return connectedRooms.sort(sortById)
+  }
+
+  const getUnlockedRooms = (rooms: Room[]): Room[] => {
+    const keyholeRoom = rooms
+      .filter((room) => room.notes)
+      .find((room) => room.notes.some((note) => note.text.match(/keyhole/)))
+    if (!keyholeRoom) return rooms
+
+    const start: Room = rooms.find((room) => room.id === 0)
+
+    const unlockedRooms = getConnectedRooms(
+      rooms,
+      start,
+      (exit: Exit) =>
+        exit.to !== "outside" &&
+        !(
+          (exit.type === DoorType.steel || exit.type === DoorType.portcullis || exit.type === DoorType.double) &&
+          exit.isFacing
+        )
+    )
+
+    return unlockedRooms
+  }
+
+  const getLockedRooms = (rooms: Room[], unlockedRooms: Room[]): Room[] =>
+    rooms.filter((room) => unlockedRooms.every((unlocked) => unlocked.id !== room.id))
+
+  /** All rooms not behind a secret door */
+  const getNonSecretRooms = (rooms: Room[]): Room[] =>
+    getConnectedRooms(
+      rooms,
+      rooms.find((room) => room.id === 0),
+      (exit: Exit) => exit.type !== DoorType.secret
+    )
+
+  const unlockedRooms = getUnlockedRooms(dungeon.rooms)
+  const lockedRooms = getLockedRooms(dungeon.rooms, unlockedRooms)
+  const nonSecretRooms = getNonSecretRooms(dungeon.rooms)
+  const secretRooms = dungeon.rooms.filter((room) => !nonSecretRooms.some((nonSecret) => nonSecret.id === room.id))
+  const gateRoom = dungeon.rooms
+    .filter((room) => room.notes)
+    .find((room) => room.notes.some((note) => note.text.includes("keyhole") || note.text.match(/gate|door/)))
+
+  const rooms = dungeon.rooms
+  /** Very large rooms have 25 area or more */
+  const veryLargeRooms = dungeon.rooms.filter((room) => !room.ending && room.w * room.h >= 25)
+  /** Large rooms are between 9 and up to 25 area */
+  const largeRooms = dungeon.rooms.filter((room) => room.w * room.h >= 9 && room.w * room.h < 25)
+  /** Medium rooms are between 6 and up to 9 area */
+  const mediumRooms = dungeon.rooms.filter((room) => room.w * room.h >= 6 && room.w * room.h < 9)
+  /** Tiny rooms are under 6 area */
+  const tinyRooms = dungeon.rooms.filter((room) => room.w * room.h < 6)
+  /** Empty rooms have no notes associated */
+  const emptyRooms = dungeon.rooms.filter((room) => !room.notes || room.notes.length === 0)
+  /** Sorted by number of exits */
+  const roomsSortedByNumberOfExits = dungeon.rooms
+    .slice(0)
+    .sort((a: Room, b: Room) => (b.exits.length > a.exits.length ? 1 : a.exits.length > b.exits.length ? -1 : 0))
+
+  const roomsSortedByArea = dungeon.rooms
+    .slice()
+    .sort((a: Room, b: Room) => (b.w * b.h > a.w * a.h ? 1 : a.w * a.h > b.w * b.h ? -1 : 0))
+
+  const justInsideId = gateRoom?.exits.find((exit) => exit.type === DoorType.double)?.to
+
+  const justInsideRoom = justInsideId ? rooms.find((room) => room.id === justInsideId) : undefined
+
+  const numKeys = items.reduce((count, item) => (item.endsWith("key") ? count + 1 : count), 0)
+
+  const unlockedNonsecretTreasureRooms =
+    treasureRooms.filter(
+      (room) =>
+        nonSecretRooms.some((nonsecret) => nonsecret.id === room.id) &&
+        lockedRooms.every((locked) => locked.id !== room.id)
+    ) ?? []
+  const unlockedNonsecretRooms =
+    dungeon.rooms.filter(
+      (room) =>
+        nonSecretRooms.some((nonsecret) => nonsecret.id === room.id) &&
+        lockedRooms.every((locked) => locked.id !== room.id)
+    ) ?? []
+
+  return {
+    title,
+    story,
+    bossName,
+    deadBoss,
+    monsterName,
+    enemies,
+    animal,
+    artifact,
+    items,
+    effects,
+    weapons,
+    armor,
+    treasure,
+    magic,
+    veryLargeRooms,
+    largeRooms,
+    mediumRooms,
+    tinyRooms,
+    emptyRooms,
+    lockedRooms,
+    unlockedRooms,
+    secretRooms,
+    nonSecretRooms,
+    gateRoom,
+    justInsideRoom,
+    endingRoom,
+    treasureRooms,
+    unlockedNonsecretRooms,
+    unlockedNonsecretTreasureRooms,
+    rooms,
+    roomsSortedByArea,
+    roomsSortedByNumberOfExits,
+    numKeys,
+    isMagic,
+    isWeapon,
+    isTreasure,
+    isArmor,
+  }
+}
+
+/** Debug printing of dungeon analysis */
+export const printAnalysis = (dungeonAnalysis: DungeonAnalysis) => {
+  // Show only room ids
+
+  const anyalysisToIds = Object.entries(dungeonAnalysis)
+    .map(([key, value]) =>
+      Array.isArray(value)
+        ? [key, value.map(toId)]
+        : [key, value && hasProperty(value, "id") ? (value as Room).id : value]
+    )
+    .reduce((obj, [key, value]: [string, string | (string | number | Room)[]]) => ({ ...obj, [key]: value }), {})
+
+  console.info(anyalysisToIds)
 }

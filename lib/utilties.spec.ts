@@ -1,4 +1,4 @@
-import { inventoryMessage } from "./utilties"
+import { inventoryMessage, keysRepeated } from "./utilties"
 
 describe("inventoryMessage()", () => {
   it("should count ordinary items", () => {
@@ -153,5 +153,11 @@ describe("inventoryMessage()", () => {
     test.each(expectations)("%s should be %s", (items, expected) => {
       expect(inventoryMessage(items as string[])).toBe(expected)
     })
+  })
+})
+
+describe("keysRepeated()", () => {
+  it("should return the expected value", () => {
+    expect(keysRepeated({ a: 1, b: 2, c: 3 })).toEqual(["a", "b", "b", "c", "c", "c"])
   })
 })

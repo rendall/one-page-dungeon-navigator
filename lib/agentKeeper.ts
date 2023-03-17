@@ -1,10 +1,26 @@
 /** This file holds functionality responsible for analyzing the
- * dungeon for current info and placing appropriate enemies or
- * allies */
+ * dungeon and supplying appropriate enemies, as well as balancing
+ * the player to have a decent fighting chance */
 
-import { Enemy, Room, Agent, Mortal } from "./dungeon"
+import { Enemy, Room, Agent, Mortal, EnemyStatus, Player } from "./dungeon"
 import { DungeonAnalysis } from "./parseDungeon"
-import { randomElement, getRandomNumber, keysRepeated, sortByExits, shuffleArray } from "./utilties"
+import {
+  randomElement,
+  getRandomNumber,
+  keysRepeated,
+  sortByExits,
+  shuffleArray,
+  randomBossName,
+  aAn,
+  randomMonsterName,
+  singularize,
+  isMonster,
+  randomRaider,
+  determineRandomValue,
+  hasMonsterAttributes,
+  getEliteNoun,
+  capitalize,
+} from "./utilties"
 
 export type MenaceManifest = {
   player: Mortal
@@ -17,12 +33,10 @@ type AdversaryAnalysis = {
   [key in EnemyClass]: number
 }
 
-/** This is where encounter difficulty is determined.
- * If encounters need to be buffed or nerfed, do it here */
-const createEncounter = (enemyClass: EnemyClass, id: number): Enemy | Enemy[] => ({
-  id,
-  name: enemyClass,
-  class: enemyClass,
+const enemyTemplate: Enemy = {
+  id: -1,
+  name: "an enemy",
+  class: "peon",
   room: -1,
   health: 0,
   attack: 0,
@@ -30,7 +44,138 @@ const createEncounter = (enemyClass: EnemyClass, id: number): Enemy | Enemy[] =>
   statuses: [],
   inventory: [],
   isEnemy: true,
-})
+}
+
+const getPeonName = (previousNames: string[], { animal, enemies }: DungeonAnalysis): string => {
+  const enemyName = enemies && !isMonster(enemies) ? singularize(enemies) : undefined
+  const animalName = animal
+    ? animal.startsWith("were")
+      ? animal
+      : determineRandomValue() > 0.5
+      ? `were${animal}`
+      : `${animal}-man`
+    : undefined
+  const raider = randomRaider() // This returns the same raider each time it's called unless reset
+  const name = enemyName ?? animalName ?? raider
+  const changeItUp = (aName:string):string => {
+    const previousNameCount = previousNames.reduce((count, pname) => pname.endsWith(aName) ? count + 1 : count, 0)
+    if (previousNameCount < 4) return aName
+    else return changeItUp(randomRaider(true))
+  }
+  const peonName = changeItUp(name)
+
+  return peonName
+}
+
+const getEliteName = ({ bossName }: DungeonAnalysis) => {
+  const bossNoun = bossName?.match(/\b\w+\b$/)[0]
+  const bossAdjective = bossName?.match(/(?<=\s)\w+(?=\s\w+|$)/) ?? ""
+
+  const eliteNoun = capitalize(getEliteNoun(bossNoun?.toLowerCase()))
+
+  return aAn(`${bossAdjective} ${eliteNoun}`.trim())
+}
+
+const getMonsterName = (previousNames: string[], { animal, monsterName, enemies }: DungeonAnalysis) => {
+  const invader = enemies && (isMonster(enemies) || hasMonsterAttributes(enemies))
+  const isMonsterNameClaimed = monsterName && previousNames.some((pName) => pName === monsterName)
+  const isAnimalNameClaimed = animal === undefined || previousNames.some((pName) => pName.match(animal))
+  const nameFromStory = isMonsterNameClaimed ? undefined : monsterName
+  const nameFromEnemies = () => randomMonsterName(singularize(enemies))
+  const avoidDuplicates = (name: string, count = 3): string =>
+    name && count <= 0 ? name : previousNames.includes(name) ? avoidDuplicates(nameFromEnemies(), count - 1) : name
+  const nameFromInvader = invader ? avoidDuplicates(nameFromEnemies()) : undefined
+  const nameFromAnimal = isAnimalNameClaimed ? undefined : randomMonsterName(animal)
+  const name = nameFromStory ?? nameFromInvader ?? nameFromAnimal ?? randomMonsterName()
+  return name
+}
+
+const getStatuses = (name: string): EnemyStatus[] => {
+  const undead = /undead/.test(name) ? "undead" : undefined
+  const giant = /giant|huge/.test(name) ? "giant" : undefined
+  const invisible = /invisible/.test(name) ? "invisible" : undefined
+  const venomous = /venomous/.test(name) ? "venomous" : undefined
+  const spectral = /spectral/.test(name) ? "spectral" : undefined
+  const fireBreathing = /fire-breathing/.test(name) ? "fire-breathing" : undefined
+  return [fireBreathing, giant, invisible, spectral, undead, venomous].filter((x) => x) as EnemyStatus[]
+}
+
+const createBoss = (dungeonAnalysis: DungeonAnalysis): Enemy => {
+  const { artifact, bossName, deadBoss, weapons, magic } = dungeonAnalysis
+  const isMagicWeapon = weapons.some((weapon) => magic.some((magic) => magic === weapon))
+  const kindOfDead = isMagicWeapon ? "ghost" : "ghastly revenant"
+
+  // If boss is dead, what kind of dead? Some can only be defeated using magic weapons.
+  // Are there magic weapons in the dungeon? If not, Boss is a 'ghastly revenant'
+  // If so, then boss is a 'ghost' with status "spectral"
+
+  const name = deadBoss ? `the ${kindOfDead} of ${bossName}` : bossName ?? randomBossName()
+  const statuses: EnemyStatus[] = isMagicWeapon ? ["spectral"] : []
+  const inventory = artifact ? [artifact] : []
+
+  return { ...enemyTemplate, name, statuses, inventory, health: 5, attack: 4, defense: 4, class: "boss" } as Enemy
+}
+
+/** This is where encounter difficulty is determined.
+ * If encounters need to be buffed or nerfed, do it here */
+const createEncounter = (
+  previousEnemies: Enemy[],
+  dungeonAnalysis: DungeonAnalysis,
+  encounterType: EnemyClass
+): Enemy[] => {
+  const previousNames = previousEnemies.map((enemy) => enemy.name)
+  switch (encounterType) {
+    case "boss":
+      return [...previousEnemies, createBoss(dungeonAnalysis)]
+    case "monster": {
+      const name = getMonsterName(previousNames, dungeonAnalysis)
+      const statuses = getStatuses(name)
+      return [
+        ...previousEnemies,
+        {
+          ...enemyTemplate,
+          name,
+          class: encounterType,
+          health: 4,
+          attack: 2,
+          defense: 4,
+          statuses,
+        },
+      ] as Enemy[]
+    }
+    case "elite": {
+      const name = getEliteName(dungeonAnalysis)
+      return [
+        ...previousEnemies,
+        {
+          ...enemyTemplate,
+          name,
+          class: "elite",
+          health: 2,
+          attack: 3,
+          defense: 3,
+        },
+      ]
+    }
+    case "peon": {
+      const name = aAn(getPeonName(previousNames, dungeonAnalysis))
+      return [
+        ...previousEnemies,
+        {
+          ...enemyTemplate,
+          name,
+          class: "peon",
+          health: 1,
+          attack: 1,
+          defense: 1,
+        },
+      ]
+    }
+
+    default:
+      return [...previousEnemies, { ...enemyTemplate, name: `${aAn(encounterType)}`, class: encounterType }]
+  }
+}
 
 /** This is where balancing of _pacing_ of encounters happens.
  * If there are too many or too few encounters, these are the numbers to adjust. */
@@ -130,17 +275,24 @@ const placeEnemies =
     }
   }
 
-export const createAgents = (dungeonAnalysis: DungeonAnalysis): MenaceManifest => {
+export const createMenaceManifest = (dungeonAnalysis: DungeonAnalysis): MenaceManifest => {
   const adversaryAnalysis = getAdversaryAnalysis(dungeonAnalysis)
   const agents = keysRepeated(adversaryAnalysis)
-    .flatMap((encounterType, i) => createEncounter(encounterType, i))
+    .reduce(
+      (enemies: Enemy[], encounterType: EnemyClass) => createEncounter(enemies, dungeonAnalysis, encounterType),
+      []
+    )
+    .map((enemy, id) => ({ ...enemy, id }))
     .reduce(placeEnemies(dungeonAnalysis), [])
-  const player: Mortal = {
+
+  const minMortal: Mortal = {
     health: 3,
     defense: 3,
     attack: 3,
     statuses: [],
   }
+  const addMortals = (a: Mortal, b: Mortal) => ({ ...a, health: a.health + b.attack})
+  const player = agents.reduce((player: Player, agent: Enemy) => addMortals(player, agent), minMortal)
+
   return { player, agents }
 }
-

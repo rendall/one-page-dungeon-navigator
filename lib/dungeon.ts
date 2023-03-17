@@ -215,8 +215,11 @@ export type Agent = Mortal & {
   isEnemy?: boolean
 }
 
+export type EnemyStatus = MortalStatus | "spectral" | "fire-breathing" | "venomous" | "invisible" | "undead" | "giant"
+
 export type Enemy = Agent & {
   class: "boss" | "monster" | "elite" | "peon"
+  statuses: EnemyStatus[]
   isEnemy: true
 }
 

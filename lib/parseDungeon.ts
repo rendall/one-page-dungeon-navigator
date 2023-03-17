@@ -19,7 +19,7 @@ import {
   Water,
 } from "./dungeon"
 import { parseNote } from "./parseNote"
-import { hasProperty, sortById, sortExitsClockwise, toId } from "./utilties"
+import { hasProperty, isArmor, isMagic, isWeapon, sortById, sortExitsClockwise, toId } from "./utilties"
 
 export const facingDirection = (door: Door): ExitDirection => {
   if (door.dir.x === -1) return "west"
@@ -363,96 +363,6 @@ export const analyzeDungeon = (dungeon: Dungeon) => {
       .reduce((all, regex) => (all[0] ? all : regex.test(story) ? [story.match(regex)] : [undefined]), [undefined])
       .filter((o) => o !== undefined)
       .flatMap((o) => o.groups.artifact)[0]
-
-  const isWeapon = (item: string) =>
-    [
-      "axe",
-      "dagger",
-      "flail",
-      "glaive",
-      "halberd",
-      "hammer",
-      "javelin",
-      "katana",
-      "mace",
-      "rapier",
-      "scimitar",
-      "spear",
-      "staff",
-      "sword",
-    ].some((weapon) => item.match(new RegExp(`/\\b${weapon}\\b/`)))
-
-  const isArmor = (item: string) =>
-    [
-      "breastplate",
-      "cape",
-      "chainmail",
-      "cloak",
-      "helm",
-      "leather armor",
-      "mantle",
-      "robe",
-      "scale mail",
-      "scarf",
-      "shield",
-    ].some((armor) => item.match(new RegExp(`/\\b${armor}\\b/`)))
-
-  const isMagic = (item: string) =>
-    [
-      "amulet",
-      "ball",
-      "blade",
-      "book",
-      "bow",
-      "cape",
-      "carpet",
-      "censer",
-      "coin",
-      "compass",
-      "cube",
-      "doll",
-      "eldritch",
-      "enchanted",
-      "flask",
-      "flute",
-      "gem",
-      "grimoire",
-      "holy",
-      "horn",
-      "hourglass",
-      "knife",
-      "lamp",
-      "lantern",
-      "life stealing",
-      "lightning",
-      "looking glass",
-      "magic",
-      "mysterious",
-      "needle",
-      "orb",
-      "potion",
-      "quill",
-      "relic",
-      "rod",
-      "scroll",
-      "skull",
-      "slaying",
-      "smiting",
-      "spellbook",
-      "staff",
-      "stone",
-      "strange",
-      "tablet",
-      "tarot deck",
-      "tome",
-      "uncanny",
-      "unholy",
-      "vengeance",
-      "venom",
-      "vorpal",
-      "wand",
-      "weird",
-    ].some((magic) => item.match(new RegExp(`\\b${magic}\\b`)))
 
   const isTreasure = (item: string) =>
     [

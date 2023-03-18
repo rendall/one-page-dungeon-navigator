@@ -83,6 +83,7 @@ export type Water = {
 /** Dungeon is a navigable object derived from One-Page Dungeon's
  * JSON object */
 export type JsonDungeon = {
+  seed?: number
   version: string
   title: string
   story: string

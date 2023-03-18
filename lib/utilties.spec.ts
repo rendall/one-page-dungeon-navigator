@@ -1,4 +1,4 @@
-import { inventoryMessage, keysRepeated } from "./utilties"
+import { inventoryMessage, keysRepeated, RandomNumberGenerator } from "./utilties"
 
 describe("inventoryMessage()", () => {
   it("should count ordinary items", () => {
@@ -159,5 +159,31 @@ describe("inventoryMessage()", () => {
 describe("keysRepeated()", () => {
   it("should return the expected value", () => {
     expect(keysRepeated({ a: 1, b: 2, c: 3 })).toEqual(["a", "b", "b", "c", "c", "c"])
+  })
+})
+
+describe("RandomNumberGenerator", () => {
+  test("is deterministic for the same seed", () => {
+    RandomNumberGenerator.setSeed(42)
+    const rng1 = RandomNumberGenerator.getInstance()
+    const results1 = Array.from({ length: 5 }, () => rng1.getNext())
+
+    RandomNumberGenerator.setSeed(42)
+    const rng2 = RandomNumberGenerator.getInstance()
+    const results2 = Array.from({ length: 5 }, () => rng2.getNext())
+
+    expect(results1).toEqual(results2)
+  })
+
+  test("produces different results for different seeds", () => {
+    RandomNumberGenerator.setSeed(42)
+    const rng1 = RandomNumberGenerator.getInstance()
+    const results1 = Array.from({ length: 5 }, () => rng1.getNext())
+
+    RandomNumberGenerator.setSeed(24)
+    const rng2 = RandomNumberGenerator.getInstance()
+    const results2 = Array.from({ length: 5 }, () => rng2.getNext())
+
+    expect(results1).not.toEqual(results2)
   })
 })

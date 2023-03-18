@@ -51,14 +51,14 @@ const getPeonName = (previousNames: string[], { animal, enemies }: DungeonAnalys
   const animalName = animal
     ? animal.startsWith("were")
       ? animal
-      : determineRandomValue() > 0.5
+      : determineRandomValue() < 0.33
       ? `were${animal}`
       : `${animal}-man`
     : undefined
   const raider = randomRaider() // This returns the same raider each time it's called unless reset
   const name = enemyName ?? animalName ?? raider
-  const changeItUp = (aName:string):string => {
-    const previousNameCount = previousNames.reduce((count, pname) => pname.endsWith(aName) ? count + 1 : count, 0)
+  const changeItUp = (aName: string): string => {
+    const previousNameCount = previousNames.reduce((count, pname) => (pname.endsWith(aName) ? count + 1 : count), 0)
     if (previousNameCount < 4) return aName
     else return changeItUp(randomRaider(true))
   }
@@ -291,7 +291,7 @@ export const createMenaceManifest = (dungeonAnalysis: DungeonAnalysis): MenaceMa
     attack: 3,
     statuses: [],
   }
-  const addMortals = (a: Mortal, b: Mortal) => ({ ...a, health: a.health + b.attack})
+  const addMortals = (a: Mortal, b: Mortal) => ({ ...a, health: a.health + b.attack })
   const player = agents.reduce((player: Player, agent: Enemy) => addMortals(player, agent), minMortal)
 
   return { player, agents }

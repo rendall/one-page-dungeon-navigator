@@ -19,7 +19,16 @@ import {
   Water,
 } from "./dungeon"
 import { parseNote } from "./parseNote"
-import { hasProperty, isArmor, isMagic, isWeapon, sortById, sortExitsClockwise, toId } from "./utilties"
+import {
+  hasProperty,
+  isArmor,
+  isMagic,
+  isWeapon,
+  RandomNumberGenerator,
+  sortById,
+  sortExitsClockwise,
+  toId,
+} from "./utilties"
 
 export const facingDirection = (door: Door): ExitDirection => {
   if (door.dir.x === -1) return "west"
@@ -222,7 +231,10 @@ const getAdjacent = <T extends Rect>(a: T, rects: T[]) => rects.filter((rect) =>
 
 /** Accepts One-Page JSON and returns a navigable object */
 export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
-  const { rects, notes: notesWithoutId, doors } = dungeon
+  const { rects, notes: notesWithoutId, doors, seed } = dungeon
+
+  const rngSeed = seed ?? 42
+  if (!RandomNumberGenerator.hasInstance()) RandomNumberGenerator.setSeed(rngSeed)
 
   // Assign a unique id to each rect
   const rectsWithId: (Rect & { id: number })[] = rects.map((r, id) => ({

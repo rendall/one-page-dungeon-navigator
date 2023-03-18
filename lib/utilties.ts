@@ -11,8 +11,8 @@ import { Exit, Room } from "./dungeon"
  */
 export const compose =
   <T>(...funcs: ((i: T) => T)[]) =>
-    (initValue: T): T =>
-      funcs.reduce<T>((all: T, f) => f(all), initValue)
+  (initValue: T): T =>
+    funcs.reduce<T>((all: T, f) => f(all), initValue)
 
 /** Compare two arrays and only return true if they each have the same elements, irrespective of order */
 export const arrEqual = (a: unknown[], b: unknown[]): boolean => {
@@ -25,16 +25,13 @@ export const arrEqual = (a: unknown[], b: unknown[]): boolean => {
   return arrEqual(a.slice(1), bStripped)
 }
 
-/** Durstenfeld shuffle */
+/** Shuffles an array */
 export const shuffleArray = <T>(array: T[]): T[] =>
-  array.reverse().reduce(
-    (acc, _, i) => {
-      const j = Math.floor(getRandomNumber() * (i + 1))
-        ;[acc[i], acc[j]] = [acc[j], acc[i]]
-      return acc
-    },
-    [...array]
-  )
+  array
+    .map((value) => ({ value, random: getRandomNumber() }))
+    .sort((a, b) => a.random - b.random)
+    .map(({ value }) => value)
+
 /** call arr.sort() on anything that has an id, such as a room, note or enemy */
 export const sortById = <T extends { id: number }>(a: T, b: T) => (a.id > b.id ? 1 : b.id > a.id ? -1 : 0)
 
@@ -45,15 +42,15 @@ export const sortByExits = (a: Room, b: Room) =>
 /** This gives an expected order to the exits when using numbers to specify them */
 export const sortExitsClockwise =
   (room: { x: number; y: number }) =>
-    (aExit: Exit, bExit: Exit): 1 | 0 | -1 => {
-      const a = aExit.door
-      const b = bExit.door
-      const [ax, ay] = [a.x - room.x, a.y - room.y]
-      const [bx, by] = [b.x - room.x, b.y - room.y]
-      const angleA = Math.atan2(ay, ax)
-      const angleB = Math.atan2(by, bx)
-      return angleA < angleB ? -1 : angleA > angleB ? 1 : 0
-    }
+  (aExit: Exit, bExit: Exit): 1 | 0 | -1 => {
+    const a = aExit.door
+    const b = bExit.door
+    const [ax, ay] = [a.x - room.x, a.y - room.y]
+    const [bx, by] = [b.x - room.x, b.y - room.y]
+    const angleA = Math.atan2(ay, ax)
+    const angleB = Math.atan2(by, bx)
+    return angleA < angleB ? -1 : angleA > angleB ? 1 : 0
+  }
 
 /** Take an object of the form { key: n } where n is a number, and
  * return an array of keys repeated n times.
@@ -225,29 +222,39 @@ export const curiousMessage = ({ trigger, action, feature, object }: { [key: str
 /**
  * Deterministic RNG based on seed
  */
-class RandomNumberGenerator {
+export class RandomNumberGenerator {
   private static instance: RandomNumberGenerator
-  private state: number
+  private seed: number
+
+  private static readonly a: number = 1664525
+  private static readonly c: number = 1013904223
+  private static readonly m: number = 2 ** 32
 
   private constructor(seed: number) {
-    this.state = seed
+    this.seed = seed
   }
 
+  /** Designed to be called once per dungeon, setting a seed makes the pseudorandom output deterministic.*/
   public static setSeed(seed: number): void {
-    if (!RandomNumberGenerator.instance) {
-      RandomNumberGenerator.instance = new RandomNumberGenerator(seed)
-    } else throw new Error("Call RandomNumberGenerator.setSeed(<seed>) only once")
+    RandomNumberGenerator.instance = new RandomNumberGenerator(seed)
   }
 
   public static getInstance(): RandomNumberGenerator {
-    if (!RandomNumberGenerator.instance)
+    if (!RandomNumberGenerator.instance) {
       throw new Error("Call RandomNumberGenerator.setSeed(<seed>) before getInstance()")
+    }
     return RandomNumberGenerator.instance
   }
 
+  public static hasInstance = (): boolean => !!RandomNumberGenerator.instance
+
   public getNext(): number {
-    const x = Math.sin(this.state++) * 10000
-    return x - Math.floor(x)
+    this.seed = (RandomNumberGenerator.a * this.seed + RandomNumberGenerator.c) % RandomNumberGenerator.m
+    return this.seed / RandomNumberGenerator.m
+  }
+
+  public nextInt(min: number, max: number): number {
+    return min + Math.floor(this.getNext() * (max - min))
   }
 }
 
@@ -353,7 +360,6 @@ const angels = ["seraph", "cherub", "ophan", "potentate", "archangel", "angel"]
     Wendigo, Native American mythology, pre-colonial era - a malevolent spirit associated with cannibalism and winter.
     Yōkai: Japanese, pre-8th century CE, a class of supernatural beings that includes malevolent spirits and demons
     */
-
 
 const demons = [
   "alu",
@@ -664,10 +670,6 @@ export const isMagic = (item: string) =>
     "wand",
     "weird",
   ].some((magic) => item.match(new RegExp(`\\b${magic}\\b`)))
-
-
-/**TODO: Set this based on map seeds */
-RandomNumberGenerator.setSeed(12345)
 
 export const getRandomNumber = (): number => RandomNumberGenerator.getInstance().getNext()
 

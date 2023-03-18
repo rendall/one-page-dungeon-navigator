@@ -419,7 +419,6 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
               controlElements.forEach((control: HTMLElement) => {
                 control.removeEventListener("click", null)
               })
-
               // resolve the getNextInput promise with the exit direction
               resolve(control.dataset.command.toString())
             },
@@ -427,7 +426,6 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
           )
         })
       })
-
       return await Promise.race([keyboardPromise, touchPromise])
     }
 
@@ -490,6 +488,7 @@ const startGame = async () => {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const gameEnd = (result: GameOutput) => {
   //TODO: use result to show end result to user
+  console.log({ result })
   const gameSection = document.querySelector("section#game")
   gameSection.classList.add("hide")
 

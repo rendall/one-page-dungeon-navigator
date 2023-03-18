@@ -1,4 +1,5 @@
 import { Dungeon, Action, exitDirections, Exit, isEnemy } from "../lib/dungeon"
+import { GameResult, showGameSummary } from "./presentResults";
 import { parseDungeon } from "../lib/parseDungeon"
 import { game, GameOutput } from "../lib/gameLoop"
 
@@ -161,6 +162,7 @@ const printMessage = (message: string, type = "message") => {
 
 const addTouchControls = (result: GameOutput) => {
   const exits = result.exits
+  const turn = result.turn
   const enemies = result.agents.filter(isEnemy).filter((enemy) => !enemy.statuses.includes("dead"))
   const messageScroll = document.getElementById("message-scroll")
   const ul = document.createElement("ul") as HTMLUListElement
@@ -169,6 +171,7 @@ const addTouchControls = (result: GameOutput) => {
     li.textContent = text
     li.classList.add("control")
     li.dataset.command = command
+    li.dataset.turn = turn.toString() // Adding `turn` here enables old controls to be invalidated
     return li
   }
   exits.forEach((exit, i) => {
@@ -486,7 +489,7 @@ const startGame = async () => {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const gameEnd = (result: GameOutput) => {
+const gameEnd = (result: GameResult) => {
   //TODO: use result to show end result to user
   console.log({ result })
   const gameSection = document.querySelector("section#game")

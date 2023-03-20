@@ -63,6 +63,10 @@ section.hide {
   display: none;
 }
 
+section#game.hide {
+  display: none;
+}
+
 h1,
 h2,
 h3,
@@ -186,7 +190,7 @@ section#game {
   display: flex;
 }
 
-#game.hide {
+.hide {
   display: none;
 }
 
@@ -278,6 +282,51 @@ section#game {
   padding: 0 1rem;
   display: flex;
   align-items: center;
+}
+
+.game-summary {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.game-summary p {
+  padding: 0;
+  margin: 0;
+}
+
+.game-summary button {
+  margin-top: 2rem;
+}
+
+.game-summary button.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.game-summary.hide {
+  display: none;
+}
+
+.game-summary-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 600px;
+  text-align: center;
+  position: relative;
 }
 
 body.credits {

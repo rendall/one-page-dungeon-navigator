@@ -5,21 +5,20 @@
 import { Enemy, Room, Agent, Mortal, EnemyStatus, Player } from "./dungeon"
 import { DungeonAnalysis } from "./parseDungeon"
 import {
-  randomElement,
-  getRandomNumber,
-  keysRepeated,
-  sortByExits,
-  shuffleArray,
-  randomBossName,
   aAn,
-  randomMonsterName,
-  singularize,
-  isMonster,
-  randomRaider,
   determineRandomValue,
-  hasMonsterAttributes,
   getEliteNoun,
-  capitalize,
+  getRandomNumber,
+  hasMonsterAttributes,
+  isMonster,
+  keysRepeated,
+  randomBossName,
+  randomElement,
+  randomMonsterName,
+  randomRaider,
+  shuffleArray,
+  singularize,
+  sortByExits,
 } from "./utilties"
 
 export type MenaceManifest = {
@@ -67,11 +66,12 @@ const getPeonName = (previousNames: string[], { animal, enemies }: DungeonAnalys
   return peonName
 }
 
-const getEliteName = ({ bossName }: DungeonAnalysis) => {
-  const bossNoun = bossName?.match(/\b\w+\b$/)[0]
-  const bossAdjective = bossName?.match(/(?<=\s)\w+(?=\s\w+|$)/) ?? ""
+const getEliteName = (previousEnemies: Enemy[], { bossName }: DungeonAnalysis) => {
+  const boss = bossName ?? previousEnemies.find((enemy) => enemy.class === "boss")?.name
+  const bossNoun = boss?.match(/\b\w+\b$/)[0]
+  const bossAdjective = boss?.match(/(?<=\s)\w+(?=\s\w+|$)/) ?? ""
 
-  const eliteNoun = capitalize(getEliteNoun(bossNoun?.toLowerCase()))
+  const eliteNoun = getEliteNoun(bossNoun?.toLowerCase())
 
   return aAn(`${bossAdjective} ${eliteNoun}`.trim())
 }
@@ -101,16 +101,16 @@ const getStatuses = (name: string): EnemyStatus[] => {
 }
 
 const createBoss = (dungeonAnalysis: DungeonAnalysis): Enemy => {
-  const { artifact, bossName, deadBoss, weapons, magic } = dungeonAnalysis
-  const isMagicWeapon = weapons.some((weapon) => magic.some((magic) => magic === weapon))
-  const kindOfDead = isMagicWeapon ? "ghost" : "ghastly revenant"
+  const { artifact, bossName, deadBoss, weapons, isMagic } = dungeonAnalysis
+  const isMagicWeapon = () => weapons.some((weapon) => isMagic(weapon))
+  const kindOfDead = () => (isMagicWeapon ? "ghost" : "revenant")
 
   // If boss is dead, what kind of dead? Some can only be defeated using magic weapons.
   // Are there magic weapons in the dungeon? If not, Boss is a 'ghastly revenant'
   // If so, then boss is a 'ghost' with status "spectral"
 
-  const name = deadBoss ? `the ${kindOfDead} of ${bossName}` : bossName ?? randomBossName()
-  const statuses: EnemyStatus[] = isMagicWeapon ? ["spectral"] : []
+  const name = deadBoss ? `the ${kindOfDead()} of ${bossName}` : bossName ?? `the ${randomBossName()}`
+  const statuses: EnemyStatus[] = deadBoss && isMagicWeapon() ? ["spectral"] : []
   const inventory = artifact ? [artifact] : []
 
   return { ...enemyTemplate, name, statuses, inventory, health: 5, attack: 4, defense: 4, class: "boss" } as Enemy
@@ -144,7 +144,7 @@ const createEncounter = (
       ] as Enemy[]
     }
     case "elite": {
-      const name = getEliteName(dungeonAnalysis)
+      const name = getEliteName(previousEnemies, dungeonAnalysis)
       return [
         ...previousEnemies,
         {
@@ -180,6 +180,7 @@ const createEncounter = (
 /** This is where balancing of _pacing_ of encounters happens.
  * If there are too many or too few encounters, these are the numbers to adjust. */
 export const getAdversaryAnalysis = ({
+  bossName,
   rooms,
   veryLargeRooms,
   numKeys,
@@ -193,7 +194,7 @@ export const getAdversaryAnalysis = ({
   const largeRoomsCount = largeRooms.length + mediumRooms.length
   const lockedRoomsCount = lockedRooms.length === rooms.length ? 0 : lockedRooms.length
 
-  const bossChance = numKeys * 0.25 + emptyRoomsCount * 0.01
+  const bossChance = numKeys * 0.25 + emptyRoomsCount * 0.01 + (bossName ? 1 : 0) // a bossName virtually ensures that a boss will show up
   const boss = bossChance > getRandomNumber() ? 1 : 0
   const monster = Math.max(Math.floor(veryLargeRoomsCount / 2.5 + largeRoomsCount / 20 + (1 - bossChance)), 0)
   const elite = Math.max(Math.floor(lockedRoomsCount * 0.15 + (1 - bossChance)), 0)
@@ -285,14 +286,14 @@ export const createMenaceManifest = (dungeonAnalysis: DungeonAnalysis): MenaceMa
     .map((enemy, id) => ({ ...enemy, id }))
     .reduce(placeEnemies(dungeonAnalysis), [])
 
-  const minMortal: Mortal = {
-    health: 3,
-    defense: 3,
+  const startingStats: Mortal = {
+    health: 4,
+    defense: 4,
     attack: 3,
     statuses: [],
   }
   const addMortals = (a: Mortal, b: Mortal) => ({ ...a, health: a.health + b.attack })
-  const player = agents.reduce((player: Player, agent: Enemy) => addMortals(player, agent), minMortal)
+  const player = agents.reduce((player: Player, agent: Enemy) => addMortals(player, agent), startingStats)
 
   return { player, agents }
 }

@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Dungeon, Action, exitDirections, Exit, isEnemy } from "../lib/dungeon"
-import { GameResult, showGameSummary } from "./presentResults";
 import { parseDungeon } from "../lib/parseDungeon"
-import { game, GameOutput } from "../lib/gameLoop"
+import { game, GameOutput, GameResult } from "../lib/gameLoop"
+import { pluralize, toThe } from "../lib/utilties"
 
 const INSTRUCTIONS = `
 <p class="instructions">Navigate the dungeon by pressing the buttons below, using the arrow keys, or pressing the following keys:</p>
@@ -386,51 +387,50 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
   const initResult = inputToGame("init")
   presentResult(initResult)
 
-  // define game loop
-  const getNextResult = async (oldResult: GameOutput): Promise<GameOutput> => {
+  const getNextInput = async (): Promise<Action | string> => {
+    const keyboardPromise = new Promise<Action | string>((resolve) => {
+      const onKeyDownListener = (event: KeyboardEvent) => {
+        const key = event.key.toLowerCase()
+        const isValid = /^[a-z#?0-9]$/.test(key) || key.startsWith("arrow")
+        if (!isValid) {
+          event.preventDefault()
+          getNextInput().then(resolve)
+        } else resolve(key)
+      }
+      document.addEventListener("keydown", onKeyDownListener, { once: true })
+    })
+
+    const touchPromise = new Promise<Action | string>((resolve) => {
+      // get the control elements
+      const controlElements = document.querySelectorAll(".control")
+
+      // add a touch event listener to each control element
+      controlElements.forEach((control: HTMLElement) => {
+        control.addEventListener(
+          "click",
+          (event) => {
+            // prevent the default touch event behavior
+            event.preventDefault()
+
+            // once touched, remove the event listeners and classes from all exit elements
+            controlElements.forEach((control: HTMLElement) => {
+              control.removeEventListener("click", null)
+            })
+            // resolve the getNextInput promise with the exit direction
+            resolve(control.dataset.command.toString())
+          },
+          { once: true }
+        )
+      })
+    })
+    return await Promise.race([keyboardPromise, touchPromise])
+  }
+
+  const innerGameLoop = async (oldResult: GameOutput): Promise<GameOutput> => {
     const oldTouchControls = document.querySelectorAll(".control")
     Array.from(oldTouchControls)
       .filter((oldControl: HTMLLIElement) => parseInt(oldControl.dataset.turn) < oldResult.turn)
       .forEach((oldControl: HTMLLIElement) => oldControl.remove())
-
-    const getNextInput = async (): Promise<Action | string> => {
-      const keyboardPromise = new Promise<Action | string>((resolve) => {
-        const onKeyDownListener = (event: KeyboardEvent) => {
-          const key = event.key.toLowerCase()
-          const isValid = /^[a-z#?0-9]$/.test(key) || key.startsWith("arrow")
-          if (!isValid) {
-            event.preventDefault()
-            getNextInput().then(resolve)
-          } else resolve(key)
-        }
-        document.addEventListener("keydown", onKeyDownListener, { once: true })
-      })
-
-      const touchPromise = new Promise<Action | string>((resolve) => {
-        // get the control elements
-        const controlElements = document.querySelectorAll(".control")
-
-        // add a touch event listener to each control element
-        controlElements.forEach((control: HTMLElement) => {
-          control.addEventListener(
-            "click",
-            (event) => {
-              // prevent the default touch event behavior
-              event.preventDefault()
-
-              // once touched, remove the event listeners and classes from all exit elements
-              controlElements.forEach((control: HTMLElement) => {
-                control.removeEventListener("click", null)
-              })
-              // resolve the getNextInput promise with the exit direction
-              resolve(control.dataset.command.toString())
-            },
-            { once: true }
-          )
-        })
-      })
-      return await Promise.race([keyboardPromise, touchPromise])
-    }
 
     const input = await getNextInput()
     const isKey = input.length === 1 || input.startsWith("arrow")
@@ -442,7 +442,6 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
       printMessage(`<p class="error">Unknown command '${input}'</p>${INSTRUCTIONS}`, "html")
     }
 
-    // Prevent the user from accidentally quitting by pressing the key to go outside.
     const pressedOutKey = (input: string, exits: Exit[]) => {
       const isExitKey = isKey && exitDirections.some((direction) => action === direction)
       if (!isExitKey) return false
@@ -462,11 +461,12 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
       return result
     } else {
       requestAnimationFrame(updateMessageScroll)
-      return getNextResult(result)
+      return innerGameLoop(result)
     }
   }
 
-  return getNextResult(initResult)
+  const finalGameOutput = (await innerGameLoop(initResult)) as GameResult
+  return finalGameOutput
 }
 
 const getSelectedDungeon = (selectId: string) => {
@@ -488,15 +488,99 @@ const startGame = async () => {
   }
 }
 
+const showGameSummary = ({
+  artifact,
+  artifactFound,
+  boss,
+  defeatedBy,
+  enemiesDefeated,
+  moreSecrets,
+  moreTreasures,
+  title,
+  treasuresFound,
+  victory,
+}: GameResult): void => {
+  const gameSummary = document.getElementById("game-summary")!
+  const defeatGraphic = document.getElementById("defeat-graphic")!
+  const victoryGraphic = document.getElementById("victory-graphic")!
+  const gameResultElement = document.getElementById("game-result")!
+  const defeatedByHeader = document.getElementById("defeated-by")!
+  const defeatedByList = document.getElementById("defeated-by-list")!
+  const enemiesDefeatedList = document.getElementById("enemies-defeated")!
+  const treasuresFoundList = document.getElementById("treasures-found")!
+  const moreTreasuresSecrets = document.getElementById("more-treasures-secrets")!
+
+  gameResultElement.textContent = victory ? `Victory in The ${title}` : `Defeat in The ${title}`
+
+  if (victory) {
+    defeatGraphic.classList.add("hide")
+    victoryGraphic.classList.remove("hide")
+  } else {
+    victoryGraphic.classList.add("hide")
+    defeatGraphic.classList.remove("hide")
+  }
+
+  if (victory && artifact) {
+    const message = `You ${artifactFound ? "recovered" : "did not recover"} ${toThe(artifact)}${
+      artifactFound ? "!" : ""
+    }`
+    const artifactResult = document.createElement("p")
+    artifactResult.innerText = message
+    gameResultElement.insertAdjacentElement("afterend", artifactResult)
+  }
+
+  if (victory && boss) {
+    const message = `You defeated ${toThe(boss)}!`
+    const bossResult = document.createElement("p")
+    bossResult.innerText = message
+    gameResultElement.insertAdjacentElement("afterend", bossResult)
+  }
+
+  defeatedByHeader.textContent = victory ? "" : `You were defeated by:`
+  defeatedByList.innerHTML = defeatedBy?.map((enemy) => `<p>${enemy}</p>`).join("")
+
+  const enemiesCount = enemiesDefeated.reduce<{ [enemy: string]: number }>(
+    (count: { [enemy: string]: number }, enemy) => ({ ...count, [enemy]: count.enemy ? 1 : count.enemy + 1 }),
+    {}
+  )
+
+  enemiesDefeatedList.innerHTML = Object.entries(enemiesCount)
+    .map(([enemy, count]) => `<p>${pluralize(count, enemy)}</p>`)
+    .join("")
+
+  if (treasuresFound) treasuresFoundList.innerHTML = treasuresFound.map((treasure) => `<p>${treasure}</p>`).join("")
+
+  if (victory) {
+    if (moreSecrets && moreTreasures)
+      moreTreasuresSecrets.textContent = `There are more secrets and treasures to be discovered in The ${title}`
+    else if (moreSecrets) moreTreasuresSecrets.textContent = `There are more secrets to be discovered in The ${title}`
+    else if (moreTreasures)
+      moreTreasuresSecrets.textContent = `There are more treasures to be discovered in The ${title}`
+  }
+
+  gameSummary.classList.remove("hide")
+
+  const closeButton = document.getElementById("game-summary-close-button")
+
+  closeButton.addEventListener("click", () => {
+    gameSummary.classList.add("hide")
+  })
+
+  const content = document.querySelector(".game-summary-content")!
+  content.addEventListener("click", (event) => {
+    event.stopPropagation()
+  })
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const gameEnd = (result: GameResult) => {
-  //TODO: use result to show end result to user
-  console.log({ result })
   const gameSection = document.querySelector("section#game")
   gameSection.classList.add("hide")
 
   const menuSection = document.querySelector("section#menu")
   menuSection.classList.remove("hide")
+
+  showGameSummary(result)
 }
 
 startButton.addEventListener("click", startGame)

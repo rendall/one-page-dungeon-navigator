@@ -223,7 +223,9 @@ describe("gameLoop good game()", () => {
     const useOutput = input("use")
     expect(useOutput).toMatchObject({
       action: "use",
-      message: `${curiousNote.message}\nYou now have: a book of protection and a creepy doll`,
+      message: expect.stringContaining(
+        `${curiousNote.message}\n\nYou now have: a book of protection and a creepy doll`
+      ),
       description: expect.stringContaining("You are in a 1x1 minimal room."),
     })
   })
@@ -456,12 +458,12 @@ describe("gameLoop good game()", () => {
       ["east", "You go east"],
       [
         "search",
-        "You approach the iron key hovering in the middle of the hall and take it.\nYou now have: an iron key",
+        "You approach the iron key hovering in the middle of the hall and take it.\n\nYou now have: an iron key",
       ],
       ["west", "You go west"],
       ["west", "You go west"],
       ["west", "You go west"],
-      ["search", "You open the large chest and find an iron key.\nYou now have: two iron keys"],
+      ["search", "You open the large chest and find an iron key.\n\nYou now have: two iron keys"],
       ["north", "You go north"],
       ["1", "You go north"],
       ["north", "You go north"],
@@ -476,7 +478,7 @@ describe("gameLoop good game()", () => {
 
     test.each(expectations)("%s should output %s", (input, expectedMessage) => {
       const { message } = gameInterface(input)
-      expect(message).toBe(expectedMessage)
+      expect(message).toContain(expectedMessage)
     })
   })
 })

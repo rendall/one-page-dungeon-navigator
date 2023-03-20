@@ -1,3 +1,4 @@
+.env
 /node_modules/
 RAW
 coverage/*
@@ -6,5 +7,3 @@ lib/*.js
 scripts/*.mjs
 scripts/node.js
 scripts/random.js
-.env
-scripts/combat-checker.ts

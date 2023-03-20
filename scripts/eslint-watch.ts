@@ -1,6 +1,6 @@
-const { spawn } = require("child_process")
-const fs = require("fs")
-const path = require("path")
+import { spawn } from "child_process"
+import { readdirSync, statSync, watchFile } from "fs"
+import { join, extname } from "path"
 
 const watchFolders = ["./src", "./scripts", "./lib"]
 
@@ -24,15 +24,15 @@ function clearTerminal() {
 }
 
 function watchFolder(folderPath) {
-  fs.readdirSync(folderPath).forEach((file) => {
-    const fullPath = path.join(folderPath, file)
-    const stat = fs.statSync(fullPath)
+  readdirSync(folderPath).forEach((file) => {
+    const fullPath = join(folderPath, file)
+    const stat = statSync(fullPath)
 
     if (stat.isDirectory()) {
       watchFolder(fullPath)
-    } else if (path.extname(fullPath) === ".ts") {
-      fs.watchFile(fullPath, () => {
-        console.log(`File changed: ${fullPath}`)
+    } else if (extname(fullPath) === ".ts") {
+      watchFile(fullPath, () => {
+        console.info(`File changed: ${fullPath}`)
         clearTerminal()
         runESLint()
       })
@@ -40,5 +40,5 @@ function watchFolder(folderPath) {
   })
 }
 
-console.log("Watching TypeScript files for changes...")
+console.info("Watching TypeScript files for changes...")
 watchFolders.forEach((folder) => watchFolder(folder))

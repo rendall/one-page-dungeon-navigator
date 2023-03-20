@@ -82,7 +82,9 @@ export const unique = <T>(arr: T[]) => arr.reduce((out: T[], e: T) => (out.inclu
 
 const hasVerb = (str: string) => (/(holds|hides)/.test(str) ? "" : /^\w*s\s/.test(str) ? "are " : "is ")
 
-export const hasProperty = (obj: unknown, property: string) => Object.prototype.hasOwnProperty.call(obj, property)
+/** Checks if obj has property. Optional predicate to check value of property */
+export const hasProperty = (obj: unknown, property: string, pred: (value: unknown) => boolean = () => true) =>
+  Object.prototype.hasOwnProperty.call(obj, property) && pred((obj as { [key: string]: unknown })[property])
 
 /** Add a 'is/are here at the end of a sentence */
 export const isHere = (str: string) => (str.startsWith("The") ? str : `${capitalize(str)} ${hasVerb(str)} here`)
@@ -122,7 +124,7 @@ export const singularize = (word: string) => {
 
 /** to plural */
 export const pluralize = (count: number, word: string): string => {
-  if (count === 1) return word
+  if (count === 1 || isNaN(count)) return word
   if (word === "some gold") {
     if (count === 2) return "gold"
     return "a lot of gold"
@@ -395,25 +397,14 @@ const demons = [
 
 const religiousElites = [
   "acolyte",
-  "bishop",
-  "cardinal",
+  "novitiate",
   "cleric",
-  "deacon",
-  "divine",
-  "evangelist",
-  "hermit",
-  "missionary",
   "monk",
-  "nun",
   "paladin",
   "preacher",
   "prophet",
-  "saint",
   "templar",
-  "theologian",
-  "vicar",
   "zealot",
-  "exorcist",
 ]
 
 const royalElites = [
@@ -478,47 +469,43 @@ const powerfulBeingsElite = [
 ]
 
 const militaryElite = [
-  "paladin",
-  "cavalier",
-  "templar",
-  "crusader",
+  "berserker",
   "champion",
-  "lancer",
-  "hussar",
-  "halberdier",
-  "pikeman",
-  "dragoon",
-  "horseman",
-  "squire",
-  "myrmidon",
-  "warden",
+  "crusader",
   "exemplar",
+  "gladiator",
+  "myrmidon",
+  "paladin",
+  "templar",
+  "warden",
+  "warrior",
 ]
 
 export const getEliteNoun = (bossNoun?: string) => {
+  const format = (arr: string[]) => capitalize(randomElement(arr))
   switch (bossNoun) {
     // Royalty bosses
     case "king":
     case "queen":
     case "prince":
     case "emperor":
-      return randomElement(royalElites)
+      return format(royalElites)
 
     // Magic-user bosses
     case "magus":
     case "savant":
     case "witch":
-      return randomElement(magusEliteClass)
+      return format(magusEliteClass)
 
     // God boss
     case "god":
-      return randomElement(angels)
+      return format(angels)
 
     // Powerful being bosses
     case "titan":
     case "dragon":
     case "reaper":
-      return randomElement(powerfulBeingsElite)
+      return format(powerfulBeingsElite)
 
     // Military bosses
     case "lord":
@@ -526,13 +513,13 @@ export const getEliteNoun = (bossNoun?: string) => {
     case "baron":
     case "general":
     case "knight":
-      return randomElement(militaryElite)
+      return format(militaryElite)
 
     // Religious figure bosses
     case "messiah":
     case "oracle":
     case "priest":
-      return randomElement(religiousElites)
+      return format(religiousElites)
 
     // Default case for unrecognized boss types
     default:
@@ -540,7 +527,7 @@ export const getEliteNoun = (bossNoun?: string) => {
   }
 }
 
-const raiders = ["orc", "goblin", "hobgoblin", "kobold", "gnoll", "pirate", "bandit", "cultist", "thug", "ogre"]
+const raiders = ["orc", "goblin", "hobgoblin", "kobold", "gnoll", "pirate", "bandit", "cultist", "thug"]
 
 export const randomRaider = (() => {
   let raider: string
@@ -569,21 +556,50 @@ const monsterAdj = [
   "invisible",
 ]
 
-const monsterNoun = ["dragon", "basilisk", "manticore", "beholder", "sphinx", "chimera", "hydra", "wyvern", "wyrm"]
+const monsterNoun = [
+  "dragon",
+  "basilisk",
+  "manticore",
+  "beholder",
+  "sphinx",
+  "chimera",
+  "hydra",
+  "wyvern",
+  "wyrm",
+  "ogre",
+]
 
 export const isMonster = (name: string) => name && monsterNoun.some((noun) => name.includes(noun))
 export const hasMonsterAttributes = (name: string) => name && monsterAdj.some((adj) => name.includes(adj))
 
 export const randomMonsterName = (beast?: string) => {
-  const bigAdj = isMonster(beast) ? undefined : randomElement(beastAdj)
-  const monAdj = beast && hasMonsterAttributes(beast) ? "" : `${randomElement(monsterAdj)} `
-  const name = `${monAdj}${beast ?? randomElement(monsterNoun)}`
-  const monsterName = bigAdj ? `${bigAdj}, ${name}` : name
-  return aAn(monsterName)
+  if (beast && !isMonster(beast)) {
+    // if there's a beast, then it's going to be a "big, scary beast"
+    const bigAdj = randomElement(beastAdj)
+    const monAdj = hasMonsterAttributes(beast) ? "" : `${randomElement(monsterAdj)} `
+    const name = `${monAdj}${beast}`
+    const monsterName = bigAdj ? `${bigAdj}, ${name}` : name
+    return aAn(monsterName)
+  }
+  // otherwise it's rarely going to be a "spectral monster" and even more rarely a "big, spectral monster"
+  const monster = beast ?? monsterNoun[Math.floor(determineRandomValue() * monsterNoun.length)]
+  const monsterRandom = getRandomNumber()
+  if (monsterRandom <= 0.01) {
+    const bigAdj = randomElement(beastAdj)
+    const monAdj = hasMonsterAttributes(monster) ? "" : `${randomElement(monsterAdj)} `
+    const name = `${monAdj}${monster}`
+    const monsterName = bigAdj ? `${bigAdj}, ${name}` : name
+    return aAn(monsterName)
+  } else if (monsterRandom <= 0.1) {
+    const monAdj = hasMonsterAttributes(monster) ? "" : `${randomElement(monsterAdj)} `
+    const monsterName = `${monAdj}${monster}`
+    return aAn(monsterName)
+  } else return aAn(monster)
 }
 export const isWeapon = (item: string) =>
   [
     "axe",
+    "blade",
     "dagger",
     "flail",
     "glaive",
@@ -597,7 +613,7 @@ export const isWeapon = (item: string) =>
     "spear",
     "staff",
     "sword",
-  ].some((weapon) => item.match(new RegExp(`/\\b${weapon}\\b/`)))
+  ].some((weapon) => new RegExp(`\\b${weapon}\\b`).test(item))
 
 export const isArmor = (item: string) =>
   [

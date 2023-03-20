@@ -4,7 +4,7 @@ import { readdir, readFile } from "fs"
 import { extname, join } from "path"
 import { parseNote } from "../lib/parseNote"
 import { parseDungeon } from "../lib/parseDungeon"
-import { Note } from "../lib/dungeon"
+import { CuriousNote, isItemNote, JsonDungeon, Note } from "../lib/dungeon"
 
 const directoryPath = "./static/dungeons/"
 
@@ -41,16 +41,16 @@ readdir(directoryPath, function (err, files) {
           return
         }
 
-        const json = JSON.parse(data)
-        const notes = json.notes.map((note) => note.text).map((text) => parseNote({ ...minNote, text }))
+        const json: JsonDungeon = JSON.parse(data)
+        const notes: Note[] = json.notes.map((note) => note.text).flatMap((text) => parseNote({ ...minNote, text }))
         const { title, story } = json
         const dungeon = parseDungeon(json)
 
         const items = notes
-          .filter((note) => note.items)
+          .filter(isItemNote)
           .flatMap((note) => note.items)
           .sort()
-        const effects = notes.filter((note) => note.type === "curious").map((note) => note.action)
+        const effects = notes.filter((note: Note) => note.type === "curious").map((note: CuriousNote) => note.action)
 
         console.log({ title, story })
 

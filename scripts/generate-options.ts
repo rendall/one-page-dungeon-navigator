@@ -6,7 +6,7 @@ import { parse } from "path"
 const directoryPath = "./static/dungeons"
 
 // Return only a list of filenames that have both svg and json
-const getMatchingFilenames = (dirPath) => {
+const getMatchingFilenames = (dirPath: string) => {
   const filenames = readdirSync(dirPath)
     .map((filename) => parse(filename).name)
     .reduce<string[]>((all, filename) => (all.some((a) => a === filename) ? all : [...all, filename]), [])
@@ -30,7 +30,7 @@ const filenames = getMatchingFilenames(directoryPath)
 filenames.sort()
 
 // Title Case
-const titleCase = (str) => {
+const titleCase = (str: string) => {
   const lowerCase = str.toLowerCase().replace(/_/g, " ")
   const exceptions = [
     "a",

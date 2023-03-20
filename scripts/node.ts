@@ -76,6 +76,7 @@ const gameLoop = async (dungeon: Dungeon): Promise<void> => {
 
   let out: GameOutput = {
     action: "init",
+    agents: [],
     message: "",
     room: 0,
     description: "",

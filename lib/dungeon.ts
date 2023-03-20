@@ -104,6 +104,7 @@ export type Direction = {
 export type Dungeon = JsonDungeon & {
   rooms: Room[]
   doors: Door[]
+  seed: number
 }
 
 // enum compatible with Jest

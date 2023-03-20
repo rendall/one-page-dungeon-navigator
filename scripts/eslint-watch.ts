@@ -23,7 +23,7 @@ function clearTerminal() {
   })
 }
 
-function watchFolder(folderPath) {
+function watchFolder(folderPath: string) {
   readdirSync(folderPath).forEach((file) => {
     const fullPath = join(folderPath, file)
     const stat = statSync(fullPath)

@@ -29,6 +29,7 @@ import {
   sortExitsClockwise,
   toId,
 } from "./utilties"
+import seeds from "./seeds.json"
 
 export const facingDirection = (door: Door): ExitDirection => {
   if (door.dir.x === -1) return "west"
@@ -231,7 +232,11 @@ const getAdjacent = <T extends Rect>(a: T, rects: T[]) => rects.filter((rect) =>
 
 /** Accepts One-Page JSON and returns a navigable object */
 export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
-  const { rects, notes: notesWithoutId, doors, seed } = dungeon
+  const { rects, notes, doors, title } = dungeon
+
+  const fileName = title.toLowerCase().replaceAll(" ", "_")
+
+  const seed = (seeds as { [key: string]: number })[fileName]
 
   const rngSeed = seed ?? 42
   if (!RandomNumberGenerator.hasInstance()) RandomNumberGenerator.setSeed(rngSeed)
@@ -253,7 +258,7 @@ export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
       ...doors.find((door) => door.x === rect.x && door.y === rect.y),
     })) as (Door & { id: number; dir: Direction })[]
 
-  const dungeonNotes: (JsonNote & { id: number })[] = notesWithoutId.map((note, id) => ({ ...note, id }))
+  const dungeonNotes: (JsonNote & { id: number })[] = notes.map((note, id) => ({ ...note, id }))
 
   // Return the door at {x,y}
   const getDoor = doorFunc(doorsWithId)
@@ -313,7 +318,7 @@ export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
       return room
     })
 
-  return { ...dungeon, rooms, doors: doorsWithId, rects: rectsWithId }
+  return { ...dungeon, seed, rooms, doors: doorsWithId, rects: rectsWithId }
 }
 
 export type DungeonAnalysis = ReturnType<typeof analyzeDungeon>

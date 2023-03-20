@@ -2,10 +2,11 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "noImplicitAny": true,
-    "module": "es6",
+    "module": "CommonJS",
     "target": "es5",
-    "allowJs": true,
-    "lib": ["dom", "ESNext"]
+    "lib": ["dom", "ESNext"],
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   },
   "exclude": ["./tests"],
   "files": ["src/index.ts"]

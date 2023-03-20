@@ -4,7 +4,7 @@ import { readdir, readFile } from "fs"
 import { extname, join } from "path"
 import { parseNote } from "../lib/parseNote"
 import { parseDungeon } from "../lib/parseDungeon"
-import { CuriousNote, isItemNote, JsonDungeon, Note } from "../lib/dungeon"
+import { CuriousNote, isCuriousNote, isItemNote, JsonDungeon, Note } from "../lib/dungeon"
 
 const directoryPath = "./static/dungeons/"
 
@@ -50,7 +50,7 @@ readdir(directoryPath, function (err, files) {
           .filter(isItemNote)
           .flatMap((note) => note.items)
           .sort()
-        const effects = notes.filter((note: Note) => note.type === "curious").map((note: CuriousNote) => note.action)
+        const effects = notes.filter(isCuriousNote).map((note) => note.action)
 
         console.log({ title, story })
 

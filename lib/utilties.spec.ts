@@ -1,4 +1,4 @@
-import { inventoryMessage, keysRepeated, RandomNumberGenerator } from "./utilties"
+import { inventoryMessage, isWeapon, keysRepeated, RandomNumberGenerator } from "./utilties"
 
 describe("inventoryMessage()", () => {
   it("should count ordinary items", () => {
@@ -162,6 +162,12 @@ describe("keysRepeated()", () => {
   })
 })
 
+describe("Predicates", () => {
+  const weapons = ["a vorpal scimitar", "a weird, sticky glaive", "a rusty axe"]
+  test.each(weapons)("isWeapon(%s) is true", (weapon) => {
+    expect(isWeapon(weapon)).toBe(true)
+  })
+})
 describe("RandomNumberGenerator", () => {
   test("is deterministic for the same seed", () => {
     RandomNumberGenerator.setSeed(42)

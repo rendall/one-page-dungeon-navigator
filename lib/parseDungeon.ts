@@ -317,12 +317,66 @@ export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
 }
 
 export type DungeonAnalysis = ReturnType<typeof analyzeDungeon>
+/**
+     Ash|Bones|Chaos|Darkness|Death|Doom|Dreams|Evil|Fate|Madness|Secrets|Shadows|Sorrows|Tears|Terror|Void|Blood|Reflection|Twilight|Thunder|Fear|Spirits|Sorrows|Pain|Fire|Illusions|Embers|Blades|Ghosts|Sky|Deep 
+  */
+const excludedWords = [
+  "Arrow",
+  "Ash",
+  "Bat",
+  "Bird",
+  "Blades",
+  "Blood",
+  "Bones",
+  "Chaos",
+  "Claw",
+  "Cross",
+  "Crown",
+  "Darkness",
+  "Death",
+  "Deep",
+  "Doom",
+  "Dreams",
+  "Embers",
+  "Evil",
+  "Eye",
+  "Fate",
+  "Fear",
+  "Fire",
+  "Fish",
+  "Fist",
+  "Ghosts",
+  "Heart",
+  "Illusions",
+  "Leaf",
+  "Lily",
+  "Madness",
+  "Moon",
+  "Pain",
+  "Palm",
+  "Reflection",
+  "Seashell",
+  "Secrets",
+  "Shadows",
+  "Skull",
+  "Sky",
+  "Snail",
+  "Sorrows",
+  "Spirits",
+  "Star",
+  "Tears",
+  "Terror",
+  "Thunder",
+  "Twilight",
+  "Void",
+]
 
+const excludedWordsPattern = excludedWords.join("|")
 /** These are expensive calculations that can be done once and passed around */
 export const analyzeDungeon = (dungeon: Dungeon) => {
   const bossPatterns = [
-    /[A-Za-z/s]+ of (?<boss>the [A-Za-z-]+ (?!Cross|Skull|Moon|Star|Eye|Arrow|Fish|Crown|Bat|Heart|Bird|Lily|Leaf|Palm|Claw|Seashell|Snail|Fist)[A-Za-z]+)$/,
-    /[A-Za-z/s]+ of (?<boss>[A-Za-z-]+)$/,
+    new RegExp(`[A-Za-z/s]+ of (?<boss>the [A-Za-z-]+ (?!${excludedWordsPattern})[A-Za-z]+)$`),
+    new RegExp(`[A-Za-z/s]+ of (?<boss>(?!${excludedWordsPattern})[A-Za-z-]+)$`),
   ]
 
   const deadBossPatterns = [
@@ -343,7 +397,7 @@ export const analyzeDungeon = (dungeon: Dungeon) => {
     /(?:Recently|Lately|Now) [\w\s]+ (squatted|controlled) by a (?:gang|party|band) of (?<enemies>[\w]+)/,
   ]
 
-  const artifactPatterns = [/[\w\s]+that (?<artifact>[\w\s,-]+) is (?:still )?hidden here/]
+  const artifactPatterns = [/[\w\s]+that (?<artifact>[\w\s,-]+), is (?:still )?hidden here/]
 
   const { title, story } = dungeon
 
@@ -587,7 +641,7 @@ export const analyzeDungeon = (dungeon: Dungeon) => {
 export const printAnalysis = (dungeonAnalysis: DungeonAnalysis) => {
   // Show only room ids
 
-  const anyalysisToIds = Object.entries(dungeonAnalysis)
+  const analysis = Object.entries(dungeonAnalysis)
     .map(([key, value]) =>
       Array.isArray(value)
         ? [key, value.map(toId)]
@@ -595,5 +649,5 @@ export const printAnalysis = (dungeonAnalysis: DungeonAnalysis) => {
     )
     .reduce((obj, [key, value]: [string, string | (string | number | Room)[]]) => ({ ...obj, [key]: value }), {})
 
-  console.info(anyalysisToIds)
+  console.info(analysis)
 }

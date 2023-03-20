@@ -23,6 +23,9 @@ import {
   isCuriousNote,
   isEnemy,
   isPlayer,
+  MortalStatus,
+  EnemyStatus,
+  isItemNote,
 } from "./dungeon"
 import { exitDirections, DoorType, isAction } from "./dungeon"
 import {
@@ -39,10 +42,11 @@ import {
   isWeapon,
   replace,
   sortExitsClockwise,
+  toList,
   toThe,
 } from "./utilties"
 import { MenaceManifest, createMenaceManifest } from "./agentKeeper"
-import { analyzeDungeon } from "./parseDungeon"
+import { analyzeDungeon, DungeonAnalysis } from "./parseDungeon"
 
 export type GameState = {
   id: number
@@ -61,7 +65,7 @@ export type GameState = {
 export type GameOutput = {
   action: Action // This is the last action of the user
   message: string
-  agents: { id: number; name: string; message?: string }[]
+  agents: { id: number; name: string; message?: string; [key: string]: unknown }[]
   room: number
   description: string
   exits: (Exit & { door: DoorState })[]
@@ -171,6 +175,24 @@ const addStatusToRoom =
     return newState
   }
 
+const removeStatusFromRoom =
+  (statusToRemove: RoomStatus, roomId?: number): GameStateModifier =>
+  (gameState: GameState) => {
+    const id = roomId ?? gameState.id
+    const room: RoomState = gameState.rooms?.find((room) => room.id === id) ?? { id, statuses: [] }
+    const updatedStatuses = room.statuses.filter((status) => status !== statusToRemove)
+    const updatedRoom = { ...room, statuses: updatedStatuses }
+    const newState = compose(updateRoomState(updatedRoom))(gameState)
+    return newState
+  }
+const addStatusToAgent =
+  (agent: Agent | Enemy, ...statuses: (MortalStatus | EnemyStatus)[]) =>
+  (gameState: GameState) => {
+    const updatedAgent = addStatus(agent, ...statuses)
+    const agents = replace(updatedAgent, gameState.agents)
+    return { ...gameState, agents }
+  }
+
 const addStatusToNote =
   (noteId: number, ...statuses: NoteStatus[]): GameStateModifier =>
   (gameState: GameState) => {
@@ -195,7 +217,7 @@ const addToInventory =
 
 const addInventoryMessage = (): GameStateModifier => (gameState: GameState) => {
   const inventory = inventoryMessage(gameState.inventory)
-  return compose(addMessage(`You now have: ${inventory}`))(gameState)
+  return compose(addMessage(`\nYou now have: ${inventory}\n`))(gameState)
 }
 
 const onUseCuriousNote =
@@ -248,6 +270,25 @@ const handleSearch =
   (gameState: GameState) => {
     const currentRoom = getCurrentRoom(dungeon, gameState)
 
+    const unsearchedDeadEnemy = gameState.agents
+      .filter((agent) => agent.room === gameState.id)
+      .filter((agent) => agent.isEnemy)
+      .filter((agent) => agent.statuses.includes("dead"))
+      .filter((agent: Enemy) => !agent.statuses.includes("searched"))
+      .find((agent) => agent.inventory?.length > 0)
+    if (unsearchedDeadEnemy) {
+      const items = unsearchedDeadEnemy.inventory
+      const message = `You loot the corpse of ${toThe(unsearchedDeadEnemy.name)} and find ${toList(items)}!`
+      const newGameState = compose(
+        addMessage(message),
+        addStatusToAgent(unsearchedDeadEnemy, "searched"),
+        addToInventory(items),
+        addInventoryMessage()
+      )(gameState)
+
+      return newGameState
+    }
+
     const unopenedContainer = currentRoom.notes?.find(
       (note) => note.type === NoteType.container && !note.statuses?.includes("searched")
     ) as ContainerNote
@@ -263,17 +304,8 @@ const handleSearch =
       return newGameState
     }
 
-    const itemNoteTypes: NoteType[] = [
-      NoteType.feature,
-      NoteType.corpse,
-      NoteType.hovering,
-      NoteType.body,
-      NoteType.remains,
-      NoteType.dying,
-    ]
-
     const unAcquiredItem = currentRoom.notes?.find(
-      (note) => itemNoteTypes.includes(note.type) && !note.statuses?.includes("searched")
+      (note) => isItemNote(note) && !note.statuses?.includes("searched")
     ) as BodyNote
 
     if (unAcquiredItem) {
@@ -358,7 +390,8 @@ const handleAttack = (gameState: GameState) => {
     const agents = replace(deadEnemy, gameState.agents)
     return compose(
       addMessage(result),
-      addMessage(`${capitalize(toThe(enemy.name))} is dead.`)
+      addMessage(`${capitalize(toThe(enemy.name))} is dead.`),
+      removeStatusFromRoom("searched") // The room is no longer thoroughly searched because now there is an unsearched dead enemy here.
     )({ ...gameState, agents })
   }
 
@@ -763,7 +796,9 @@ export const game = (dungeon: Dungeon, options?: GameOptions): GameInterface => 
 
     if (gameState.turn > 0) {
       gameState = interpretInput({ ...gameState, action })
-      return toOutput(gameState)
+      const output = toOutput(gameState)
+      if (output.end) return toFinalGameResult(output, gameState, dungeonAnalysis)
+      else return output
     } else {
       if (action !== "init") throw new Error("The first call to the game must be 'init'")
       gameState = compose(describeRoomFunc(dungeon), addStatusToRoom("visited"), advanceTurn)(gameState)
@@ -772,4 +807,46 @@ export const game = (dungeon: Dungeon, options?: GameOptions): GameInterface => 
   }
 
   return gameInterface
+}
+
+export type GameResult = ReturnType<typeof toFinalGameResult>
+
+const toFinalGameResult = (
+  output: GameOutput,
+  { id, player, agents, inventory, doors }: GameState,
+  { title, treasure, isTreasure, artifact }: DungeonAnalysis
+) => {
+  const victory = player.health >= 0
+  const defeatedBy = agents
+    .filter((agent) => agent.room === id)
+    .filter((agent) => agent.isEnemy)
+    .filter((agent) => !agent.statuses.includes("dead"))
+    .map((a) => a.name)
+  const enemiesDefeated = agents
+    .filter((agent) => agent.isEnemy)
+    .filter((agent) => agent.statuses.includes("dead"))
+    .map((enemy) => enemy.name)
+  const treasuresFound = inventory?.filter(isTreasure)
+  const moreTreasures = treasure.length > (treasuresFound?.length ?? 0)
+  const moreSecrets = doors
+    .filter((door) => door.type === DoorType.secret)
+    .some((secretDoor) => !secretDoor.statuses.includes("open"))
+
+  const artifactFound = !!artifact && inventory?.includes(artifact)
+  const boss = agents.filter(isEnemy).find((agent) => agent.class === "boss")?.name
+
+  return {
+    ...output,
+    artifact,
+    artifactFound,
+    boss,
+    defeatedBy,
+    end: true,
+    enemiesDefeated,
+    moreSecrets,
+    moreTreasures,
+    title,
+    treasuresFound,
+    victory,
+  }
 }

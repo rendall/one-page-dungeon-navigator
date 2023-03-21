@@ -92,6 +92,15 @@ export const keysRepeated = <T extends string>(obj: { [key in T]: number }): T[]
 
   return Object.entries(obj).reduce((arr, [key, value]) => [...arr, ...Array(value).fill(key)], [])
 }
+
+export const countItems = (items: string[]): [number, string][] => {
+  const entriesCountMap = items.reduce<{ [item: string]: number }>(
+    (count: { [item: string]: number }, item) => ({ ...count, [item]: count.item ? 1 : count.item + 1 }),
+    {}
+  )
+  return Object.entries(entriesCountMap).map(([item, count]) => [count, item]) // swapping here to make it easier to remember count, item
+}
+
 /** Given an value with an id, return the id. Otherwise return the value */
 export const toId = (value: Room | number | string) => (value && hasProperty(value, "id") ? (value as Room).id : value)
 /** Randomly choose one of the element's members */
@@ -159,6 +168,29 @@ export const singularize = (word: string) => {
   return singular
 }
 
+export const toWords = (num:number) => {
+  const ones = [
+    "", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+  ];
+  const teens = [
+    "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+    "sixteen", "seventeen", "eighteen", "nineteen",
+  ];
+  const tens = [
+    "", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety",
+  ];
+
+  if (num >= 100) return "many";
+  if (num === 0) return "zero";
+  if (num < 20) return [...ones, ...teens][num]
+
+  const numTens = Math.floor(num/10)
+  const numOnes = num - numTens * 10
+
+  return `${tens[numTens]} ${ones[numOnes]}`.trim()
+};
+
+
 /** to plural */
 export const pluralize = (count: number, word: string): string => {
   if (count === 1 || isNaN(count)) return word
@@ -170,8 +202,7 @@ export const pluralize = (count: number, word: string): string => {
   // non-count mass items will not start with a/an
   if (deAAn(word) === word) return word
 
-  // Realistically, the count never rises above 4 and never drops below 2
-  const countword = ["zero", "one", "two", "three", "four", "five", "six"][count]
+  const countword = toWords(count)
 
   // Realistically, the only word that will ever be pluralized is "key"
   return `${countword} ${deAAn(word)}s`

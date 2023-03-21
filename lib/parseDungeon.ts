@@ -322,9 +322,7 @@ export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
 }
 
 export type DungeonAnalysis = ReturnType<typeof analyzeDungeon>
-/**
-     Ash|Bones|Chaos|Darkness|Death|Doom|Dreams|Evil|Fate|Madness|Secrets|Shadows|Sorrows|Tears|Terror|Void|Blood|Reflection|Twilight|Thunder|Fear|Spirits|Sorrows|Pain|Fire|Illusions|Embers|Blades|Ghosts|Sky|Deep 
-  */
+
 const excludedWords = [
   "Arrow",
   "Ash",

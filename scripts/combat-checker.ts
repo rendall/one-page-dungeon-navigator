@@ -3,12 +3,13 @@
 import { readdir, readFile } from "fs"
 import { extname, join } from "path"
 // import { inspect } from "util"
-import { createMenaceManifest } from "../lib/agentKeeper.js"
+import { createMenaceManifest, getAdversaryAnalysis } from "../lib/agentKeeper.js"
 import { parseDungeon } from "../lib/parseDungeon.js"
 import { analyzeDungeon } from "../lib/parseDungeon.js"
-// import { printAnalysis } from "../lib/parseDungeon.js"
+import { printAnalysis } from "../lib/parseDungeon.js"
 import { attackByFunc, GameState } from "../lib/gameLoop"
-import { Enemy } from "../lib/dungeon.js"
+import { DoorType, Enemy, Exit } from "../lib/dungeon.js"
+import { inspect } from "util"
 // import { getRandomNumber } from "../lib/utilties.js"
 
 const jsonFile = process.argv[2]
@@ -40,12 +41,43 @@ readdir(directoryPath, function (err, files) {
         const dungeon = parseDungeon(json)
         const analysis = analyzeDungeon(dungeon)
 
-        // const adversaryAnalysis = getAdversaryAnalysis(analysis)
+        const adversaryAnalysis = getAdversaryAnalysis(analysis)
         const { player, agents } = createMenaceManifest(analysis)
 
-        // printAnalysis({ ...analysis, ...adversaryAnalysis })
-        // console.info(inspect(agents, { depth: 6, colors: true }))
-        console.info("\n\n" + analysis.title)
+        const describeExit = (exit: Exit) => {
+          const doorTypes = [
+            "open passageway",
+            "closed door",
+            "narrow passageway",
+            "exit from the dungeon",
+            "closed portcullis",
+            "(see note)",
+            "secret door",
+            "steel door",
+            "broad stairway down",
+            "stairwell",
+          ]
+
+          const lockedState =
+            (exit.type === DoorType.steel || DoorType.portcullis) && exit.isFacing
+              ? "locked "
+              : (exit.type === DoorType.steel || DoorType.portcullis) && !exit.isFacing
+              ? "unlocked "
+              : ""
+
+          return `${lockedState}${doorTypes[exit.type]} to the ${exit.towards} to room ${exit.to}`
+        }
+
+        // printAnalysis({ ...dungeon, ...analysis, ...adversaryAnalysis })
+        const rooms = dungeon.rooms.map((room) => ({
+          room: room.id,
+          description: `${room.area} ${room.description}`,
+          notes: room.notes?.map((note) => note.text) ?? [],
+          exits: room.exits.map(describeExit),
+        }))
+
+        console.info(inspect({ title: dungeon.title, story: dungeon.story, rooms }, { depth: 6, colors: true }))
+        // console.info("\n\n" + analysis.title)
 
         let gameState: GameState = {
           id: 0,
@@ -60,39 +92,40 @@ readdir(directoryPath, function (err, files) {
 
         let attackBy = attackByFunc(gameState)
 
-        agents.reverse().reduce((player, enemy, i) => {
-          if (player.health < 0) return player
+        // agents.reverse().reduce((player, enemy, i) => {
+        //   if (player.health < 0) return player
 
-          let playerLoss = 0
-          let enemyLoss = 0
+        //   let playerLoss = 0
+        //   let enemyLoss = 0
 
-          while (player.health > playerLoss && enemy.health > enemyLoss) {
-            const enemyAttackResult = attackBy(enemy, player)
-            const { loss: enemyAttack } = enemyAttackResult
-            playerLoss += enemyAttack
+        //   while (player.health > playerLoss && enemy.health > enemyLoss) {
+        //     const enemyAttackResult = attackBy(enemy, player)
+        //     const { loss: enemyAttack } = enemyAttackResult
+        //     playerLoss += enemyAttack
 
-            const playerAttackResult = attackBy(player, enemy)
-            const { loss: playerAttack } = playerAttackResult
-            enemyLoss += playerAttack
-          }
+        //     const playerAttackResult = attackBy(player, enemy)
+        //     const { loss: playerAttack } = playerAttackResult
+        //     enemyLoss += playerAttack
+        //   }
 
-          if (player.health - playerLoss < 0) {
-            defeats++
-            console.info(`Player defeated by ${enemy.name}`)
-            if ((enemy as Enemy).class === "boss") defeatByBoss++
-          } else {
-            if (agents.length === i + 1) {
-              console.info(`Player defeats ${enemy.name}`)
-              wins++
-            } // take enemy's inventory
-            const newInventory = [...(gameState.inventory ?? []), ...enemy.inventory]
-            gameState = { ...gameState, inventory: newInventory }
-            attackBy = attackByFunc(gameState)
-            if ((enemy as Enemy).class === "boss") winAgainstBoss++
-          }
+        //   if (player.health - playerLoss < 0) {
+        //     defeats++
+        //     console.info(`Player defeated by ${enemy.name}`)
+        //     if ((enemy as Enemy).class === "boss") defeatByBoss++
+        //   } else {
+        //     if (agents.length === i + 1) {
+        //       console.info(`Player defeats ${enemy.name}`)
+        //       wins++
+        //     } // take enemy's inventory
+        //     const newInventory = [...(gameState.inventory ?? []), ...enemy.inventory]
+        //     gameState = { ...gameState, inventory: newInventory }
+        //     attackBy = attackByFunc(gameState)
+        //     if ((enemy as Enemy).class === "boss") winAgainstBoss++
+        //   }
 
-          return { ...player, health: player.health - playerLoss }
-        }, player)
+        //   return { ...player, health: player.health - playerLoss }
+        // }, player)
+
         // if there is a Boss, it is in the ending room
         // if there is an Artifact, it is in the ending room
 

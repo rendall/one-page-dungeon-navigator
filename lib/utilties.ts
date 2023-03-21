@@ -1,18 +1,44 @@
-import { Exit, Room } from "./dungeon"
+import type { Exit, Room } from "./dungeon"
+import type { GameState } from "./gameLoop"
 
 /**
- * Composes one or more functions together and returns a new function that applies each function in order
- * to the previous function's result.
+ * Composes a sequence of functions that transform a single input value into a final output value.
  *
- * @template T - The type of the input and output of the composed functions
- * @param {T} initValue - The initial value to pass to the first function in the composition
- * @param {...((i: T) => T)[]} funcs - An array of functions to compose
- * @returns {T} - The result of applying each function in order to the previous function's result
+ * @template T The type of the input and output values.
+ * @param {...((i: T) => T)[]} funcs An array of functions that take a single input parameter of type T and return an output of the same type T.
+ * @param {T} initValue The initial input value to be passed to the first function in the sequence.
+ * @param {(currentValue: T, nextFunc: (i: T) => T) => T} [wrapper=(currentValue, nextFunc) => nextFunc(currentValue)] A function that wraps each function in the sequence and allows for modification of the output before it is passed as input to the next function.
+ * @returns {T} The final output value after applying all functions in the sequence to the initial input value.
+ *
+ * @example
+ * // Define some simple functions to transform a string input
+ * const addExclamation = (str: string) => str + "!";
+ * const addQuestionMark = (str: string) => str + "?";
+ * const addPeriod = (str: string) => str + ".";
+ *
+ * // Compose the functions into a sequence and apply them to an input value
+ * const result = compose(addExclamation, addQuestionMark, addPeriod)("hello");
+ *
+ * // Output the final result
+ * console.log(result); // "hello?!."
+ *
+ * @example
+ * // Define a function that converts a string to uppercase
+ * const toUpperCase = (str: string) => str.toUpperCase();
+ *
+ * // Define a wrapper function that appends "!" to the output of each function in the sequence
+ * const addExclamation = (currentValue: string, nextFunc: (i: string) => string) => nextFunc(currentValue) + "!";
+ *
+ * // Compose the functions into a sequence and apply them to an input value
+ * const result = compose(toUpperCase)("hello", addExclamation);
+ *
+ * // Output the final result
+ * console.log(result); // "HELLO!"
  */
 export const compose =
   <T>(...funcs: ((i: T) => T)[]) =>
-  (initValue: T): T =>
-    funcs.reduce<T>((all: T, f) => f(all), initValue)
+  (initValue: T, wrapper = (currentValue: T, nextFunc: (i: T) => T) => nextFunc(currentValue)): T =>
+    funcs.reduce<T>((currentValue: T, nextFunc) => wrapper(currentValue, nextFunc), initValue)
 
 /** Compare two arrays and only return true if they each have the same elements, irrespective of order */
 export const arrEqual = (a: unknown[], b: unknown[]): boolean => {
@@ -85,6 +111,17 @@ const hasVerb = (str: string) => (/(holds|hides)/.test(str) ? "" : /^\w*s\s/.tes
 /** Checks if obj has property. Optional predicate to check value of property */
 export const hasProperty = (obj: unknown, property: string, pred: (value: unknown) => boolean = () => true) =>
   Object.prototype.hasOwnProperty.call(obj, property) && pred((obj as { [key: string]: unknown })[property])
+
+/** Append "." to str and ensure there is only one, as long as there is not already a ! or ? */
+export const period = (str: string): string =>
+  /[?!]$/.test(str.trim()) ? str : /\.$/.test(str.trim()) ? period(str.trim().slice(0, -1)) : `${str}.`
+
+/** Format the string using successive formats, e.g. formatString("an orc", toThe, isHere, period) // -> "The orc is here. " */
+export const formatString = (str: string, ...rest: ((str: string) => string)[]): string =>
+  rest?.length === 0 ? str : formatString(rest[0](str), ...rest.slice(1))
+
+/** Alias for 'formatString' */
+export const fmt = formatString
 
 /** Add a 'is/are here at the end of a sentence */
 export const isHere = (str: string) => (str.startsWith("The") ? str : `${capitalize(str)} ${hasVerb(str)} here`)
@@ -204,6 +241,8 @@ export const curiousImperative = ({ feature, trigger, object }: { [key: string]:
       return `Open ${toThe(directObject)}`
     case "a coin is dropped into it":
       return `Drop a coin into ${toThe(directObject)}`
+    case "struck hard":
+      return `Strike the ${object} hard`
 
     default: {
       const [past, preposition] = trigger.split(" ")

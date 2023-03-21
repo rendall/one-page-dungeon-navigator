@@ -155,6 +155,7 @@ const printMessage = (message: string, type = "message") => {
       messageP.classList.add(type)
       messageP.innerHTML = message
       messageScroll.appendChild(messageP)
+      if (/You go (east|north|south|west)/.test(message)) printMessage("<hr/>", "html")
       break
     }
   }
@@ -187,12 +188,12 @@ const addTouchControls = (result: GameOutput) => {
   })
 
   if (!result.statuses?.includes("searched")) {
-    const searchLi = createCommandLi("You can also search.", "x")
+    const searchLi = createCommandLi("You can also search", "x")
     ul.appendChild(searchLi)
   }
 
   enemies.forEach((enemy) => {
-    const li = createCommandLi(`Attack ${enemy.name}`, `attack ${enemy.id}`)
+    const li = createCommandLi(`Attack ${toThe(enemy.name)}`, `attack ${enemy.id}`)
     ul.appendChild(li)
   })
 
@@ -201,6 +202,7 @@ const addTouchControls = (result: GameOutput) => {
 }
 
 const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (result: GameOutput) => {
+  console.log({ result })
   switch (result.action) {
     case "init": {
       const [title, subtitle] = result.message.split("\n")
@@ -215,8 +217,7 @@ const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (resul
       break
     default: {
       // eslint-disable-next-line no-empty
-      if (/^\d$/.test(result.action)) {
-      } else printMessage(result.action, "action")
+      // if (/^\d$/.test(result.action)) printMessage(result.action, "action")
       const message = result.message.replace(/\n/g, "<br>")
       printMessage(message)
       break
@@ -391,7 +392,7 @@ const gameLoop = async ([mapSvgData, dungeonData]: [string, Dungeon]) => {
     const keyboardPromise = new Promise<Action | string>((resolve) => {
       const onKeyDownListener = (event: KeyboardEvent) => {
         const key = event.key.toLowerCase()
-        const isValid = /^[a-z#?0-9]$/.test(key) || key.startsWith("arrow")
+        const isValid = /^[a-z#?1-9]$/.test(key) || key.startsWith("arrow")
         if (!isValid) {
           event.preventDefault()
           getNextInput().then(resolve)
@@ -477,8 +478,8 @@ const getSelectedDungeon = (selectId: string) => {
   return randomOption.value
 }
 
-const startGame = async () => {
-  const selectedDungeon = getSelectedDungeon("dungeon-select")
+const startGame = async (startDungeon?: string) => {
+  const selectedDungeon = startDungeon ?? getSelectedDungeon("dungeon-select")
   try {
     const gameDataFiles = await loadFiles(selectedDungeon)
     const result = await gameLoop(gameDataFiles)
@@ -487,6 +488,9 @@ const startGame = async () => {
     console.error(error)
   }
 }
+
+const tryRandom = () => startGame()
+let tryAgain: EventListener = () => startGame()
 
 const showGameSummary = ({
   artifact,
@@ -498,11 +502,12 @@ const showGameSummary = ({
   moreTreasures,
   title,
   treasuresFound,
-  victory,
+  endResult,
 }: GameResult): void => {
   const gameSummary = document.getElementById("game-summary")!
   const defeatGraphic = document.getElementById("defeat-graphic")!
   const victoryGraphic = document.getElementById("victory-graphic")!
+  const escapeGraphic = document.getElementById("escape-graphic")!
   const gameResultElement = document.getElementById("game-result")!
   const defeatedByHeader = document.getElementById("defeated-by")!
   const defeatedByList = document.getElementById("defeated-by-list")!
@@ -510,47 +515,57 @@ const showGameSummary = ({
   const treasuresFoundList = document.getElementById("treasures-found")!
   const moreTreasuresSecrets = document.getElementById("more-treasures-secrets")!
 
-  gameResultElement.textContent = victory ? `Victory in The ${title}` : `Defeat in The ${title}`
+  gameResultElement.textContent = endResult === "victory" ? `Victory in The ${title}` : endResult === "defeat" ? `Defeat in The ${title}` : `Escape from The ${title}`
 
-  if (victory) {
-    defeatGraphic.classList.add("hide")
-    victoryGraphic.classList.remove("hide")
-  } else {
-    victoryGraphic.classList.add("hide")
-    defeatGraphic.classList.remove("hide")
+  // the three ending states are:
+  // -victory (alive, and destroyed boss and/or all enemies)
+  // -defeat (killed by enemy)
+  // -escape (quit without victory)
+  defeatGraphic.classList.add("hide")
+  escapeGraphic.classList.add("hide")
+  victoryGraphic.classList.add("hide")
+
+  switch (endResult) {
+    case "victory": victoryGraphic.classList.remove("hide"); break;
+    case "defeat": defeatGraphic.classList.remove("hide"); break;
+    case "escape": escapeGraphic.classList.remove("hide"); break;
   }
 
-  if (victory && artifact) {
-    const message = `You ${artifactFound ? "recovered" : "did not recover"} ${toThe(artifact)}${
-      artifactFound ? "!" : ""
-    }`
+  if (endResult !== "defeat" && artifact) {
+    const message = `You ${artifactFound ? "recovered" : "did not recover"} ${toThe(artifact)}${artifactFound ? "!" : ""
+      }`
     const artifactResult = document.createElement("p")
     artifactResult.innerText = message
     gameResultElement.insertAdjacentElement("afterend", artifactResult)
   }
 
-  if (victory && boss) {
+  if (endResult === "victory" && boss) {
     const message = `You defeated ${toThe(boss)}!`
     const bossResult = document.createElement("p")
     bossResult.innerText = message
     gameResultElement.insertAdjacentElement("afterend", bossResult)
   }
 
-  defeatedByHeader.textContent = victory ? "" : `You were defeated by:`
+  defeatedByHeader.textContent = endResult === "defeat" ? "You were defeated by:" : ""
   defeatedByList.innerHTML = defeatedBy?.map((enemy) => `<p>${enemy}</p>`).join("")
 
-  const enemiesCount = enemiesDefeated.reduce<{ [enemy: string]: number }>(
+  const enemiesCountMap = enemiesDefeated.reduce<{ [enemy: string]: number }>(
     (count: { [enemy: string]: number }, enemy) => ({ ...count, [enemy]: count.enemy ? 1 : count.enemy + 1 }),
     {}
   )
 
-  enemiesDefeatedList.innerHTML = Object.entries(enemiesCount)
-    .map(([enemy, count]) => `<p>${pluralize(count, enemy)}</p>`)
-    .join("")
+  const enemiesList = Object.entries(enemiesCountMap)
 
-  if (treasuresFound) treasuresFoundList.innerHTML = treasuresFound.map((treasure) => `<p>${treasure}</p>`).join("")
+  enemiesDefeatedList.innerHTML =
+    enemiesList.length === 0
+      ? "<p>none</p>"
+      : enemiesList.map(([enemy, count]) => `<p>${pluralize(count, enemy)}</p>`).join("")
 
-  if (victory) {
+  treasuresFoundList.innerHTML = treasuresFound
+    ? treasuresFound.map((treasure) => `<p>${treasure}</p>`).join("")
+    : "<p>none</p>"
+
+  if (endResult !== "defeat") {
     if (moreSecrets && moreTreasures)
       moreTreasuresSecrets.textContent = `There are more secrets and treasures to be discovered in The ${title}`
     else if (moreSecrets) moreTreasuresSecrets.textContent = `There are more secrets to be discovered in The ${title}`
@@ -565,6 +580,18 @@ const showGameSummary = ({
   closeButton.addEventListener("click", () => {
     gameSummary.classList.add("hide")
   })
+
+  const tryAgainButton = document.getElementById("try-again")
+  tryAgainButton.removeEventListener("click", tryAgain)
+  tryAgain = () => {
+    const filename = title.toLowerCase().replaceAll(" ", "_")
+    startGame(filename)
+  }
+  tryAgainButton.addEventListener("click", tryAgain)
+
+  const tryRandomButton = document.getElementById("try-random")
+  tryRandomButton.removeEventListener("click", tryRandom)
+  tryRandomButton.addEventListener("click", tryRandom)
 
   const content = document.querySelector(".game-summary-content")!
   content.addEventListener("click", (event) => {
@@ -583,5 +610,5 @@ const gameEnd = (result: GameResult) => {
   showGameSummary(result)
 }
 
-startButton.addEventListener("click", startGame)
+startButton.addEventListener("click", () => startGame())
 startGame()

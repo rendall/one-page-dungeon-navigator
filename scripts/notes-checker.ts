@@ -4,6 +4,7 @@ import { readdir, readFile } from "fs"
 import { extname, join } from "path"
 import { parseNote } from "../lib/parseNote"
 import { parseDungeon } from "../lib/parseDungeon"
+import { inspect } from "util"
 import { CuriousNote, isCuriousNote, isItemNote, JsonDungeon, Note } from "../lib/dungeon"
 
 const directoryPath = "./static/dungeons/"
@@ -52,7 +53,7 @@ readdir(directoryPath, function (err, files) {
           .sort()
         const effects = notes.filter(isCuriousNote).map((note) => note.action)
 
-        console.log({ title, story })
+        console.info(inspect({ title, story, notes, effects, items }, { depth: 6, colors: true }))
 
         // notes.forEach((note) => {
         //   if (note.type === "corpse") console.log(note)

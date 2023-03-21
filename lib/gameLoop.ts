@@ -33,6 +33,7 @@ import {
   compose,
   deCapitalize,
   doKeysMatchKeyholes as haveEnoughKeys,
+  fmt,
   getRandomNumber,
   hereIs,
   inventoryMessage,
@@ -40,6 +41,7 @@ import {
   isHere,
   isMagic,
   isWeapon,
+  period,
   replace,
   sortExitsClockwise,
   toList,
@@ -56,6 +58,7 @@ export type GameState = {
   message: string
   rooms?: RoomState[]
   inventory?: string[]
+  isFleeing?: boolean
   player: Mortal
   agents: Agent[]
   turn: number
@@ -107,7 +110,7 @@ type GameStateModifier = (gameState: GameState) => GameState
 
 type GameStateEntry = [keyof GameState, GameState[keyof GameState]]
 
-const clearProps: (keyof GameState)[] = ["error", "message", "end"]
+const clearProps: (keyof GameState)[] = ["error", "message", "end", "isFleeing"]
 
 /** Remove properties from GameState */
 export const resetState: GameStateModifier = (gameState: GameState): GameState => {
@@ -129,9 +132,9 @@ export const resetState: GameStateModifier = (gameState: GameState): GameState =
 const addMessage =
   (message: string): GameStateModifier =>
   (gameState: GameState) => {
-    const hasOldMessage = gameState.message && gameState.message.length > 0
-    const newMessage = hasOldMessage ? `${gameState.message}\n${message}` : message
-    return { ...gameState, message: newMessage }
+    const oldMessage = gameState.message?.trim() || ""
+    const newMessage = `${oldMessage} ${fmt(message, capitalize, period)}`
+    return { ...gameState, message: newMessage.trim() }
   }
 
 /** Insert or update a door in GameState */
@@ -217,7 +220,7 @@ const addToInventory =
 
 const addInventoryMessage = (): GameStateModifier => (gameState: GameState) => {
   const inventory = inventoryMessage(gameState.inventory)
-  return compose(addMessage(`\nYou now have: ${inventory}\n`))(gameState)
+  return compose(addMessage(`You now have ${inventory}.`))(gameState)
 }
 
 const onUseCuriousNote =
@@ -245,10 +248,9 @@ const onUseCuriousNote =
 
 /** Set current room id to id */
 const moveTo =
-  (id: number): GameStateModifier =>
-  (gameState: GameState) => {
-    return { ...gameState, id }
-  }
+  (id: number | "outside"): GameStateModifier =>
+  (gameState: GameState) =>
+    id === "outside" ? { ...gameState, message: "You leave the dungeon", end: true } : { ...gameState, id }
 
 const handleUse =
   (dungeon: Dungeon): GameStateModifier =>
@@ -345,13 +347,13 @@ const handleSearch =
       return {
         ...gameState,
         doors,
-        message: `You discover a secret door to the ${undiscoveredSecretDoor.towards}!`,
+        message: `You search along the ${undiscoveredSecretDoor.towards}ern wall and discover a secret door!`,
       }
     } else {
       const hadInterest =
         currentRoom.notes?.length || currentRoom.exits.some((exit) => exit.door.type === DoorType.secret)
       const newState = compose(
-        addMessage(`You find nothing ${hadInterest ? "else " : ""}of interest.`),
+        addMessage(`You search but find nothing ${hadInterest ? "else " : ""}of interest.`),
         addStatusToRoom("searched")
       )(gameState)
       return newState
@@ -437,42 +439,48 @@ const handleExit =
       ...dungeonDoor,
       ...gameState.doors.find((door) => door.id === exit.door.id),
     }
+
+    const goOut =
+      (exit: Exit): GameStateModifier =>
+      (gameState: GameState) =>
+        compose(
+          fleeingEnemiesCheck,
+          addMessage(`You go ${exit.towards}`),
+          addStatusToRoom("visited"),
+          moveTo(exit.to)
+        )(gameState, passIfEnd)
+
     switch (door.type) {
       // steel doors can only be opened from one direction
       case DoorType.steel: {
         const isSteelUnlocked = door?.statuses?.find((s) => s === "unlocked")
-        if (isSteelUnlocked)
-          return compose(addMessage(`You go ${exit.towards}`), addStatusToRoom("visited"), moveTo(exit.to))(gameState)
+        if (isSteelUnlocked) return compose(goOut(exit))(gameState, passIfEnd)
         if (exit.isFacing) return { ...gameState, message: "The steel door does not open." }
         else {
           return compose(
             addStatusToDoor(door, "unlocked", "open"),
-            addMessage(`You shove against the steel door and it opens. You go ${exit.towards}.`),
-            addStatusToRoom("visited"),
-            moveTo(exit.to)
-          )(gameState)
+            addMessage("You shove against the steel door and it opens."),
+            goOut(exit)
+          )(gameState, passIfEnd)
         }
       }
       // portcullises can only be opened from one direction
       case DoorType.portcullis: {
         const isPortcullisUnlocked = door?.statuses?.find((s) => s === "unlocked")
-        if (isPortcullisUnlocked)
-          return compose(addMessage(`You go ${exit.towards}`), addStatusToRoom("visited"), moveTo(exit.to))(gameState)
+        if (isPortcullisUnlocked) return compose(goOut(exit))(gameState, passIfEnd)
         if (exit.isFacing) return { ...gameState, message: "The portcullis bars your way." }
         else {
           return compose(
             addStatusToDoor(door, "unlocked", "open"),
-            addMessage(`You pull the lever. The portcullis opens. You go ${exit.towards}.`),
-            addStatusToRoom("visited"),
-            moveTo(exit.to)
-          )(gameState)
+            addMessage("You pull the lever. The portcullis opens."),
+            goOut(exit)
+          )(gameState, passIfEnd)
         }
       }
       case DoorType.double:
         // This door type falls through if there is no associated note
         if (exit.note && exit.note.keyholes) {
-          if (door.statuses?.includes("open"))
-            return compose(addMessage(`You go ${exit.towards}`), addStatusToRoom("visited"), moveTo(exit.to))(gameState)
+          if (door.statuses?.includes("open")) return compose(goOut(exit))(gameState, passIfEnd)
 
           const keys = gameState.inventory?.filter((item) => item.endsWith("key")) ?? []
 
@@ -481,26 +489,20 @@ const handleExit =
             return compose(
               addStatusToDoor(door, "unlocked", "open"),
               addMessage(
-                `You insert ${whichKeys} into ${toThe(exit.note.keyholes)} of ${toThe(
-                  exit.note.door
-                )}. It grinds open. You go ${exit.towards}.`
+                `You insert ${whichKeys} into ${toThe(exit.note.keyholes)} of ${toThe(exit.note.door)}. It grinds open.`
               ),
               removeKeys,
-              addStatusToRoom("visited"),
-              moveTo(exit.to)
-            )(gameState)
+              goOut(exit)
+            )(gameState, passIfEnd)
           } else return { ...gameState, message: `${capitalize(toThe(exit.note.door))} is locked.` }
         }
       // eslint-disable-next-line no-fallthrough
       default:
-        return compose(
-          addStatusToDoor(door, "open"),
-          addMessage(`You go ${exit.towards}`),
-          addStatusToRoom("visited"),
-          moveTo(exit.to)
-        )(gameState)
+        return compose(addStatusToDoor(door, "open"), goOut(exit))(gameState, passIfEnd)
     }
   }
+
+const passIfEnd = (gameState: GameState, f: GameStateModifier) => (gameState.end ? gameState : f(gameState))
 
 const handleActionFunc =
   (dungeon: Dungeon): GameStateModifier =>
@@ -584,7 +586,9 @@ const enemiesAttack: GameStateModifier = (gameState: GameState) => {
 
   const attackBy = attackByFunc(gameState)
 
-  const attacksResults = enemiesHere.map((enemy) => ({ enemy, ...attackBy(enemy, player) }))
+  const attacksResults = enemiesHere
+    .map((enemy) => (gameState.isFleeing ? { ...enemy, attack: enemy.attack * 3 } : enemy))
+    .map((enemy) => ({ enemy, ...attackBy(enemy, player) }))
   const enemies = attacksResults.map(({ enemy, result }) => ({ ...enemy, message: result })) as Agent[]
   const health = attacksResults.reduce((health, { loss }) => health - loss, player.health)
   const updatedAgents = enemies.reduce((all, attacker) => replace(attacker, all), agents)
@@ -592,6 +596,18 @@ const enemiesAttack: GameStateModifier = (gameState: GameState) => {
 
   if (health < 0) return compose(addMessage("You succumb to the attack and die."))({ ...newGameState, end: true })
   else return newGameState
+}
+
+const fleeingEnemiesCheck: GameStateModifier = (gameState: GameState) => {
+  const { player, agents } = gameState
+  const enemiesHere = agents
+    .filter(isEnemy)
+    .filter((agent) => agent.room === gameState.id)
+    .filter((agent) => agent.isEnemy)
+    .filter((enemy) => !enemy.statuses.includes("dead"))
+
+  if (enemiesHere.length === 0) return gameState
+  return enemiesAttack({ ...gameState, isFleeing: true })
 }
 
 const advanceTurn: GameStateModifier = (gameState: GameState) => ({ ...gameState, turn: gameState.turn + 1 })
@@ -621,10 +637,16 @@ export const describeNote = (note: Note) => {
 const describeNotes = (notes: Note[]): string =>
   notes
     .filter((note) => !note.statuses?.includes("gone"))
-    .reduce((description: string, note: Note) => `${description}${describeNote(note)}`, "")
+    .reduce((description: string, note: Note) => `${description} ${describeNote(note)}`.trim(), "")
 
-const describeAgent = (agent: Agent): string =>
-  agent.statuses.includes("dead") ? isHere(`the dead body of ${toThe(agent.name)}`) : isHere(agent.name)
+const describeAgent = (agent: Agent): string => {
+  const agentDescription = agent.statuses.includes("dead")
+    ? (agent as Enemy).statuses.includes("searched")
+      ? `the looted corpse of ${toThe(agent.name)}`
+      : `the corpse of ${toThe(agent.name)}`
+    : agent.name
+  return fmt(agentDescription, isHere, period)
+}
 
 const describeAgents = (agents: Enemy[]): string =>
   agents.reduce((all, agent) => `${all} ${describeAgent(agent)}`, "\n\n")
@@ -713,7 +735,7 @@ const describeRoomFunc =
 export const inputFunc =
   (dungeon: Dungeon): GameStateModifier =>
   (oldGameState: GameState): GameState =>
-    compose(resetState, handleActionFunc(dungeon), describeRoomFunc(dungeon), enemiesAttack, advanceTurn)(oldGameState)
+    compose(resetState, handleActionFunc(dungeon), describeRoomFunc(dungeon), enemiesAttack, advanceTurn)(oldGameState, passIfEnd)
 
 const isVisibleExitFunc = (gameState: GameState) => (exit: Exit) => {
   switch (exit.type) {
@@ -813,10 +835,9 @@ export type GameResult = ReturnType<typeof toFinalGameResult>
 
 const toFinalGameResult = (
   output: GameOutput,
-  { id, player, agents, inventory, doors }: GameState,
+  { id, player, agents, inventory, doors, action }: GameState,
   { title, treasure, isTreasure, artifact }: DungeonAnalysis
 ) => {
-  const victory = player.health >= 0
   const defeatedBy = agents
     .filter((agent) => agent.room === id)
     .filter((agent) => agent.isEnemy)
@@ -835,8 +856,14 @@ const toFinalGameResult = (
   const artifactFound = !!artifact && inventory?.includes(artifact)
   const boss = agents.filter(isEnemy).find((agent) => agent.class === "boss")?.name
 
+  // victory is boss defeated or all defeated
+  const victory = player.health >= 0 && (enemiesDefeated.includes(boss) || enemiesDefeated?.length === agents.filter(isEnemy)?.length)
+
+  const endResult: ("victory" | "defeat" | "escape") = victory ? "victory" : player.health < 0 ? "defeat" : "escape"
+
   return {
     ...output,
+    action,
     artifact,
     artifactFound,
     boss,
@@ -847,6 +874,6 @@ const toFinalGameResult = (
     moreTreasures,
     title,
     treasuresFound,
-    victory,
+    endResult,
   }
 }

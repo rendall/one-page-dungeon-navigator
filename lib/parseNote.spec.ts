@@ -22,7 +22,7 @@ describe("parseNote()", () => {
   const secrets: Secret[] = parsedNotes.filter((note) => note.type === NoteType.secret) as Secret[]
   test.each(secrets)("Should parse secret '$text'", (secret) => {
     expect(Object.keys(secret)).toEqual(expect.arrayContaining(["message", "items", "pos"]))
-    expect(secret.message).toMatch(/^You find /)
+    expect(secret.message).toMatch(/^Searching the room, you find /)
   })
 
   describe("More type", () => {

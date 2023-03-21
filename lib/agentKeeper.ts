@@ -159,6 +159,7 @@ const createEncounter = (
     }
     case "peon": {
       const name = aAn(getPeonName(previousNames, dungeonAnalysis))
+      const inventory = getRandomNumber() < 0.3 ? ["some gold"] : []
       return [
         ...previousEnemies,
         {
@@ -168,6 +169,7 @@ const createEncounter = (
           health: 1,
           attack: 1,
           defense: 1,
+          inventory,
         },
       ]
     }

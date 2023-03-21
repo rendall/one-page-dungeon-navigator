@@ -80,7 +80,7 @@ describe("gameLoop good game()", () => {
     const searchOutput = input("search")
     expect(searchOutput).toMatchObject({
       action: "search",
-      message: "You find nothing of interest.",
+      message: "You search but find nothing of interest.",
       turn: 2,
       statuses: expect.arrayContaining(["searched"]),
     })
@@ -223,9 +223,7 @@ describe("gameLoop good game()", () => {
     const useOutput = input("use")
     expect(useOutput).toMatchObject({
       action: "use",
-      message: expect.stringContaining(
-        `${curiousNote.message}\n\nYou now have: a book of protection and a creepy doll`
-      ),
+      message: expect.stringContaining(`${curiousNote.message} You now have a book of protection and a creepy doll`),
       description: expect.stringContaining("You are in a 1x1 minimal room."),
     })
   })
@@ -252,7 +250,7 @@ describe("gameLoop good game()", () => {
     const useOutput = input("use")
     expect(useOutput).toMatchObject({
       action: "use",
-      message: `${curiousNote.message}\nYou return, and enter.`,
+      message: `${curiousNote.message} You return, and enter.`,
       description: expect.stringContaining("You are in a 3m x 3m square room."),
     })
   })
@@ -321,9 +319,10 @@ describe("gameLoop good game()", () => {
       input("init")
     })
 
-    test(`${action} of room 0 should return expected output`, () => {
+    test(`Action '${action}' of room 0 should return expected output`, () => {
       const output = input(action)
-      expect(output).toMatchObject({ action: action, turn: 2 })
+      const turn = output.end? 1 : 2 // "output.end" does not advance turn
+      expect(output).toMatchObject({ action: action, turn })
     })
   })
 
@@ -346,12 +345,12 @@ describe("gameLoop good game()", () => {
       expect(northOutput.exits.length).toBe(1)
 
       const searchOutput = input("search")
-      expect(searchOutput.message).toBe("You discover a secret door to the north!")
+      expect(searchOutput.message).toBe("You search along the northern wall and discover a secret door!")
       expect(searchOutput.exits.length).toBe(2)
 
       // moving in the direction of the secret door should now succeed
       const secretOutput = input("north")
-      expect(secretOutput.message).toBe("You go north")
+      expect(secretOutput.message).toBe("You go north.")
     })
 
     test("unsuccessful search should give 'searched' status", () => {
@@ -366,7 +365,7 @@ describe("gameLoop good game()", () => {
       input("search")
 
       const output = input("search")
-      expect(output.message).toMatch(/You find nothing( else)? of interest./)
+      expect(output.message).toMatch(/You search but find nothing( else)? of interest./)
       expect(output.statuses).toContain("searched")
     })
   })
@@ -394,54 +393,98 @@ describe("gameLoop good game()", () => {
   })
 
   describe("combat", () => {
-    const enemy: Enemy = {
-      id: 0,
-      room: 1,
-      name: "an enemy",
-      health: 0,
-      attack: 0,
-      class: "monster",
-      inventory: [],
-      defense: 0,
-      statuses: [],
-      isEnemy: true,
-    }
-    const initGameState: GameState = {
-      id: 0,
-      message: "Minimal Title\nMinimal Story",
-      turn: 0,
-      end: false,
-      rooms: [],
-      doors: [],
-      player: {
-        health: 1000,
-        defense: 1000,
-        attack: 1000,
+    test("basic combat", () => {
+      const enemy: Enemy = {
+        id: 0,
+        room: 1,
+        name: "an enemy",
+        health: 0,
+        attack: 0,
+        class: "monster",
+        inventory: [],
+        defense: 0,
         statuses: [],
-      },
-      agents: [enemy],
-    }
+        isEnemy: true,
+      }
+      const initGameState: GameState = {
+        id: 0,
+        message: "Minimal Title\nMinimal Story",
+        turn: 0,
+        end: false,
+        rooms: [],
+        doors: [],
+        player: {
+          health: 1000,
+          defense: 1000,
+          attack: 1000,
+          statuses: [],
+        },
+        agents: [enemy],
+      }
 
-    const combatDungeon = parseDungeon(twoRoomDungeon)
-    const input = game(combatDungeon, { initGameState, noCombat: true })
-    input("init")
-    const eastOutput = input("east")
-    expect(eastOutput).toMatchObject({
-      agents: expect.arrayContaining([
-        expect.objectContaining({
-          id: 0,
-          isEnemy: true,
-          message: expect.stringContaining("The enemy attacks you and"),
-        }),
-      ]),
+      const combatDungeon = parseDungeon(twoRoomDungeon)
+      const input = game(combatDungeon, { initGameState, noCombat: true })
+      input("init")
+      const eastOutput = input("east")
+      expect(eastOutput).toMatchObject({
+        agents: expect.arrayContaining([
+          expect.objectContaining({
+            id: 0,
+            isEnemy: true,
+            message: expect.stringContaining("The enemy attacks you and"),
+          }),
+        ]),
+      })
+      const attackOutput = input("attack 0")
+      expect(attackOutput).toMatchObject({
+        message: expect.stringContaining("The enemy is dead."),
+        description: expect.stringContaining("The corpse of the enemy is  here"),
+        agents: expect.arrayContaining([
+          expect.objectContaining({ id: 0, isEnemy: true, statuses: expect.arrayContaining(["dead"]) }),
+        ]),
+      })
     })
-    const attackOutput = input("attack 0")
-    expect(attackOutput).toMatchObject({
-      message: expect.stringContaining("The enemy is dead."),
-      description: expect.stringContaining("The dead body of the enemy is  here"),
-      agents: expect.arrayContaining([
-        expect.objectContaining({ id: 0, isEnemy: true, statuses: expect.arrayContaining(["dead"]) }),
-      ]),
+
+    test("fleeing combat", () => {
+      const enemy: Enemy = {
+        id: 0,
+        room: 0,
+        name: "an enemy",
+        health: 1000,
+        attack: 1000,
+        class: "monster",
+        inventory: [],
+        defense: 1000,
+        statuses: [],
+        isEnemy: true,
+      }
+
+      const enemies = new Array(10).fill(enemy).map((enemy, id) => ({ ...enemy, id }))
+      const initGameState: GameState = {
+        id: 0,
+        message: "Minimal Title\nMinimal Story",
+        turn: 0,
+        end: false,
+        rooms: [],
+        doors: [],
+        player: {
+          health: 1,
+          defense: 1,
+          attack: 1,
+          statuses: [],
+        },
+        agents: enemies,
+      }
+
+      const combatDungeon = parseDungeon(twoRoomDungeon)
+      const input = game(combatDungeon, { initGameState, noCombat: true })
+      const initInput = input("init")
+      expect(initInput.end).toBe(false)
+      expect(initInput.description).toContain("An enemy is  here.")
+      const eastOutput = input("east")
+      expect(eastOutput.room).toBe(0)
+      expect(eastOutput.end).toBe(true)
+      expect(eastOutput.message).toContain("You succumb to the attack and die.")
     })
   })
 
@@ -456,14 +499,11 @@ describe("gameLoop good game()", () => {
       ["south", "You go south"],
       ["south", "You go south"],
       ["east", "You go east"],
-      [
-        "search",
-        "You approach the iron key hovering in the middle of the hall and take it.\n\nYou now have: an iron key",
-      ],
+      ["search", "You approach the iron key hovering in the middle of the hall and take it. You now have an iron key"],
       ["west", "You go west"],
       ["west", "You go west"],
       ["west", "You go west"],
-      ["search", "You open the large chest and find an iron key.\n\nYou now have: two iron keys"],
+      ["search", "You open the large chest and find an iron key. You now have two iron keys."],
       ["north", "You go north"],
       ["1", "You go north"],
       ["north", "You go north"],

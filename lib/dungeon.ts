@@ -207,16 +207,18 @@ export type Mortal = {
   attack: number
   defense: number
   statuses: MortalStatus[]
+  inventory: string[]
 }
 
-export type Player = Mortal
+export type Player = Mortal & {
+  maxHealth: number
+}
 
 export type Agent = Mortal & {
   id: number
   name: string
   room: number
   message?: string
-  inventory: string[]
   isEnemy?: boolean
 }
 

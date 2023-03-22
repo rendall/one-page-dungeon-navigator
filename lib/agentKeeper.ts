@@ -288,14 +288,20 @@ export const createMenaceManifest = (dungeonAnalysis: DungeonAnalysis): MenaceMa
     .map((enemy, id) => ({ ...enemy, id }))
     .reduce(placeEnemies(dungeonAnalysis), [])
 
+  const startingChance = getRandomNumber()
+
+  const inventory = startingChance < 0.1 ? ["a potion of healing", "a potion of healing"] : startingChance < 0.7 ? ["a potion of healing"] : []
+
   const startingStats: Mortal = {
     health: 4,
     defense: 4,
     attack: 3,
     statuses: [],
+    inventory
   }
   const addMortals = (a: Mortal, b: Mortal) => ({ ...a, health: a.health + b.attack })
-  const player = agents.reduce((player: Player, agent: Enemy) => addMortals(player, agent), startingStats)
+  const playerStats = agents.reduce((player: Player, agent: Enemy) => addMortals(player, agent), startingStats)
+  const player = {...playerStats, maxHealth: playerStats.health}
 
   return { player, agents }
 }

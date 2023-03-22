@@ -1,9 +1,10 @@
-import { actions, CuriousNote, Door, Dungeon, Enemy, exitDirections, JsonDungeon, Rect, Room } from "./dungeon"
+import { Action, actions, CuriousNote, Door, Dungeon, Enemy, exitDirections, JsonDungeon, Rect, Room } from "./dungeon"
 import { game, GameOutput, GameState } from "./gameLoop"
 import { parseDungeon } from "./parseDungeon"
 import testDungeon from "../tests/dungeons/house_of_the_immortal_lord.json"
 import dungeonRun from "../tests/dungeons/chambers_of_the_red_master.json"
 import { parseNote } from "./parseNote"
+import { hasProperty } from "./utilties"
 
 const minimalDungeon: Dungeon = {
   seed: 0,
@@ -85,6 +86,48 @@ describe("gameLoop good game()", () => {
       turn: 2,
       statuses: expect.arrayContaining(["searched"]),
     })
+  })
+
+  test.each(actions)("action '%s' should have result", (action) => {
+    const expectedMessages: Partial<{ [key in Action]: string }> = {
+      init: "Not understood.",
+      search: "You search but find nothing of interest.",
+      noop: undefined,
+      use: "There is nothing to use here.",
+      attack: "There is nothing here to attack.",
+      quit: "You quit.",
+      info: "You take stock of your situation. Your health is 0. Your attack is 0. Your defense is 0. Your magical power is 0. You now have nothing.",
+    }
+    const input = game(minimalWorkingDungeon, { noCombat: true })
+    input("init")
+    const actionOutput = input(action)
+    const expectedMessage = hasProperty(expectedMessages, action) ? expectedMessages[action] : "You cannot go that way"
+    expect(actionOutput.message).toBe(expectedMessage)
+  })
+
+  describe("Test 'info' action", () => {
+    const initGameState: GameState = {
+      id: 0,
+      message: "",
+      turn: 0,
+      end: false,
+      rooms: [],
+      doors: [],
+      player: {
+        health: 1,
+        defense: 1,
+        attack: 1,
+        statuses: ["poisoned", "hallucinating", "aged"],
+      },
+      inventory: ["an axe", "a helm", "an amulet"],
+      agents: [],
+    }
+    const input = game(minimalWorkingDungeon, { noCombat: true, initGameState })
+    input("init")
+    const infoOutput = input("info")
+    expect(infoOutput.message).toBe(
+      "You take stock of your situation. Your health is 1. Your attack is 3. Your defense is 3. Your magical power is 1. You are poisoned, hallucinating and aged. You now have an axe, a helm and an amulet."
+    )
   })
 
   test("Test 'use' action", () => {
@@ -509,7 +552,10 @@ describe("gameLoop good game()", () => {
       ["north", "You go north"],
       ["north", "You go north"],
       ["west", "You go west"],
-      ["north", "You attempt to go north but the lavishly decorated wooden gate is locked. It has four keyholes but you have only two iron keys."],
+      [
+        "north",
+        "You attempt to go north but the lavishly decorated wooden gate is locked. It has four keyholes but you have only two iron keys.",
+      ],
       ["east", "You go east"],
       ["south", "You go south"],
       ["south", "You go south"],

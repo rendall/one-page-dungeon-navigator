@@ -700,7 +700,7 @@ export const isArmor = (item: string) =>
     "scale mail",
     "scarf",
     "shield",
-  ].some((armor) => item.match(new RegExp(`/\\b${armor}\\b/`)))
+  ].some((armor) => new RegExp(`\\b${armor}\\b`).test(item))
 
 export const isMagic = (item: string) =>
   [
@@ -757,7 +757,7 @@ export const isMagic = (item: string) =>
     "vorpal",
     "wand",
     "weird",
-  ].some((magic) => item.match(new RegExp(`\\b${magic}\\b`)))
+  ].some((magic) => new RegExp(`\\b${magic}\\b`).test(item))
 
 export const getRandomNumber = (): number => RandomNumberGenerator.getInstance().getNext()
 

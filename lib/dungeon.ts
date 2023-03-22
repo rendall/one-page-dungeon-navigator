@@ -5,12 +5,6 @@ export type ExitDirection = (typeof exitDirections)[number]
 
 export type Action = (typeof actions)[number] | ExitDirection
 export const actions = [
-  "quit",
-  "attack",
-  "use",
-  "noop",
-  "search",
-  "init",
   "1",
   "2",
   "3",
@@ -20,6 +14,13 @@ export const actions = [
   "7",
   "8",
   "9",
+  "attack",
+  "info",
+  "init",
+  "noop",
+  "quit",
+  "search",
+  "use",
 ] as const
 export const isAction = (input: string | Action): input is Action =>
   [...actions, ...exitDirections].some((elem) => elem === input) ||
@@ -199,7 +200,7 @@ export type Room = Rect & {
   notes?: PlainNote[]
 }
 
-export type MortalStatus = "dead"
+export type MortalStatus = "dead" | "poisoned" | "hallucinating" | "bigger" | "aged"
 
 export type Mortal = {
   health: number

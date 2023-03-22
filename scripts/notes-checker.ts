@@ -6,6 +6,7 @@ import { parseNote } from "../lib/parseNote"
 import { parseDungeon } from "../lib/parseDungeon"
 import { inspect } from "util"
 import { CuriousNote, isCuriousNote, isItemNote, JsonDungeon, Note } from "../lib/dungeon"
+import { unique } from "../lib/utilties"
 
 const directoryPath = "./static/dungeons/"
 
@@ -26,6 +27,8 @@ readdir(directoryPath, function (err, files) {
   }
 
   let notes = []
+  let allItems:string[] = []
+  let allEffects:string[] =[]
 
   let maxRoomsCount = 0
   let minRoomsCount = Number.MAX_SAFE_INTEGER
@@ -50,10 +53,13 @@ readdir(directoryPath, function (err, files) {
         const items = notes
           .filter(isItemNote)
           .flatMap((note) => note.items)
-          .sort()
-        const effects = notes.filter(isCuriousNote).map((note) => note.action)
 
-        console.info(inspect({ title, story, notes, effects, items }, { depth: 6, colors: true }))
+        allItems = [...allItems, ...items]
+
+        const effects = notes.filter(isCuriousNote).map((note) => note.action)
+        allEffects = [...allEffects, ...effects]
+
+        // console.info(inspect({ title, story, notes, effects, items }, { depth: 6, colors: true }))
 
         // notes.forEach((note) => {
         //   if (note.type === "corpse") console.log(note)
@@ -61,6 +67,9 @@ readdir(directoryPath, function (err, files) {
 
         if (i === all.length - 1) {
           // const uqNotes = notes.reduce((all, note) => (all.includes(note) ? all : [...all, note]), [])
+          allEffects = unique( allEffects ).sort()
+          allItems = unique( allItems ).sort()
+          console.info(inspect({ allEffects, allItems }, { depth: 6, colors: true, compact: false, maxArrayLength:null }))
 
           // uqNotes
           //   .map((text) => parseNote({ ...minNote, text }))

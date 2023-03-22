@@ -133,7 +133,7 @@ const addMessage =
   (message: string): GameStateModifier =>
   (gameState: GameState) => {
     const oldMessage = gameState.message?.trim() || ""
-    const newMessage = `${oldMessage} ${fmt(message, capitalize, period)}`
+    const newMessage = message.trim() === "" ? oldMessage : `${oldMessage} ${fmt(message, capitalize, period)}`
     return { ...gameState, message: newMessage.trim() }
   }
 
@@ -220,7 +220,7 @@ const addToInventory =
 
 const addInventoryMessage = (): GameStateModifier => (gameState: GameState) => {
   const inventory = inventoryMessage(gameState.inventory)
-  return compose(addMessage(`You now have ${inventory}.`))(gameState)
+  return compose(addMessage(`You now have ${inventory === "" ? "nothing" : inventory}.`))(gameState)
 }
 
 const onUseCuriousNote =
@@ -352,7 +352,8 @@ const handleSearch =
       }
     } else {
       const hadInterest =
-        currentRoom.notes?.length || currentRoom.exits.some((exit) => (exit.door.type === DoorType.secret && exit.isFacing))
+        currentRoom.notes?.length ||
+        currentRoom.exits.some((exit) => exit.door.type === DoorType.secret && exit.isFacing)
       const newState = compose(
         addMessage(`You search but find nothing ${hadInterest ? "else " : ""}of interest.`),
         addStatusToRoom("searched")
@@ -465,7 +466,8 @@ const handleExit =
       case DoorType.steel: {
         const isSteelUnlocked = door?.statuses?.find((s) => s === "unlocked")
         if (isSteelUnlocked) return compose(goOut(exit))(gameState, passIfEnd)
-        if (exit.isFacing) return { ...gameState, message: `You attempt to go ${exit.towards} but the steel door does not open.` }
+        if (exit.isFacing)
+          return { ...gameState, message: `You attempt to go ${exit.towards} but the steel door does not open.` }
         else {
           return compose(
             addStatusToDoor(door, "unlocked", "open"),
@@ -478,7 +480,8 @@ const handleExit =
       case DoorType.portcullis: {
         const isPortcullisUnlocked = door?.statuses?.find((s) => s === "unlocked")
         if (isPortcullisUnlocked) return compose(goOut(exit))(gameState, passIfEnd)
-        if (exit.isFacing) return { ...gameState, message: `You attempt to go ${exit.towards} but the portcullis bars your way.` }
+        if (exit.isFacing)
+          return { ...gameState, message: `You attempt to go ${exit.towards} but the portcullis bars your way.` }
         else {
           return compose(
             addStatusToDoor(door, "unlocked", "open"),
@@ -542,6 +545,18 @@ const handleActionFunc =
         return gameState
       case "quit":
         return { ...gameState, message: "You quit.", end: true }
+      case "info": {
+        const { health, attack, defense, statuses } = gameState.player
+        return compose(
+          addMessage("You take stock of your situation."),
+          addMessage(`Your health is ${health}.`),
+          addMessage(`Your attack is ${attack + calculateAttackBonus(gameState.player, gameState.inventory)}.`),
+          addMessage(`Your defense is ${defense + calculateDefenseBonus(gameState.player, gameState.inventory)}.`),
+          addMessage(`Your magical power is ${calculateMagicBonus(gameState.player, gameState.inventory)}.`),
+          addMessage(statuses?.length ? `You are ${toList(statuses)}` : ""),
+          addInventoryMessage()
+        )(gameState)
+      }
       default:
         if (/^\d$/.test(action)) {
           return handleExit(dungeon)(gameState)
@@ -554,16 +569,28 @@ type AttackResult = {
   result: string
 }
 
+const calculateMagicBonus = (mortal: Mortal, inventory: string[] = []): number =>
+  isPlayer(mortal)
+    ? inventory?.reduce<number>((bonus: number, item: string) => (isMagic(item) ? bonus + 1 : bonus), 0)
+    : 0
+const calculateAttackBonus = (mortal: Mortal, inventory: string[] = []) =>
+  isPlayer(mortal)
+    ? inventory?.reduce(
+        (bonus, item) => (isWeapon(item) ? bonus + 1 : bonus),
+        calculateMagicBonus(mortal, inventory)
+      ) ?? 0
+    : 0
+const calculateDefenseBonus = (mortal: Mortal, inventory: string[] = []) =>
+  isPlayer(mortal)
+    ? inventory?.reduce((bonus, item) => (isArmor(item) ? bonus + 1 : bonus), calculateMagicBonus(mortal, inventory)) ??
+      0
+    : 0
+
 export const attackByFunc =
   ({ inventory }: GameState) =>
   (attacker: Mortal, defender: Mortal): AttackResult => {
-    const magicBonus = inventory?.reduce((bonus, item) => (isMagic(item) ? bonus + 1 : bonus), 0) ?? 0
-    const attackBonus = isPlayer(attacker)
-      ? inventory?.reduce((bonus, item) => (isWeapon(item) ? bonus + 1 : bonus), 0) ?? 0 + magicBonus
-      : 0
-    const defenseBonus = isPlayer(defender)
-      ? inventory?.reduce((bonus, item) => (isArmor(item) ? bonus + 1 : bonus), 0) ?? 0 + magicBonus
-      : 0
+    const attackBonus = calculateAttackBonus(attacker, inventory)
+    const defenseBonus = calculateDefenseBonus(defender, inventory)
 
     const attackPower = attacker.attack + attackBonus
     const defensePower = defender.defense + defenseBonus
@@ -879,9 +906,10 @@ const toFinalGameResult = (
   const boss = agents.filter(isEnemy).find((agent) => agent.class === "boss")?.name
 
   // victory is boss defeated or all defeated
-  const victory = player.health >= 0 && (enemiesDefeated.includes(boss) || enemiesDefeated?.length === agents.filter(isEnemy)?.length)
+  const victory =
+    player.health >= 0 && (enemiesDefeated.includes(boss) || enemiesDefeated?.length === agents.filter(isEnemy)?.length)
 
-  const endResult: ("victory" | "defeat" | "escape") = victory ? "victory" : player.health < 0 ? "defeat" : "escape"
+  const endResult: "victory" | "defeat" | "escape" = victory ? "victory" : player.health < 0 ? "defeat" : "escape"
 
   return {
     ...output,

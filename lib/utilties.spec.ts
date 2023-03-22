@@ -1,4 +1,4 @@
-import { inventoryMessage, isWeapon, keysRepeated, RandomNumberGenerator } from "./utilties"
+import { inventoryMessage, isArmor, isMagic, isWeapon, keysRepeated, RandomNumberGenerator } from "./utilties"
 
 describe("inventoryMessage()", () => {
   it("should count ordinary items", () => {
@@ -166,6 +166,17 @@ describe("Predicates", () => {
   const weapons = ["a vorpal scimitar", "a weird, sticky glaive", "a rusty axe"]
   test.each(weapons)("isWeapon(%s) is true", (weapon) => {
     expect(isWeapon(weapon)).toBe(true)
+  })
+
+  const armor = ["a helm", "a weird, transluscent shield"]
+  test.each(armor)("isArmor(%s) is true", (armor) => {
+    expect(isArmor(armor)).toBe(true)
+  })
+
+  const nonMagic = ["a helm", "a rusty axe"]
+  test.each([...weapons, ...armor])("isMagic(%s)", (item) => {
+    const expected = nonMagic.every((e) => e !== item)
+    expect(isMagic(item)).toBe(expected)
   })
 })
 describe("RandomNumberGenerator", () => {

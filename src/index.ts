@@ -17,6 +17,7 @@ const INSTRUCTIONS = `
   <li>To quit to main menu, press <span>q</span></li>
   <!--<li>To view entire dungeon, press <span>#</span></li>-->
   <li>To move through a specific exit, press its corresponding <span>number</span> key, assigned in a clockwise direction starting with <span>1</span> to the north west.</li>
+  <li>To check your status, press <span>i</span></li>
   <li>To view these instructions again, press <span>?</span></li>
 </ul>
 <hr/>`
@@ -205,7 +206,6 @@ const addTouchControls = (result: GameOutput) => {
 let lastRoomId = -1
 
 const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (result: GameOutput) => {
-
   const { action } = result
   switch (action) {
     case "init": {
@@ -238,7 +238,7 @@ const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (resul
   }
 
   const roomId = result.room
-  const description = result.description.replace(/\n/g, "<br>")
+  const description = result.description.trim().replace(/\n/g, "<br>")
 
   const isRoomChanged = roomId !== lastRoomId
   lastRoomId = roomId
@@ -359,6 +359,7 @@ const getAction = (key: string): Action => {
     arrowup: "north",
     a: "west",
     d: "east",
+    i: "info",
     q: "quit",
     s: "south",
     u: "use",

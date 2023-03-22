@@ -207,6 +207,32 @@ const isAdjacent = (a: Rect, b: Rect): boolean => {
   return false
 }
 
+/**
+ * Checks if the 'to' rectangle is opposite to the 'from' rectangle across a door.
+ *
+ * @param {Rect} to - The target rectangle that we want to check if it's opposite to the 'from' rectangle.
+ * @param {Rect} from - The source rectangle that is adjacent to the door.
+ * @param {Door} door - The door between the 'to' and 'from' rectangles.
+ * @returns {boolean} - Returns true if the 'to' rectangle is opposite to the 'from' rectangle across the door, otherwise false.
+ */
+export const isOpposite = (to: Rect, from: Rect, door: Door): boolean => {
+  // Check if the 'to' and 'from' rectangles are adjacent to the door
+  if (!isAdjacent(to, { ...door, w: 1, h: 1 }) || !isAdjacent(from, { ...door, w: 1, h: 1 })) return false
+  const isDoorSouth = door.x >= from.x && door.x < from.x + from.w && door.y === from.y + from.h
+  const isRoomSouth = from.y + from.h === door.y && door.x >= from.x && door.x < from.x + from.w
+  if (isDoorSouth && isRoomSouth) return true
+  const isDoorNorth = door.x >= from.x && door.x < from.x + from.w && door.y === from.y - 1
+  const isRoomNorth = to.y + to.h === door.y && door.x >= to.x && door.x < to.x + to.w
+  if (isDoorNorth && isRoomNorth) return true
+  const isDoorWest = door.y >= from.y && door.y < from.y + from.h && door.x === from.x - 1
+  const isRoomWest = to.x + to.w === door.x && door.y >= to.y && door.y < to.y + to.h
+  if (isDoorWest && isRoomWest) return true
+  const isDoorEast = door.y >= from.y && door.y < from.y + from.h && door.x === from.x + from.w
+  const isRoomEast = from.x + from.w === door.x && door.y >= from.y && door.y < from.y + from.h
+  if (isDoorEast && isRoomEast) return true
+
+  return false
+}
 const isInside = (pos: { x: number; y: number }, rect: Rect) =>
   pos.x >= rect.x && pos.x < rect.x + rect.w && pos.y >= rect.y && pos.y < rect.y + rect.h
 
@@ -278,7 +304,7 @@ export const parseDungeon = (dungeon: JsonDungeon): Dungeon => {
           const direction = getDir(fullRoom, exit)
           if (door) {
             // If the exit is a door, include the "to"
-            const destination = rectsWithId.find((x) => isAdjacent(x, exit) && x.id !== fullRoom.id)
+            const destination = rectsWithId.find((x) => isOpposite(x, fullRoom, door) && x.id !== fullRoom.id)
             const to = destination?.id ?? "outside"
             const isFacing = facingDirection(door) === direction
 

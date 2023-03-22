@@ -57,7 +57,6 @@ export type GameState = {
   error?: string
   message: string
   rooms?: RoomState[]
-  inventory?: string[]
   isFleeing?: boolean
   player: Mortal
   agents: Agent[]
@@ -99,6 +98,7 @@ const initState: GameState = {
     attack: 3,
     defense: 3,
     statuses: [],
+    inventory:[],
   },
   agents: [],
 }
@@ -155,8 +155,9 @@ const updateRoomState =
   }
 
 const removeKeys: GameStateModifier = (gameState: GameState): GameState => {
-  const inventory = gameState.inventory.filter((item) => !item.endsWith("key"))
-  return { ...gameState, inventory }
+  const inventory = gameState.player.inventory.filter((item) => !item.endsWith("key"))
+  const player = {...gameState.player, inventory}
+  return { ...gameState, player }
 }
 
 /** Add one or more statuses to an object such as a Door or Room or Enemy
@@ -214,12 +215,13 @@ const addStatusToDoor = (door: DoorState, ...statuses: string[]) => updateDoorSt
 const addToInventory =
   (items: string[]): GameStateModifier =>
   (gameState: GameState) => {
-    const inventory = [...(gameState.inventory ?? []), ...items]
-    return { ...gameState, inventory }
+    const inventory = [...gameState.player.inventory, ...items]
+    const player = {...gameState.player, inventory}
+    return { ...gameState, player }
   }
 
 const addInventoryMessage = (): GameStateModifier => (gameState: GameState) => {
-  const inventory = inventoryMessage(gameState.inventory)
+  const inventory = inventoryMessage(gameState.player.inventory)
   return compose(addMessage(`You now have ${inventory === "" ? "nothing" : inventory}.`))(gameState)
 }
 
@@ -382,8 +384,6 @@ const handleAttack = (gameState: GameState) => {
   if (enemy.statuses.includes("dead"))
     return compose(addMessage(`${capitalize(toThe(enemy.name))} is dead.`))(gameState)
 
-  const attackBy = attackByFunc(gameState)
-
   const { loss, result } = attackBy(gameState.player, enemy)
 
   const health = enemy.health - loss
@@ -495,8 +495,8 @@ const handleExit =
         if (exit.note && exit.note.keyholes) {
           if (door.statuses?.includes("open")) return compose(goOut(exit))(gameState, passIfEnd)
 
-          const keys = gameState.inventory?.filter((item) => item.endsWith("key")) ?? []
-          const whichKeys = inventoryMessage(gameState.inventory).match(/^[\w\s-]+? keys?/)
+          const keys = gameState.player.inventory.filter((item) => item.endsWith("key")) ?? []
+          const whichKeys = inventoryMessage(gameState.player.inventory).match(/^[\w\s-]+? keys?/)
           const howManyKeys = whichKeys ? `only ${whichKeys}` : "no keys"
 
           if (doKeysMatchKeyholes(exit.note.keyholes, keys)) {
@@ -550,10 +550,14 @@ const handleActionFunc =
         return compose(
           addMessage("You take stock of your situation."),
           addMessage(`Your health is ${health}.`),
-          addMessage(`Your attack is ${attack + calculateAttackBonus(gameState.player, gameState.inventory)}.`),
-          addMessage(`Your defense is ${defense + calculateDefenseBonus(gameState.player, gameState.inventory)}.`),
-          addMessage(`Your magical power is ${calculateMagicBonus(gameState.player, gameState.inventory)}.`),
-          addMessage(statuses?.length ? `You are ${toList(statuses)}` : ""),
+          addMessage(`Your attack is ${attack + calculateAttackBonus(gameState.player)}.`),
+          addMessage(`Your defense is ${defense + calculateDefenseBonus(gameState.player)}.`),
+          addMessage(`Your magical power is ${calculateMagicBonus(gameState.player)}.`),
+          addMessage(
+            statuses?.length
+              ? `You are ${toList(statuses)}`
+              : ""
+          ),
           addInventoryMessage()
         )(gameState)
       }
@@ -569,28 +573,16 @@ type AttackResult = {
   result: string
 }
 
-const calculateMagicBonus = (mortal: Mortal, inventory: string[] = []): number =>
-  isPlayer(mortal)
-    ? inventory?.reduce<number>((bonus: number, item: string) => (isMagic(item) ? bonus + 1 : bonus), 0)
-    : 0
-const calculateAttackBonus = (mortal: Mortal, inventory: string[] = []) =>
-  isPlayer(mortal)
-    ? inventory?.reduce(
-        (bonus, item) => (isWeapon(item) ? bonus + 1 : bonus),
-        calculateMagicBonus(mortal, inventory)
-      ) ?? 0
-    : 0
-const calculateDefenseBonus = (mortal: Mortal, inventory: string[] = []) =>
-  isPlayer(mortal)
-    ? inventory?.reduce((bonus, item) => (isArmor(item) ? bonus + 1 : bonus), calculateMagicBonus(mortal, inventory)) ??
-      0
-    : 0
+const calculateMagicBonus = (mortal: Mortal): number => isPlayer(mortal) ? mortal.inventory?.reduce<number>((bonus: number, item: string) => (isMagic(item) ? bonus + 1 : bonus), 0) : 0
+const calculateAttackBonus = (mortal: Mortal) => isPlayer(mortal) ? mortal.inventory?.reduce((bonus, item) => (isWeapon(item) ? bonus + 1 : bonus), calculateMagicBonus(mortal)) ?? 0 : 0
+const calculateDefenseBonus = (mortal: Mortal) => isPlayer(mortal) ? mortal.inventory?.reduce((bonus, item) => (isArmor(item) ? bonus + 1 : bonus), calculateMagicBonus(mortal)) ?? 0 : 0
 
-export const attackByFunc =
-  ({ inventory }: GameState) =>
+
+
+export const attackBy =
   (attacker: Mortal, defender: Mortal): AttackResult => {
-    const attackBonus = calculateAttackBonus(attacker, inventory)
-    const defenseBonus = calculateDefenseBonus(defender, inventory)
+    const attackBonus = calculateAttackBonus(attacker)
+    const defenseBonus = calculateDefenseBonus(defender)
 
     const attackPower = attacker.attack + attackBonus
     const defensePower = defender.defense + defenseBonus
@@ -625,8 +617,6 @@ const enemiesAttack: GameStateModifier = (gameState: GameState) => {
     .filter((enemy) => !enemy.statuses.includes("dead"))
 
   if (enemiesHere.length === 0) return gameState
-
-  const attackBy = attackByFunc(gameState)
 
   const attacksResults = enemiesHere
     .map((enemy) => (gameState.isFleeing ? { ...enemy, attack: enemy.attack * 3 } : enemy))
@@ -850,6 +840,7 @@ export const game = (dungeon: Dungeon, options?: GameOptions): GameInterface => 
       attack: 0,
       defense: 0,
       statuses: [],
+      inventory: []
     },
     agents: [],
   }
@@ -884,7 +875,7 @@ export type GameResult = ReturnType<typeof toFinalGameResult>
 
 const toFinalGameResult = (
   output: GameOutput,
-  { id, turn, player, agents, inventory, doors, action }: GameState,
+  { id, turn, player, agents, doors, action }: GameState,
   { title, treasure, isTreasure, artifact }: DungeonAnalysis
 ) => {
   const defeatedBy = agents
@@ -896,13 +887,13 @@ const toFinalGameResult = (
     .filter((agent) => agent.isEnemy)
     .filter((agent) => agent.statuses.includes("dead"))
     .map((enemy) => enemy.name)
-  const treasuresFound = inventory?.filter(isTreasure) ?? []
+  const treasuresFound = player.inventory.filter(isTreasure) ?? []
   const moreTreasures = treasure.length > (treasuresFound?.length ?? 0)
   const moreSecrets = doors
     .filter((door) => door.type === DoorType.secret)
     .some((secretDoor) => !secretDoor.statuses.includes("open"))
 
-  const artifactFound = !!artifact && inventory?.includes(artifact)
+  const artifactFound = !!artifact && player.inventory?.includes(artifact)
   const boss = agents.filter(isEnemy).find((agent) => agent.class === "boss")?.name
 
   // victory is boss defeated or all defeated

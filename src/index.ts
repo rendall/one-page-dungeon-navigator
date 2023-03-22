@@ -168,6 +168,7 @@ const addTouchControls = (result: GameOutput) => {
   const enemies = result.agents.filter(isEnemy).filter((enemy) => !enemy.statuses.includes("dead"))
   const messageScroll = document.getElementById("message-scroll")
   const ul = document.createElement("ul") as HTMLUListElement
+  ul.classList.add("controls")
   const createCommandLi = (text: string, command: string) => {
     const li = document.createElement("li") as HTMLLIElement
     li.textContent = text
@@ -201,8 +202,12 @@ const addTouchControls = (result: GameOutput) => {
   updateMessageScroll()
 }
 
+let lastRoomId = -1
+
 const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (result: GameOutput) => {
-  switch (result.action) {
+
+  const { action } = result
+  switch (action) {
     case "init": {
       const [title, subtitle] = result.message.split("\n")
       printMessage(`<h1 class="title">${title}</h1><p class="story">${subtitle}</p>`, "init")
@@ -215,8 +220,6 @@ const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (resul
       // eslint-disable-next-line no-empty
       break
     default: {
-      // eslint-disable-next-line no-empty
-      // if (/^\d$/.test(result.action)) printMessage(result.action, "action")
       const message = result.message.replace(/\n/g, "<br>")
       printMessage(message)
       break
@@ -234,13 +237,16 @@ const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (resul
     }
   }
 
+  const roomId = result.room
   const description = result.description.replace(/\n/g, "<br>")
-  printMessage(description, "description")
+
+  const isRoomChanged = roomId !== lastRoomId
+  lastRoomId = roomId
+  if (isRoomChanged) printMessage(description, "description")
   result.agents.filter((agent) => agent.message).forEach((agent) => printMessage(agent.message, "agent-message"))
 
   addTouchControls(result)
 
-  const roomId = result.room
   const path: SVGPathElement = revealRoom(roomId)
   moveAvatar(path.getAttribute("d"))
   result.exits.forEach((exit) => revealRoom(exit.door.id))
@@ -627,7 +633,7 @@ const gameEnd = (result: GameResult) => {
   const menuSection = document.querySelector("section#menu")
   menuSection.classList.remove("hide")
 
-  if (result.turn > 1) showGameSummary(result)
+  if (result.turn > 2) showGameSummary(result)
 }
 
 startButton.addEventListener("click", () => startGame())

@@ -226,10 +226,11 @@ const addInventoryMessage = (): GameStateModifier => (gameState: GameState) => {
 const onUseCuriousNote =
   ({ action, message, id, feature, trigger, object }: CuriousNote): GameStateModifier =>
   (gameState: GameState) => {
-    const isGone = ["bursts into flames", "turns into dust"].includes(action) || trigger === "picked up"
+    const isGone = ["bursts into flames", "turns into dust"].includes(action)
+    const isInventory = trigger === "picked up"
     const items = [
       ...(action.startsWith("spawns") ? [action.replace("spawns ", "")] : []),
-      ...(object === "doll" ? [feature] : []),
+      ...(object === "doll" && !isGone ? [feature] : []),
     ]
 
     const isTeleporter = action.startsWith("teleports")
@@ -238,7 +239,7 @@ const onUseCuriousNote =
       addMessage(message),
       addStatusToNote(id, "used"),
       ...(isTeleporter ? [moveTo(0), addMessage("You return, and enter.")] : []),
-      ...(isGone ? [addStatusToNote(id, "gone")] : []),
+      ...(isGone || isInventory ? [addStatusToNote(id, "gone")] : []),
       ...(items.length ? [addToInventory(items)] : []),
       ...(items.length ? [addInventoryMessage()] : []),
     ]
@@ -351,7 +352,7 @@ const handleSearch =
       }
     } else {
       const hadInterest =
-        currentRoom.notes?.length || currentRoom.exits.some((exit) => exit.door.type === DoorType.secret)
+        currentRoom.notes?.length || currentRoom.exits.some((exit) => (exit.door.type === DoorType.secret && exit.isFacing))
       const newState = compose(
         addMessage(`You search but find nothing ${hadInterest ? "else " : ""}of interest.`),
         addStatusToRoom("searched")
@@ -464,7 +465,7 @@ const handleExit =
       case DoorType.steel: {
         const isSteelUnlocked = door?.statuses?.find((s) => s === "unlocked")
         if (isSteelUnlocked) return compose(goOut(exit))(gameState, passIfEnd)
-        if (exit.isFacing) return { ...gameState, message: "The steel door does not open." }
+        if (exit.isFacing) return { ...gameState, message: `You attempt to go ${exit.towards} but the steel door does not open.` }
         else {
           return compose(
             addStatusToDoor(door, "unlocked", "open"),
@@ -477,7 +478,7 @@ const handleExit =
       case DoorType.portcullis: {
         const isPortcullisUnlocked = door?.statuses?.find((s) => s === "unlocked")
         if (isPortcullisUnlocked) return compose(goOut(exit))(gameState, passIfEnd)
-        if (exit.isFacing) return { ...gameState, message: "The portcullis bars your way." }
+        if (exit.isFacing) return { ...gameState, message: `You attempt to go ${exit.towards} but the portcullis bars your way.` }
         else {
           return compose(
             addStatusToDoor(door, "unlocked", "open"),
@@ -507,7 +508,7 @@ const handleExit =
           } else
             return {
               ...gameState,
-              message: `${capitalize(toThe(exit.note.door))} is locked. It has ${
+              message: `You attempt to go ${exit.towards} but ${toThe(exit.note.door)} is locked. It has ${
                 exit.note.keyholes
               } but you have ${howManyKeys}.`,
             }
@@ -700,6 +701,7 @@ const describeRoomFunc =
   (dungeon: Dungeon): GameStateModifier =>
   (gameState: GameState): GameState => {
     if (gameState === undefined) throw Error("gameState is undefined!")
+
     const currentRoom = getCurrentRoom(dungeon, gameState)
     const isVisible = isVisibleExitFunc(gameState)
     const getDoorStatuses = ((gs: GameState) => (id: number) => {

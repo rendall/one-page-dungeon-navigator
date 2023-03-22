@@ -6,6 +6,7 @@ import dungeonRun from "../tests/dungeons/chambers_of_the_red_master.json"
 import { parseNote } from "./parseNote"
 
 const minimalDungeon: Dungeon = {
+  seed: 0,
   version: "",
   title: "Minimal Title",
   story: "Minimal Story",
@@ -49,7 +50,7 @@ const twoRoomDungeon: JsonDungeon = {
 }
 const parsedDungeon = parseDungeon(testDungeon)
 
-describe("gameLoop bad game()", () => {
+describe("bad data", () => {
   test("Dungeon with no rooms should error with 'Bad Data'", () => {
     expect(() => game(minimalDungeon)("init")).toThrow("Bad data: no rooms found")
   })
@@ -321,8 +322,7 @@ describe("gameLoop good game()", () => {
 
     test(`Action '${action}' of room 0 should return expected output`, () => {
       const output = input(action)
-      const turn = output.end? 1 : 2 // "output.end" does not advance turn
-      expect(output).toMatchObject({ action: action, turn })
+      expect(output).toMatchObject({ action: action, turn: 2 })
     })
   })
 

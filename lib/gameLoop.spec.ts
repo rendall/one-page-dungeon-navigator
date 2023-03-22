@@ -509,7 +509,7 @@ describe("gameLoop good game()", () => {
       ["north", "You go north"],
       ["north", "You go north"],
       ["west", "You go west"],
-      ["north", "The lavishly decorated wooden gate is locked."],
+      ["north", "You attempt to go north but the lavishly decorated wooden gate is locked. It has four keyholes but you have only two iron keys."],
       ["east", "You go east"],
       ["south", "You go south"],
       ["south", "You go south"],

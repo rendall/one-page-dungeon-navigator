@@ -31,7 +31,7 @@ export type Exit = {
   to: number | "outside"
   description: string
   isFacing: boolean // some doors have directions, secret doors for example
-  door: Door
+  door: Door & { id: number }
   type: DoorType
   note?: DoorNote
 }
@@ -59,7 +59,6 @@ export type Rect = {
 }
 
 export type Door = {
-  id: number
   x: number
   y: number
   dir: Direction
@@ -102,9 +101,9 @@ export type Direction = {
 }
 
 export type Dungeon = JsonDungeon & {
-  rooms: Room[]
-  doors: Door[]
-  seed: number
+  rects: (Rect & { id: number })[]
+  rooms: (Room & { id: number })[]
+  doors: (Door & { id: number })[]
 }
 
 // enum compatible with Jest

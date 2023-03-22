@@ -1,5 +1,4 @@
 import type { Exit, Room } from "./dungeon"
-import type { GameState } from "./gameLoop"
 
 /**
  * Composes a sequence of functions that transform a single input value into a final output value.
@@ -168,28 +167,31 @@ export const singularize = (word: string) => {
   return singular
 }
 
-export const toWords = (num:number) => {
-  const ones = [
-    "", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
-  ];
+export const toWords = (num: number) => {
+  const ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
   const teens = [
-    "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
-    "sixteen", "seventeen", "eighteen", "nineteen",
-  ];
-  const tens = [
-    "", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety",
-  ];
+    "ten",
+    "eleven",
+    "twelve",
+    "thirteen",
+    "fourteen",
+    "fifteen",
+    "sixteen",
+    "seventeen",
+    "eighteen",
+    "nineteen",
+  ]
+  const tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
 
-  if (num >= 100) return "many";
-  if (num === 0) return "zero";
+  if (num >= 100) return "many"
+  if (num === 0) return "zero"
   if (num < 20) return [...ones, ...teens][num]
 
-  const numTens = Math.floor(num/10)
+  const numTens = Math.floor(num / 10)
   const numOnes = num - numTens * 10
 
   return `${tens[numTens]} ${ones[numOnes]}`.trim()
-};
-
+}
 
 /** to plural */
 export const pluralize = (count: number, word: string): string => {

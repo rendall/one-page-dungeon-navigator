@@ -27,8 +27,8 @@ readdir(directoryPath, function (err, files) {
   }
 
   let notes = []
-  let allItems:string[] = []
-  let allEffects:string[] =[]
+  let allItems: string[] = []
+  let allEffects: string[] = []
 
   let maxRoomsCount = 0
   let minRoomsCount = Number.MAX_SAFE_INTEGER
@@ -50,16 +50,14 @@ readdir(directoryPath, function (err, files) {
         const { title, story } = json
         const dungeon = parseDungeon(json)
 
-        const items = notes
-          .filter(isItemNote)
-          .flatMap((note) => note.items)
+        const items = notes.filter(isItemNote).flatMap((note) => note.items)
 
         allItems = [...allItems, ...items]
 
         const effects = notes.filter(isCuriousNote).map((note) => note.action)
         allEffects = [...allEffects, ...effects]
 
-        // console.info(inspect({ title, story, notes, effects, items }, { depth: 6, colors: true }))
+        console.info(inspect({ title, story, notes, effects, items }, { depth: 6, colors: true }))
 
         // notes.forEach((note) => {
         //   if (note.type === "corpse") console.log(note)
@@ -67,9 +65,11 @@ readdir(directoryPath, function (err, files) {
 
         if (i === all.length - 1) {
           // const uqNotes = notes.reduce((all, note) => (all.includes(note) ? all : [...all, note]), [])
-          allEffects = unique( allEffects ).sort()
-          allItems = unique( allItems ).sort()
-          console.info(inspect({ allEffects, allItems }, { depth: 6, colors: true, compact: false, maxArrayLength:null }))
+          allEffects = unique(allEffects).sort()
+          allItems = unique(allItems).sort()
+          console.info(
+            inspect({ allEffects, allItems }, { depth: 6, colors: true, compact: false, maxArrayLength: null })
+          )
 
           // uqNotes
           //   .map((text) => parseNote({ ...minNote, text }))

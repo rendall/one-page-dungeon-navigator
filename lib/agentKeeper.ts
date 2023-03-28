@@ -2,27 +2,31 @@
  * dungeon and supplying appropriate enemies, as well as balancing
  * the player to have a decent fighting chance */
 
-import { Enemy, Room, Agent, Mortal, EnemyStatus, Player } from "./dungeon"
+import { Enemy, Room, Agent, Mortal, EnemyStatus, Player, DoorType } from "./dungeon"
 import { DungeonAnalysis } from "./parseDungeon"
 import {
   aAn,
   determineRandomValue,
+  distributeFactionPopulation,
+  expandTally,
   getEliteNoun,
-  getRandomNumber,
+  getInventory as getEnemyInventory,
+  getRandomBossName,
+  getRandomElementOf,
+  getRandomMonsterName,
+  getRandomRaider,
+  getRandomTreasureItem,
+  getRoomsAtDistance,
   hasMonsterAttributes,
+  inverseSquareRandom,
   isMonster,
-  keysRepeated,
-  randomBossName,
-  randomElement,
-  randomMonsterName,
-  randomRaider,
   shuffleArray,
   singularize,
-  sortByExits,
+  toTitleCase,
 } from "./utilties"
 
 export type MenaceManifest = {
-  player: Mortal
+  player: Player
   agents: Agent[]
 }
 
@@ -45,25 +49,36 @@ const enemyTemplate: Enemy = {
   isEnemy: true,
 }
 
-const getPeonName = (previousNames: string[], { animal, enemies }: DungeonAnalysis): string => {
-  const enemyName = enemies && !isMonster(enemies) ? singularize(enemies) : undefined
-  const animalName = animal
-    ? animal.startsWith("were")
-      ? animal
-      : determineRandomValue() < 0.33
-      ? `were${animal}`
-      : `${animal}-man`
-    : undefined
-  const raider = randomRaider() // This returns the same raider each time it's called unless reset
-  const name = enemyName ?? animalName ?? raider
-  const changeItUp = (aName: string): string => {
-    const previousNameCount = previousNames.reduce((count, pname) => (pname.endsWith(aName) ? count + 1 : count), 0)
-    if (previousNameCount < 4) return aName
-    else return changeItUp(randomRaider(true))
+const getPeonFactionName = (
+  previousNames: string[],
+  dungeonAnalysis: DungeonAnalysis,
+  factionIndex: number
+): string => {
+  const { animal, enemies } = dungeonAnalysis
+  switch (factionIndex) {
+    case 0: {
+      // first peon faction is based on enemy, if available
+      const enemyName = enemies && !isMonster(enemies) ? singularize(enemies) : undefined
+      if (enemyName) return enemyName
+    }
+    // fall through if no enemy name
+    case 1: {
+      const animalName = animal
+        ? animal.startsWith("were")
+          ? animal
+          : determineRandomValue() < 0.33
+          ? `were${animal}`
+          : `${animal}-man`
+        : undefined
+      if (animalName && !previousNames.includes(animalName)) return animalName
+    }
+    // fall through if no animal name
+    default: {
+      const getUniqueName = (name = getRandomRaider(true)): string =>
+        previousNames.includes(name) ? getUniqueName(getRandomRaider(true)) : name
+      return getUniqueName()
+    }
   }
-  const peonName = changeItUp(name)
-
-  return peonName
 }
 
 const getEliteName = (previousEnemies: Enemy[], { bossName }: DungeonAnalysis) => {
@@ -81,12 +96,12 @@ const getMonsterName = (previousNames: string[], { animal, monsterName, enemies 
   const isMonsterNameClaimed = monsterName && previousNames.some((pName) => pName === monsterName)
   const isAnimalNameClaimed = animal === undefined || previousNames.some((pName) => pName.match(animal))
   const nameFromStory = isMonsterNameClaimed ? undefined : monsterName
-  const nameFromEnemies = () => randomMonsterName(singularize(enemies))
+  const nameFromEnemies = () => getRandomMonsterName(singularize(enemies))
   const avoidDuplicates = (name: string, count = 3): string =>
     name && count <= 0 ? name : previousNames.includes(name) ? avoidDuplicates(nameFromEnemies(), count - 1) : name
   const nameFromInvader = invader ? avoidDuplicates(nameFromEnemies()) : undefined
-  const nameFromAnimal = isAnimalNameClaimed ? undefined : randomMonsterName(animal)
-  const name = nameFromStory ?? nameFromInvader ?? nameFromAnimal ?? randomMonsterName()
+  const nameFromAnimal = isAnimalNameClaimed ? undefined : getRandomMonsterName(animal)
+  const name = nameFromStory ?? nameFromInvader ?? nameFromAnimal ?? getRandomMonsterName()
   return name
 }
 
@@ -109,9 +124,10 @@ const createBoss = (dungeonAnalysis: DungeonAnalysis): Enemy => {
   // Are there magic weapons in the dungeon? If not, Boss is a 'ghastly revenant'
   // If so, then boss is a 'ghost' with status "spectral"
 
-  const name = deadBoss ? `the ${kindOfDead()} of ${bossName}` : bossName ?? `the ${randomBossName()}`
+  const name = deadBoss ? `the ${kindOfDead()} of ${bossName}` : bossName ?? `the ${getRandomBossName()}`
   const statuses: EnemyStatus[] = deadBoss && isMagicWeapon() ? ["spectral"] : []
-  const inventory = artifact ? [artifact] : []
+  const bossArtifact = artifact ?? toTitleCase(`the ${getRandomTreasureItem()} of ${bossName}`)
+  const inventory = [bossArtifact, ...getEnemyInventory("boss")]
 
   return { ...enemyTemplate, name, statuses, inventory, health: 5, attack: 4, defense: 4, class: "boss" } as Enemy
 }
@@ -130,6 +146,7 @@ const createEncounter = (
     case "monster": {
       const name = getMonsterName(previousNames, dungeonAnalysis)
       const statuses = getStatuses(name)
+      const inventory = getEnemyInventory("monster")
       return [
         ...previousEnemies,
         {
@@ -140,11 +157,13 @@ const createEncounter = (
           attack: 2,
           defense: 4,
           statuses,
+          inventory,
         },
       ] as Enemy[]
     }
     case "elite": {
       const name = getEliteName(previousEnemies, dungeonAnalysis)
+      const inventory = getEnemyInventory("elite")
       return [
         ...previousEnemies,
         {
@@ -154,12 +173,13 @@ const createEncounter = (
           health: 2,
           attack: 3,
           defense: 3,
+          inventory,
         },
       ]
     }
     case "peon": {
-      const name = aAn(getPeonName(previousNames, dungeonAnalysis))
-      const inventory = getRandomNumber() < 0.3 ? ["some gold"] : []
+      const name = aAn("orc")
+      const inventory = getEnemyInventory("peon")
       return [
         ...previousEnemies,
         {
@@ -179,28 +199,24 @@ const createEncounter = (
   }
 }
 
-/** This is where balancing of _pacing_ of encounters happens.
- * If there are too many or too few encounters, these are the numbers to adjust. */
-export const getAdversaryAnalysis = ({
-  bossName,
-  rooms,
-  veryLargeRooms,
-  numKeys,
-  emptyRooms,
-  largeRooms,
-  mediumRooms,
-  lockedRooms,
-}: DungeonAnalysis): AdversaryAnalysis => {
-  const emptyRoomsCount = emptyRooms.length
+/**
+ * Analyzes the dungeon's properties to determine the counts of adversaries in the dungeon.
+ * This is where balancing of _pacing_ of encounters happens.
+ * If there are too many or too few encounters, these are the numbers to adjust.
+ * This should be a pure function, no randomness here.
+ * @param {DungeonAnalysis} params - An object containing the dungeon's analysis properties.
+ **/
+
+export const getAdversaryAnalysis = (dungeonAnalysis: DungeonAnalysis): AdversaryAnalysis => {
+  const { largeRooms, lockedRooms, mediumRooms, numKeys, rooms, secretRooms, veryLargeRooms } = dungeonAnalysis
   const veryLargeRoomsCount = veryLargeRooms.length
   const largeRoomsCount = largeRooms.length + mediumRooms.length
   const lockedRoomsCount = lockedRooms.length === rooms.length ? 0 : lockedRooms.length
 
-  const bossChance = numKeys * 0.25 + emptyRoomsCount * 0.01 + (bossName ? 1 : 0) // a bossName virtually ensures that a boss will show up
-  const boss = bossChance > getRandomNumber() ? 1 : 0
-  const monster = Math.max(Math.floor(veryLargeRoomsCount / 2.5 + largeRoomsCount / 20 + (1 - bossChance)), 0)
-  const elite = Math.max(Math.floor(lockedRoomsCount * 0.15 + (1 - bossChance)), 0)
-  const peon = Math.max(Math.floor((rooms.length - lockedRoomsCount) * 0.15), 0)
+  const boss = 1
+  const elite = numKeys + Math.max(Math.floor(rooms.length * 0.15), 0) + Math.floor(lockedRooms.length * 0.25)
+  const peon = Math.max(Math.floor((rooms.length - lockedRoomsCount - secretRooms.length) * 0.85), 0)
+  const monster = Math.max(Math.floor(veryLargeRoomsCount / 2.5 + largeRoomsCount / 20), 0) + Math.ceil(peon / 10)
 
   return {
     boss,
@@ -209,35 +225,119 @@ export const getAdversaryAnalysis = ({
     peon,
   }
 }
+
+/**
+ * Gets a list of peon base rooms from the dungeon analysis, sorted by their suitability as bases.
+ * The function prioritizes rooms with only one non-secret exit and an area between 4 and 20.
+ * If there are not enough suitable rooms, it considers rooms with two non-secret exits and similar area requirements.
+ * If still not enough, it includes all remaining rooms.
+ *
+ * @param {DungeonAnalysis} param0 - An object containing dungeon analysis data.
+ * @param {{ id: number; w: number; h: number; exits: { type: DoorType }[] }[]} param0.unlockedNonsecretRooms - An array of unlocked non-secret room objects with their dimensions, exits, and IDs.
+ * @returns {{ area: number; id: number }[]} An array of peon base room objects sorted by their suitability as bases, each containing the area and ID.
+ */
+const getPeonBaseRooms = ({ unlockedNonsecretRooms }: DungeonAnalysis) => {
+  const getRoomScore = (exitsCount: number) => (exitsCount === 1 ? 2 : exitsCount === 2 ? 1 : 0)
+
+  const availableRooms = unlockedNonsecretRooms.filter((room) => room.id)
+
+  const suitableBases = availableRooms
+    .map((room) => ({
+      area: room.w * room.h,
+      id: room.id,
+      exitsCount: room.exits.filter((exit) => exit.type !== DoorType.secret).length,
+    }))
+    .filter(({ area }) => area >= 4 && area < 20)
+    .sort((a, b) => getRoomScore(b.exitsCount) - getRoomScore(a.exitsCount) || b.area - a.area)
+
+  const unfilteredUnordered = availableRooms.map((room) => ({ area: room.w * room.h, id: room.id }))
+
+  const bases = [...suitableBases, ...unfilteredUnordered]
+
+  if (bases.length === 0) console.error("No peon base rooms available")
+
+  return bases
+}
+
+const assignLocations =
+  (roomGraph: [number, number[]][]) =>
+  (previous: { name: string; id: number }[] = [], { name, home }: { name: string; home: number }) => {
+    const distance = inverseSquareRandom()
+    const roomsAtDistance = getRoomsAtDistance(roomGraph, home, distance)
+    const room = getRandomElementOf(roomsAtDistance)
+
+    return [{ name, room }, ...previous]
+  }
+
+const findLocation = (roomGraph: [number, number[]][], homeRoom: number, inversePower = 2) => {
+  const distance = inverseSquareRandom(0, inversePower)
+  const roomsAtDistance = getRoomsAtDistance(roomGraph, homeRoom, distance)
+  const roomId = getRandomElementOf(roomsAtDistance)
+  return roomId
+}
+
 /** This is where placement of encounters is determined. If the
  * encounters need to be distributed differently, this is where that
  * happens */
-const placeEnemies =
-  ({
-    rooms,
-    unlockedNonsecretTreasureRooms,
-    unlockedNonsecretRooms,
-    endingRoom,
-    lockedRooms,
-    largeRooms,
-    veryLargeRooms,
-    mediumRooms,
-    justInsideRoom,
-    treasureRooms,
-    unlockedRooms,
-  }: DungeonAnalysis) =>
-  (placedEnemies: Enemy[], enemy: Enemy): Enemy[] => {
+const placeEnemies = (dungeonAnalysis: DungeonAnalysis, adversaryAnalysis: AdversaryAnalysis) => {
+  const { rooms, lockedRooms } = dungeonAnalysis
+
+  const { peon: peonCount } = adversaryAnalysis
+
+  // if there are many peons, they are divided into factions
+  // number of factions and their sizes are determined by the number of defensible, non-secret rooms and their area
+  // each faction has a defendable home base - prefer a non-secret room with few exits and no notes
+  const peonBaseRooms = getPeonBaseRooms(dungeonAnalysis)
+  const peonFactionDistribution = distributeFactionPopulation({
+    population: peonCount,
+    spaces: peonBaseRooms.map(({ area }) => area),
+  })
+  const peonFactionNames = new Array(peonFactionDistribution.length)
+    .fill("")
+    .reduce((previousNames, _blank, i) => [...previousNames, getPeonFactionName(previousNames, dungeonAnalysis, i)], [])
+  // home base is not the location of the enemy
+  const roomGraph: [number, number[]][] = rooms.map<[number, number[]]>((room) => [
+    room.id,
+    room.exits.filter((exit) => typeof exit.to === "number").map((exit) => exit.to) as number[],
+  ])
+
+  let peonCounter = 0
+  const peons: { name: string; room: number }[] = assignFactions(
+    peonFactionDistribution,
+    peonBaseRooms,
+    peonFactionNames
+  ).reduce(assignLocations(roomGraph), [])
+
+  //TODO: large factions have a faction-themed monster at their home base
+
+  // most peons will be at the home base, some will be just outside and there will be stragglers elsewhere, nearby
+
+  // other monsters prefer large room, no notes, fewer exits, non-secret
+
+  // boss room is always at the `ending` room if it's available, otherwise the highest id locked room, otherwise the highest id room over 3 x 3, otherwise the highest room over 2 x 2
+
+  // elites will be in the boss room or an adjacent room
+
+  const bossRoom =
+    rooms.find((room) => room.ending) ??
+    lockedRooms.reduce((highestId, room) => (room.id > highestId.id ? room : highestId)) ??
+    rooms
+      .filter((room) => room.h * room.w >= 9)
+      .reduce((highestId, room) => (room.id > highestId.id ? room : highestId)) ??
+    rooms
+      .filter((room) => room.h * room.w >= 4)
+      .reduce((highestId, room) => (room.id > highestId.id ? room : highestId))
+
+  return (placedEnemies: Enemy[], enemy: Enemy): Enemy[] => {
     const placedRoomIds = placedEnemies.map((enemy) => enemy.room) ?? []
     const availableRooms = rooms.filter((room) => !(placedRoomIds.includes(room.id) || room.id === 0)) // let's also reserve the front room
-    const getRandomRoom = (rooms: Room[]) => randomElement(rooms)
-    const firstAvailable = (rooms: Room[]) => rooms.find((room) => availableRooms.includes(room))
+    const firstAvailable = (rooms: Room[]) =>
+      rooms.filter((room) => room.id).find((room) => availableRooms.includes(room)) ?? getRandomElementOf(rooms)
 
     switch (enemy.class) {
       case "boss": {
         // Boss is always in the ending room if it exists, otherwise the highest id room with area 9 or more
-        const placed = firstAvailable([endingRoom, ...lockedRooms]) ?? getRandomRoom(availableRooms)
-        const room = placed.id
-        const boss = { ...enemy, room }
+        const boss = { ...enemy, room: bossRoom.id }
         return [...placedEnemies, boss]
       }
 
@@ -245,63 +345,69 @@ const placeEnemies =
       case "monster": {
         // boss room if available
         // otherwise only unlocked rooms
-        const unlockedLargeRooms =
-          veryLargeRooms.filter((room) => !lockedRooms.some((locked) => locked.id === room.id)) ??
-          largeRooms.filter((room) => !lockedRooms.some((locked) => locked.id === room.id)) ??
-          mediumRooms.filter((room) => !lockedRooms.some((locked) => locked.id === room.id))
-        const sorted = unlockedLargeRooms.sort(sortByExits)
-        const room = firstAvailable([endingRoom, ...sorted, ...shuffleArray(unlockedRooms)]).id
+        const room = firstAvailable(shuffleArray(rooms)).id
         const monster = { ...enemy, room }
         return [...placedEnemies, monster]
       }
 
-      // Elites only exist in the locked back rooms but never in the ending room
       case "elite": {
-        // Locked rooms with treasure
-        const lockedTreasureRooms = lockedRooms.filter((room) => treasureRooms.some((tRoom) => tRoom.id === room.id))
-        // Just inside the gate room
-        const anywhere = lockedRooms.filter((room) => room.id !== endingRoom.id)
-        const room = firstAvailable([...lockedTreasureRooms, justInsideRoom, ...anywhere].filter((x) => x)).id
+        const room = findLocation(roomGraph, bossRoom.id, 1.5)
         const elite = { ...enemy, room }
         return [...placedEnemies, elite]
       }
       default: {
-        // anywhere that is not a locked room, nor secret room
-        // prefer treasure rooms
-        const room = firstAvailable([
-          ...unlockedNonsecretTreasureRooms,
-          ...unlockedNonsecretRooms,
-          ...shuffleArray(unlockedRooms),
-        ]).id
-        return [...placedEnemies, { ...enemy, room }]
+        const peon = peons[peonCounter]
+        const name = aAn(peon.name)
+        peonCounter++
+        return [...placedEnemies, { ...enemy, ...peon, name }]
       }
     }
   }
+}
 
 export const createMenaceManifest = (dungeonAnalysis: DungeonAnalysis): MenaceManifest => {
   const adversaryAnalysis = getAdversaryAnalysis(dungeonAnalysis)
-  const agents = keysRepeated(adversaryAnalysis)
+  const agents = expandTally(adversaryAnalysis)
     .reduce(
       (enemies: Enemy[], encounterType: EnemyClass) => createEncounter(enemies, dungeonAnalysis, encounterType),
       []
     )
     .map((enemy, id) => ({ ...enemy, id }))
-    .reduce(placeEnemies(dungeonAnalysis), [])
+    .reduce(placeEnemies(dungeonAnalysis, adversaryAnalysis), [])
 
-  const startingChance = getRandomNumber()
+  const inventory = [
+    "a wooden shield",
+    "a rusty sword",
+    "a leather helmet",
+    "a potion of healing",
+    "a potion of healing",
+  ]
 
-  const inventory = startingChance < 0.1 ? ["a potion of healing", "a potion of healing"] : startingChance < 0.7 ? ["a potion of healing"] : []
-
-  const startingStats: Mortal = {
-    health: 4,
-    defense: 4,
-    attack: 3,
+  const playerStats: Mortal = {
+    health: 10,
+    defense: 1,
+    attack: 1,
     statuses: [],
-    inventory
+    inventory,
   }
-  const addMortals = (a: Mortal, b: Mortal) => ({ ...a, health: a.health + b.attack })
-  const playerStats = agents.reduce((player: Player, agent: Enemy) => addMortals(player, agent), startingStats)
-  const player = {...playerStats, maxHealth: playerStats.health}
+  const player = { ...playerStats, maxHealth: playerStats.health }
 
   return { player, agents }
 }
+
+/**
+ * Assigns factions to base rooms based on the given population distribution and room information.
+ * The function creates an array of objects representing the assignments of faction members to the available rooms.
+ *
+ * @param {number[]} factionPopulationDistribution - An array representing the population of each faction.
+ * @param {{ area: number; id: number }[]} baseRooms - An array of objects containing the area and ID of each room.
+ * @returns {{ faction: number; room: number }[]} An array of objects representing the assignment of faction members to rooms.
+ */
+const assignFactions = (
+  factionPopulationDistribution: number[],
+  baseRooms: { area: number; id: number }[],
+  factionNames: string[]
+) =>
+  factionPopulationDistribution.flatMap((factionPopulation: number, faction: number) =>
+    new Array(factionPopulation).fill({ name: factionNames[faction], home: baseRooms[faction].id })
+  )

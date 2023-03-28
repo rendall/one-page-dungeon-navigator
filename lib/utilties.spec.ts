@@ -1,4 +1,4 @@
-import { inventoryMessage, isArmor, isMagic, isWeapon, keysRepeated, RandomNumberGenerator } from "./utilties"
+import { inventoryMessage, isArmor, isMagic, isWeapon, expandTally, RandomNumberGenerator } from "./utilties"
 
 describe("inventoryMessage()", () => {
   it("should count ordinary items", () => {
@@ -154,11 +154,36 @@ describe("inventoryMessage()", () => {
       expect(inventoryMessage(items as string[])).toBe(expected)
     })
   })
+
+  describe("it should combine and count all items ", () => {
+    const doubledExpectation = [
+      [
+        ["a translucent helm", "some gold", "a long sword", "a scarf", "a mysterious, whispering object", "a key"],
+        "two keys, two translucent helms, gold, two long swords, two scarves and two mysterious, whispering objects",
+      ],
+      [
+        ["a copper key", "a mysterious, unnaturally heavy medallion", "a copper key", "a copper key"],
+        "six copper keys and two mysterious, unnaturally heavy medallions",
+      ],
+      [
+        ["an orb of protection", "a leather armor", "a key", "a key", "a key", "a key", "a magic censer"],
+        "eight keys, two orbs of protection, two leather armors and two magic censers",
+      ],
+      [
+        ["some gold", "a vorpal spear", "a magic hourglass", "a cloak", "gems", "rations", "some gold"],
+        "a lot of gold, two vorpal spears, two magic hourglasses, two cloaks, gems and rations",
+      ],
+    ]
+    test.each(doubledExpectation)("doubled %s should be %s", (items, expected) => {
+      const double = [...items, ...items]
+      expect(inventoryMessage(double as string[])).toBe(expected)
+    })
+  })
 })
 
 describe("keysRepeated()", () => {
   it("should return the expected value", () => {
-    expect(keysRepeated({ a: 1, b: 2, c: 3 })).toEqual(["a", "b", "b", "c", "c", "c"])
+    expect(expandTally({ a: 1, b: 2, c: 3 })).toEqual(["a", "b", "b", "c", "c", "c"])
   })
 })
 

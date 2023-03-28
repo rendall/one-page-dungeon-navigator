@@ -6,9 +6,10 @@ import { createMenaceManifest, getAdversaryAnalysis } from "../lib/agentKeeper.j
 import { parseDungeon } from "../lib/parseDungeon.js"
 import { analyzeDungeon } from "../lib/parseDungeon.js"
 import { printAnalysis } from "../lib/parseDungeon.js"
-import { attackByFunc, GameState } from "../lib/gameLoop"
+import { attackBy, game, GameState } from "../lib/gameLoop"
 import { DoorType, Enemy, Exit } from "../lib/dungeon.js"
 import { inspect } from "util"
+import { unique } from "../lib/utilties.js"
 // import { getRandomNumber } from "../lib/utilties.js"
 
 const jsonFile = process.argv[2]
@@ -35,6 +36,11 @@ readdir(directoryPath, function (err, files) {
         const json = JSON.parse(data)
         const dungeon = parseDungeon(json)
         const { rooms } = dungeon
+
+        const dungeonAnalysis = analyzeDungeon(dungeon)
+        const initAgents = createMenaceManifest(dungeonAnalysis)
+
+        console.log(unique(initAgents.agents.map((agent) => agent.name)))
 
         rooms
           .flatMap((room) => room.exits)

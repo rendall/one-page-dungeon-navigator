@@ -200,6 +200,9 @@ export type Room = Rect & {
   notes?: PlainNote[]
 }
 
+// Utility class that returns the element of an array as its type
+export type ElementOf<T extends unknown[]> = T extends (infer E)[] ? E : never
+
 export type MortalStatus = "dead" | "poisoned" | "hallucinating" | "bigger" | "aged"
 
 export type Mortal = {
@@ -237,6 +240,8 @@ export type Enemy = Agent & {
   statuses: EnemyStatus[]
   isEnemy: true
 }
+
+export type EnemyClass = Pick<Enemy, "class">["class"]
 
 export const isPlayer = (mortal: Mortal): mortal is Player => !("id" in mortal)
 export const isAgent = (mortal: Mortal): mortal is Agent => "id" in mortal

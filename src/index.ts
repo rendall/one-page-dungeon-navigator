@@ -2,7 +2,7 @@
 import { Dungeon, Action, exitDirections, Exit, isEnemy } from "../lib/dungeon"
 import { parseDungeon } from "../lib/parseDungeon"
 import { game, GameOutput, GameResult } from "../lib/gameLoop"
-import { countItems, pluralize, toThe } from "../lib/utilties"
+import { tallyArray, addCount, toThe } from "../lib/utilties"
 
 const INSTRUCTIONS = `
 <p class="instructions">Navigate the dungeon by pressing the buttons below, using the arrow keys, or pressing the following keys:</p>
@@ -166,7 +166,10 @@ const printMessage = (message: string, type = "message") => {
 const addTouchControls = (result: GameOutput) => {
   const exits = result.exits
   const turn = result.turn
-  const enemies = result.agents.filter(isEnemy).filter((enemy) => !enemy.statuses.includes("dead"))
+  const enemies = result.agents
+    .filter(isEnemy)
+    .filter((enemy) => !enemy.statuses.includes("dead"))
+    .sort((a, b) => b.id - a.id)
   const messageScroll = document.getElementById("message-scroll")
   const ul = document.createElement("ul") as HTMLUListElement
   ul.classList.add("controls")
@@ -492,6 +495,7 @@ const deselectDungeon = () => {
 
 const startGame = async (startDungeon?: string) => {
   const selectedDungeon = startDungeon ?? getSelectedDungeon("dungeon-select")
+  deselectDungeon()
   try {
     const gameDataFiles = await loadFiles(selectedDungeon)
     const result = await gameLoop(gameDataFiles)
@@ -531,6 +535,8 @@ const showGameSummary = ({
   const treasuresFoundUL = document.getElementById("treasures-found")!
   const moreTreasuresSecrets = document.getElementById("more-treasures-secrets")!
 
+  document.querySelectorAll(".game-result").forEach((item) => item.remove())
+
   gameResultElement.textContent =
     endResult === "victory"
       ? `Victory in The ${title}`
@@ -563,6 +569,7 @@ const showGameSummary = ({
       artifactFound ? "!" : ""
     }`
     const artifactResult = document.createElement("p")
+    artifactResult.classList.add("game-result")
     artifactResult.innerText = message
     gameResultElement.insertAdjacentElement("afterend", artifactResult)
   }
@@ -570,22 +577,27 @@ const showGameSummary = ({
   if (boss) {
     const message = endResult === "victory" ? `You defeated ${toThe(boss)}!` : `You did not defeat ${toThe(boss)}!`
     const bossResult = document.createElement("p")
+    bossResult.classList.add("game-result")
     bossResult.innerText = message
     gameResultElement.insertAdjacentElement("afterend", bossResult)
   }
 
-  defeatedByHeader.textContent = endResult === "defeat" ? "You were defeated by:" : ""
-  defeatedByUL.innerHTML = defeatedBy?.map((enemy) => `<p>${enemy}</p>`).join("")
+  const defeatedByList = defeatedBy
+    ? tallyArray(defeatedBy).map(([count, enemy]) => (count === 1 ? enemy : addCount(count, enemy)))
+    : []
 
-  const enemiesList = countItems(enemiesDefeated).map(([count, enemy]) =>
-    count === 1 ? enemy : pluralize(count, enemy)
+  defeatedByHeader.textContent = endResult === "defeat" ? "You were defeated by:" : ""
+  defeatedByUL.innerHTML = defeatedByList.map((enemy) => `<p>${enemy}</p>`).join("")
+
+  const enemiesList = tallyArray(enemiesDefeated).map(([count, enemy]) =>
+    count === 1 ? enemy : addCount(count, enemy)
   )
 
   enemiesDefeatedUL.innerHTML =
     enemiesList.length === 0 ? "<p>none</p>" : enemiesList.map((listItem: string) => `<p>${listItem}</p>`).join("")
 
-  const treasuresList = countItems(treasuresFound).map(([count, treasure]) =>
-    count === 1 ? treasure : pluralize(count, treasure)
+  const treasuresList = tallyArray(treasuresFound).map(([count, treasure]) =>
+    count === 1 ? treasure : addCount(count, treasure)
   )
 
   treasuresFoundUL.innerHTML = treasuresList.length

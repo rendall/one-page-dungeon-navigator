@@ -1,5 +1,5 @@
 import { Action, actions, CuriousNote, Door, Dungeon, Enemy, exitDirections, JsonDungeon, Rect, Room } from "./dungeon"
-import { game, GameOutput, GameState } from "./gameLoop"
+import { describeAgents, game, GameOutput, GameState } from "./gameLoop"
 import { parseDungeon } from "./parseDungeon"
 import testDungeon from "../tests/dungeons/house_of_the_immortal_lord.json"
 import dungeonRun from "../tests/dungeons/chambers_of_the_red_master.json"
@@ -47,7 +47,7 @@ const twoRoomDungeon: JsonDungeon = {
     { x: 4, y: 0, w: 3, h: 3, rotunda: true }, // east room
     { x: 3, y: 2, w: 1, h: 1 },
   ], // door
-  doors: [{ x: 3, y: 2, dir: { x: 1, y: 0 }, type: 0, id: 2 }] as Door[],
+  doors: [{ x: 3, y: 2, dir: { x: 1, y: 0 }, type: 0, id: 2 }] as (Door & { id: number })[],
 }
 const parsedDungeon = parseDungeon(testDungeon)
 
@@ -117,16 +117,17 @@ describe("gameLoop good game()", () => {
         health: 1,
         defense: 1,
         attack: 1,
+        maxHealth: 1,
         statuses: ["poisoned", "hallucinating", "aged"],
+        inventory: ["an axe", "a helm", "an amulet", "a potion of healing", "a potion of healing"],
       },
-      inventory: ["an axe", "a helm", "an amulet"],
       agents: [],
     }
     const input = game(minimalWorkingDungeon, { noCombat: true, initGameState })
     input("init")
     const infoOutput = input("info")
     expect(infoOutput.message).toBe(
-      "You take stock of your situation. Your health is 1. Your attack is 3. Your defense is 3. Your magical power is 1. You are poisoned, hallucinating and aged. You now have an axe, a helm and an amulet."
+      "You take stock of your situation. Your health is 1. Your attack is 3. Your defense is 3. Your magical power is 1. You are poisoned, hallucinating and aged. You now have an axe, a helm, an amulet and two potions of healing."
     )
   })
 
@@ -459,8 +460,10 @@ describe("gameLoop good game()", () => {
         player: {
           health: 1000,
           defense: 1000,
+          maxHealth: 1000,
           attack: 1000,
           statuses: [],
+          inventory: [],
         },
         agents: [enemy],
       }
@@ -481,7 +484,7 @@ describe("gameLoop good game()", () => {
       const attackOutput = input("attack 0")
       expect(attackOutput).toMatchObject({
         message: expect.stringContaining("The enemy is dead."),
-        description: expect.stringContaining("The corpse of the enemy is  here"),
+        description: expect.stringContaining("A corpse of an enemy is here"),
         agents: expect.arrayContaining([
           expect.objectContaining({ id: 0, isEnemy: true, statuses: expect.arrayContaining(["dead"]) }),
         ]),
@@ -512,9 +515,11 @@ describe("gameLoop good game()", () => {
         doors: [],
         player: {
           health: 1,
+          maxHealth: 1,
           defense: 1,
           attack: 1,
           statuses: [],
+          inventory: [],
         },
         agents: enemies,
       }
@@ -523,7 +528,7 @@ describe("gameLoop good game()", () => {
       const input = game(combatDungeon, { initGameState, noCombat: true })
       const initInput = input("init")
       expect(initInput.end).toBe(false)
-      expect(initInput.description).toContain("An enemy is  here.")
+      expect(initInput.description).toContain("Ten enemies are here.")
       const eastOutput = input("east")
       expect(eastOutput.room).toBe(0)
       expect(eastOutput.end).toBe(true)
@@ -533,7 +538,7 @@ describe("gameLoop good game()", () => {
 
   describe("dungeon run: Chambers of The Red Master", () => {
     const parsedDungeon = parseDungeon(dungeonRun)
-    const gameInterface = game(parsedDungeon)
+    const gameInterface = game(parsedDungeon, { noCombat: true })
     const expectations: [string, string][] = [
       [
         "init",
@@ -546,7 +551,7 @@ describe("gameLoop good game()", () => {
       ["west", "You go west"],
       ["west", "You go west"],
       ["west", "You go west"],
-      ["search", "You open the large chest and find an iron key. You now have two iron keys."],
+      ["search", "You open the large chest and find an iron key. You now have two iron keys"],
       ["north", "You go north"],
       ["1", "You go north"],
       ["north", "You go north"],
@@ -566,5 +571,151 @@ describe("gameLoop good game()", () => {
       const { message } = gameInterface(input)
       expect(message).toContain(expectedMessage)
     })
+  })
+})
+
+describe("group agents", () => {
+  test("should properly describe live agents", () => {
+    const waspAgents: Enemy[] = [
+      {
+        id: 1,
+        name: "a giant, soul-eating wasp",
+        class: "monster",
+        room: 1,
+        health: 4,
+        attack: 2,
+        defense: 4,
+        statuses: [],
+        inventory: [],
+        isEnemy: true,
+      },
+      {
+        id: 7,
+        name: "a wasp-man",
+        class: "peon",
+        room: 1,
+        health: 1,
+        attack: 1,
+        defense: 1,
+        statuses: [],
+        inventory: [],
+        isEnemy: true,
+      },
+      {
+        id: 8,
+        name: "a wasp-man",
+        class: "peon",
+        room: 1,
+        health: 1,
+        attack: 1,
+        defense: 1,
+        statuses: [],
+        inventory: ["some gold"],
+        isEnemy: true,
+      },
+    ]
+
+    const agentDescriptions = describeAgents(waspAgents)
+    expect(agentDescriptions).toBe("A giant, soul-eating wasp and two wasp-men are here.")
+  })
+
+  test("should properly describe a single, live agent", () => {
+    const enemy: Enemy[] = [
+      {
+        id: 13,
+        name: "a gnoll",
+        class: "peon",
+        room: 2,
+        health: 1,
+        attack: 1,
+        defense: 1,
+        statuses: [],
+        inventory: [],
+        isEnemy: true,
+      },
+    ]
+    const agentDescriptions = describeAgents(enemy)
+    expect(agentDescriptions).toBe("A gnoll is here.")
+  })
+
+  test("should properly describe a single, dead agent", () => {
+    const enemy: Enemy[] = [
+      {
+        id: 13,
+        name: "a gnoll",
+        class: "peon",
+        room: 2,
+        health: 1,
+        attack: 1,
+        defense: 1,
+        statuses: ["dead"],
+        inventory: [],
+        isEnemy: true,
+      },
+    ]
+    const agentDescriptions = describeAgents(enemy)
+    expect(agentDescriptions).toBe("A corpse of a gnoll is here.")
+  })
+
+  test("should properly describe two dead agents", () => {
+    const enemy: Enemy[] = [
+      {
+        id: 13,
+        name: "a gnoll",
+        class: "peon",
+        room: 2,
+        health: 1,
+        attack: 1,
+        defense: 1,
+        statuses: ["dead"],
+        inventory: [],
+        isEnemy: true,
+      },
+      {
+        id: 14,
+        name: "a gnoll",
+        class: "peon",
+        room: 2,
+        health: 1,
+        attack: 1,
+        defense: 1,
+        statuses: ["dead"],
+        inventory: [],
+        isEnemy: true,
+      },
+    ]
+    const agentDescriptions = describeAgents(enemy)
+    expect(agentDescriptions).toBe("The corpses of two gnolls are here.")
+  })
+
+  test("should properly describe two dead agents, one of them looted", () => {
+    const enemy: Enemy[] = [
+      {
+        id: 13,
+        name: "a gnoll",
+        class: "peon",
+        room: 2,
+        health: 1,
+        attack: 1,
+        defense: 1,
+        statuses: ["dead"],
+        inventory: [],
+        isEnemy: true,
+      },
+      {
+        id: 14,
+        name: "a gnoll",
+        class: "peon",
+        room: 2,
+        health: 1,
+        attack: 1,
+        defense: 1,
+        statuses: ["dead", "searched"],
+        inventory: [],
+        isEnemy: true,
+      },
+    ] as Enemy[]
+    const agentDescriptions = describeAgents(enemy)
+    expect(agentDescriptions).toBe("A corpse of a gnoll and a looted corpse of a gnoll are here.")
   })
 })

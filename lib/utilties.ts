@@ -1,4 +1,4 @@
-import type { Exit, Room } from "./dungeon"
+import type { EnemyClass, Exit, Room } from "./dungeon"
 
 /**
  * Composes a sequence of functions that transform a single input value into a final output value.
@@ -82,7 +82,7 @@ export const sortExitsClockwise =
  *
  * @example {a: 1, b: 3, c: 2} => ["a", "b", "b", "b", "c", "c"]
  */
-export const keysRepeated = <T extends string>(obj: { [key in T]: number }): T[] => {
+export const expandTally = <T extends string>(obj: { [key in T]: number }): T[] => {
   Object.entries(obj).forEach(([key, value]) => {
     if (typeof value !== "number")
       throw new Error(`Invalid value type '${typeof value}' in keysRepeated ${key}:${value}`)
@@ -92,18 +92,21 @@ export const keysRepeated = <T extends string>(obj: { [key in T]: number }): T[]
   return Object.entries(obj).reduce((arr, [key, value]) => [...arr, ...Array(value).fill(key)], [])
 }
 
-export const countItems = (items: string[]): [number, string][] => {
-  const entriesCountMap = items.reduce<{ [item: string]: number }>(
-    (count: { [item: string]: number }, item) => ({ ...count, [item]: count.item ? 1 : count.item + 1 }),
-    {}
-  )
-  return Object.entries(entriesCountMap).map(([item, count]) => [count, item]) // swapping here to make it easier to remember count, item
+export const tallyArray = (items: string[]): [number, string][] => {
+  const counts = items.reduce((map, str) => {
+    map.set(str, (map.get(str) || 0) + 1)
+    return map
+  }, new Map<string, number>())
+
+  const pairs = Array.from(counts.entries()).map(([str, count]) => [count, str]) as [number, string][]
+
+  return pairs
 }
 
 /** Given an value with an id, return the id. Otherwise return the value */
 export const toId = (value: Room | number | string) => (value && hasProperty(value, "id") ? (value as Room).id : value)
 /** Randomly choose one of the element's members */
-export const randomElement = <T>(arr: T[]) => arr[Math.floor(getRandomNumber() * arr.length)]
+export const getRandomElementOf = <T>(arr: T[]) => arr[Math.floor(getRandomNumber() * arr.length)]
 
 /** Compare two arrays and return true if all elements of a are contained in b. Does not accommodate duplicates */
 export const containsElementsOf = (a: unknown[], b: unknown[]): boolean => a.every((e) => b.includes(e))
@@ -122,7 +125,13 @@ export const hasProperty = (obj: unknown, property: string, pred: (value: unknow
 
 /** Append "." to str and ensure there is only one, as long as there is not already a ! or ? */
 export const period = (str: string): string =>
-  /[?!]$/.test(str.trim()) ? str : /\.$/.test(str.trim()) ? period(str.trim().slice(0, -1)) : `${str}.`
+  str.length === 0
+    ? ""
+    : /[?!]$/.test(str.trim())
+    ? str
+    : /\.$/.test(str.trim())
+    ? period(str.trim().slice(0, -1))
+    : `${str}.`
 
 /** Format the string using successive formats, e.g. formatString("an orc", toThe, isHere, period) // -> "The orc is here. " */
 export const formatString = (str: string, ...rest: ((str: string) => string)[]): string =>
@@ -130,6 +139,39 @@ export const formatString = (str: string, ...rest: ((str: string) => string)[]):
 
 /** Alias for 'formatString' */
 export const fmt = formatString
+
+export const toTitleCase = (str: string): string => {
+  const smallWords = [
+    "a",
+    "an",
+    "and",
+    "as",
+    "at",
+    "but",
+    "by",
+    "en",
+    "for",
+    "if",
+    "in",
+    "of",
+    "on",
+    "or",
+    "the",
+    "to",
+    "v",
+    "via",
+    "vs",
+  ]
+  const words = str.toLowerCase().split(" ")
+  const titleCasedWords = words.map((word, index) => {
+    if (index === 0 || !smallWords.includes(word)) {
+      return word.charAt(0).toUpperCase() + word.slice(1)
+    } else {
+      return word
+    }
+  })
+  return titleCasedWords.join(" ")
+}
 
 /** Add a 'is/are here at the end of a sentence */
 export const isHere = (str: string) => (str.startsWith("The") ? str : `${capitalize(str)} ${hasVerb(str)} here`)
@@ -193,8 +235,8 @@ export const toWords = (num: number) => {
   return `${tens[numTens]} ${ones[numOnes]}`.trim()
 }
 
-/** to plural */
-export const pluralize = (count: number, word: string): string => {
+/** Add count number and properly pluralize an item */
+export const addCount = (count: number, word: string): string => {
   if (count === 1 || isNaN(count)) return word
   if (word === "some gold") {
     if (count === 2) return "gold"
@@ -206,15 +248,84 @@ export const pluralize = (count: number, word: string): string => {
 
   const countword = toWords(count)
 
-  // Realistically, the only word that will ever be pluralized is "key"
-  return `${countword} ${deAAn(word)}s`
+  // takes care of properly pluralizing the correct object
+  // {object: 'an eldritch potion', prepositional: ' of healing'} => "eldritch potions of healing"
+  const { object, prepositional } = word.match(/(?<object>[\w\s,]+)(?<prepositional> of (?:an? )?\w+)/)?.groups || {
+    object: word,
+  }
+
+  const pluralObject = pluralize(deAAn(object))
+
+  if (prepositional) {
+    const isACreature = /of an? /.test(prepositional)
+    if (isACreature && count !== 1) {
+      const { creature } = word.match(/[\w\s,]+ of an? (?<creature>\w+)/)?.groups ?? {}
+      return `the ${pluralObject} of ${countword} ${pluralize(deAAn(creature))}`
+    } else return `${countword} ${pluralObject}${prepositional}`
+  }
+
+  return `${countword} ${pluralObject}`
 }
 
+const pluralize = (word: string) => {
+  const irregular: { [key: string]: string } = {
+    // Add more irregular plurals if needed
+    cherub: "cherubim",
+    dice: "dice",
+    die: "dice",
+    hero: "heroes",
+    mage: "magi",
+    ophan: "ophanim",
+    seraph: "seraphim",
+  }
+
+  if (irregular[word]) {
+    return irregular[word]
+  }
+
+  if (/man$/i.test(word)) {
+    return word.replace(/man$/, "men")
+  }
+
+  if (/(s|x|z|sh|ch)$/i.test(word)) {
+    return word + "es"
+  }
+
+  if (/y$/i.test(word) && !/[aeiou]y$/i.test(word)) {
+    return word.slice(0, -1) + "ies"
+  }
+
+  if (/ff$/i.test(word)) {
+    return word.slice(0, -2) + "ves"
+  }
+
+  if (/f$/i.test(word)) {
+    return word.slice(0, -1) + "ves"
+  }
+
+  if (/fe$/i.test(word)) {
+    return word.slice(0, -2) + "ves"
+  }
+
+  return word + "s"
+}
 /** comma list */
 export const toList = (items: string[]): string => {
+  if (items.length === 0) return "nothing"
   if (items.length === 1) return items[0]
-  if (items.length === 2) return `${items[0]} and ${items[1]}`
+  if (items.length === 2) return `${items[0]} and ${deCapitalize(items[1])}`
   return `${items[0]}, ${toList(items.slice(1))}`
+}
+
+// `the looted corpse of the orc`
+// `the corpse of the orc`
+// `an orc`
+
+export const groupAgents = (agentDescriptions: string[]) => {
+  const tally = tallyArray(agentDescriptions)
+  const wordCounts = tally.map(([count, item]) => addCount(count, item))
+  const list = `${toList(wordCounts)} ${agentDescriptions.length === 1 ? "is" : "are"} here.`
+  return capitalize(list)
 }
 
 /** Create inventory message */
@@ -222,10 +333,10 @@ export const inventoryMessage = (inventory?: string[]) => {
   if (!inventory) return ""
   const keySort = (a: string, b: string) => (a.endsWith("key") ? -1 : b.endsWith("key") ? 1 : 0) // keys should always be the first item listed
   const itemCount = inventory
-    .map((item) => item.toLowerCase())
+    // .map((item) => item.toLowerCase())
     .sort(keySort)
     .reduce((acc: { [key: string]: number }, curr: string) => ({ ...acc, [curr]: (acc[curr] || 0) + 1 }), {})
-  const items = Object.entries(itemCount).map(([item, count]: [string, number]) => pluralize(count, item))
+  const items = Object.entries(itemCount).map(([item, count]: [string, number]) => addCount(count, item))
   return toList(items)
 }
 
@@ -554,7 +665,7 @@ const militaryElite = [
 ]
 
 export const getEliteNoun = (bossNoun?: string) => {
-  const format = (arr: string[]) => capitalize(randomElement(arr))
+  const format = (arr: string[]) => capitalize(getRandomElementOf(arr))
   switch (bossNoun) {
     // Royalty bosses
     case "king":
@@ -595,24 +706,25 @@ export const getEliteNoun = (bossNoun?: string) => {
 
     // Default case for unrecognized boss types
     default:
-      return randomElement(demons)
+      return getRandomElementOf(demons)
   }
 }
 
 const raiders = ["orc", "goblin", "hobgoblin", "kobold", "gnoll", "pirate", "bandit", "cultist", "thug"]
 
-export const randomRaider = (() => {
+export const getRandomRaider = (() => {
   let raider: string
   return (reset?: boolean) => {
     if (raider === undefined || reset === true) {
       // Generate a new random value on the first call
-      raider = randomElement(raiders)
+      raider = getRandomElementOf(raiders)
     }
     return raider
   }
 })()
 
-export const randomBossName = () => `${capitalize(randomElement(bossAdj))} ${capitalize(randomElement(bossNoun))}`
+export const getRandomBossName = () =>
+  `${capitalize(getRandomElementOf(bossAdj))} ${capitalize(getRandomElementOf(bossNoun))}`
 
 const beastAdj = ["huge", "giant", "terrifying", "fearsome", "undead"]
 const monsterAdj = [
@@ -644,11 +756,11 @@ const monsterNoun = [
 export const isMonster = (name: string) => name && monsterNoun.some((noun) => name.includes(noun))
 export const hasMonsterAttributes = (name: string) => name && monsterAdj.some((adj) => name.includes(adj))
 
-export const randomMonsterName = (beast?: string) => {
+export const getRandomMonsterName = (beast?: string) => {
   if (beast && !isMonster(beast)) {
     // if there's a beast, then it's going to be a "big, scary beast"
-    const bigAdj = randomElement(beastAdj)
-    const monAdj = hasMonsterAttributes(beast) ? "" : `${randomElement(monsterAdj)} `
+    const bigAdj = getRandomElementOf(beastAdj)
+    const monAdj = hasMonsterAttributes(beast) ? "" : `${getRandomElementOf(monsterAdj)} `
     const name = `${monAdj}${beast}`
     const monsterName = bigAdj ? `${bigAdj}, ${name}` : name
     return aAn(monsterName)
@@ -657,107 +769,207 @@ export const randomMonsterName = (beast?: string) => {
   const monster = beast ?? monsterNoun[Math.floor(determineRandomValue() * monsterNoun.length)]
   const monsterRandom = getRandomNumber()
   if (monsterRandom <= 0.01) {
-    const bigAdj = randomElement(beastAdj)
-    const monAdj = hasMonsterAttributes(monster) ? "" : `${randomElement(monsterAdj)} `
+    const bigAdj = getRandomElementOf(beastAdj)
+    const monAdj = hasMonsterAttributes(monster) ? "" : `${getRandomElementOf(monsterAdj)} `
     const name = `${monAdj}${monster}`
     const monsterName = bigAdj ? `${bigAdj}, ${name}` : name
     return aAn(monsterName)
   } else if (monsterRandom <= 0.1) {
-    const monAdj = hasMonsterAttributes(monster) ? "" : `${randomElement(monsterAdj)} `
+    const monAdj = hasMonsterAttributes(monster) ? "" : `${getRandomElementOf(monsterAdj)} `
     const monsterName = `${monAdj}${monster}`
     return aAn(monsterName)
   } else return aAn(monster)
 }
-export const isWeapon = (item: string) =>
-  [
-    "axe",
-    "blade",
-    "dagger",
-    "flail",
-    "glaive",
-    "halberd",
-    "hammer",
-    "javelin",
-    "katana",
-    "mace",
-    "rapier",
-    "scimitar",
-    "spear",
-    "staff",
-    "sword",
-  ].some((weapon) => new RegExp(`\\b${weapon}\\b`).test(item))
+const treasureItems = [
+  "box",
+  "bracelet",
+  "brooch",
+  "chain",
+  "chess piece",
+  "comb",
+  "crown",
+  "dice",
+  "egg",
+  "figurine",
+  "gems",
+  "idol",
+  "mask",
+  "medallion",
+  "mirror",
+  "necklace",
+  "pin",
+  "ring",
+  "some gold",
+  "statuette",
+  "tiara",
+]
 
-export const isArmor = (item: string) =>
-  [
-    "breastplate",
-    "cape",
-    "chainmail",
-    "cloak",
-    "helm",
-    "leather armor",
-    "mantle",
-    "robe",
-    "scale mail",
-    "scarf",
-    "shield",
-  ].some((armor) => new RegExp(`\\b${armor}\\b`).test(item))
+export const getRandomTreasureItem = () => getRandomElementOf(treasureItems)
 
+export const isTreasure = (item: string) =>
+  treasureItems.some((treasure) => item.match(new RegExp(`\\b${treasure}\\b`)))
+
+const weapons = [
+  "axe",
+  "blade",
+  "bow",
+  "dagger",
+  "flail",
+  "glaive",
+  "halberd",
+  "hammer",
+  "javelin",
+  "katana",
+  "knife",
+  "mace",
+  "rapier",
+  "scimitar",
+  "spear",
+  "staff",
+  "sword",
+]
+
+export const isWeapon = (item: string) => weapons.some((weapon) => new RegExp(`\\b${weapon}\\b`).test(item))
+
+const armors = [
+  "breastplate",
+  "cape",
+  "chainmail",
+  "cloak",
+  "helm",
+  "leather armor",
+  "mantle",
+  "robe",
+  "scale mail",
+  "scarf",
+  "shield",
+]
+export const isArmor = (item: string) => armors.some((armor) => new RegExp(`\\b${armor}\\b`).test(item))
+
+const magicItems = [
+  "amulet",
+  "ball",
+  "book",
+  "cape",
+  "carpet",
+  "censer",
+  "coin",
+  "compass",
+  "cube",
+  "doll",
+  "flute",
+  "gem",
+  "grimoire",
+  "horn",
+  "hourglass",
+  "lamp",
+  "lantern",
+  "looking glass",
+  "needle",
+  "orb",
+  "quill",
+  "relic",
+  "rod",
+  "scroll",
+  "skull",
+  "spellbook",
+  "stone",
+  "tablet",
+  "tarot deck",
+  "tome",
+  "wand",
+]
 export const isMagic = (item: string) =>
   [
-    "amulet",
-    "ball",
-    "blade",
-    "book",
-    "bow",
-    "cape",
-    "carpet",
-    "censer",
-    "coin",
-    "compass",
-    "cube",
-    "doll",
     "eldritch",
     "enchanted",
-    "flask",
-    "flute",
-    "gem",
-    "grimoire",
     "holy",
-    "horn",
-    "hourglass",
-    "knife",
-    "lamp",
-    "lantern",
     "life stealing",
     "lightning",
-    "looking glass",
     "magic",
     "mysterious",
-    "needle",
-    "orb",
-    "potion",
-    "quill",
-    "relic",
-    "rod",
-    "scroll",
-    "skull",
     "slaying",
     "smiting",
-    "spellbook",
-    "staff",
-    "stone",
     "strange",
-    "tablet",
-    "tarot deck",
-    "tome",
     "uncanny",
     "unholy",
     "vengeance",
     "venom",
     "vorpal",
-    "wand",
     "weird",
+    ...magicItems,
   ].some((magic) => new RegExp(`\\b${magic}\\b`).test(item))
+
+// distributes x into arr.length buckets proportional the values of arr.
+// e.g. (12, [1,2,3]) => [2,4,6]
+const distributeProportionately = (x: number, arr: number[]): number[] => {
+  const sum = arr.reduce((a, b) => a + b, 0)
+  const proportions = arr.map((value) => value / sum)
+  const distributed = arr.map((_, i) => Math.floor(proportions[i] * x))
+
+  let remaining = x - distributed.reduce((a, b) => a + b, 0)
+  while (remaining > 0) {
+    const index = distributed.findIndex((_, i) => proportions[i] === Math.max(...proportions))
+    distributed[index]++
+    proportions[index] = -1
+    remaining--
+  }
+
+  return distributed
+}
+/**
+ * Distributes the given population into factions based on the available spaces.
+ * If the population exceeds the total spaces, it will proportionately distribute the population among the spaces.
+ * If the population is less than or equal to the total spaces, it will create factions within the given constraints:
+ * - Ideally, there should be only 9 members in each faction.
+ * - No faction should have more than 15 members nor less than 4.
+ * - The faction populations should be divided as evenly as possible.
+ * - There should be as few factions as possible.
+ *
+ * @param {SpaceConfig} config - A configuration object containing the population and spaces.
+ * @param {number} config.population - The total population to be distributed.
+ * @param {number[]} config.spaces - An array of numbers representing the available spaces in each faction.
+ * @returns {number[]} An array representing the population of each faction after distribution.
+ */
+export const distributeFactionPopulation = (config: { population: number; spaces: number[] }): number[] => {
+  const { population, spaces } = config
+  const totalSpaces = spaces.reduce((a, b) => a + b, 0)
+
+  if (population > totalSpaces) {
+    return distributeProportionately(population, spaces)
+  }
+
+  const minSize = 4
+  const maxSize = 15
+  const idealSize = 9
+
+  const minFactions = Math.ceil(population / maxSize)
+  const maxFactions = Math.floor(population / minSize)
+
+  let bestFactions = minFactions
+  let bestDiff = Infinity
+
+  for (let factions = minFactions; factions <= maxFactions; factions++) {
+    const averageSize = population / factions
+    const diff = Math.abs(averageSize - idealSize)
+
+    if (diff < bestDiff) {
+      bestDiff = diff
+      bestFactions = factions
+    }
+  }
+
+  const baseSize = Math.floor(population / bestFactions)
+  const remainder = population % bestFactions
+  const result: number[] = []
+
+  for (let i = 0; i < bestFactions; i++) {
+    const factionSize = i < remainder ? baseSize + 1 : baseSize
+    result.push(factionSize)
+  }
+
+  return result
+}
 
 export const getRandomNumber = (): number => RandomNumberGenerator.getInstance().getNext()
 
@@ -772,3 +984,104 @@ export const determineRandomValue = (() => {
     return value
   }
 })()
+
+/** Return a value according to the inverse power law */
+export const inverseSquareRandom = (value = 0, power = 2): number => {
+  if (value > 100) return value
+  const prob = 1 / Math.pow(value + 2, power)
+  // no terminating recursion!!! YOLO!! (｀◔ ω ◔´)ψ
+  return getRandomNumber() < prob ? inverseSquareRandom(value + 1) : value
+}
+
+const getNeighbors = (rooms: [number, number[]][], roomId: number): number[] => {
+  const roomData = rooms.find(([id]) => id === roomId)
+  return roomData ? roomData[1] : []
+}
+
+/**
+ * Returns an array of room IDs that are at a specified distance from a given room ID.
+ *
+ * @param {Array<[number, number[]]>} rooms - An array of tuples, where each tuple represents a room and its neighboring rooms.
+ * @param {number} roomId - The ID of the starting room.
+ * @param {number} distance - The distance from the starting room to find other rooms.
+ * @param {Set<number>} [visited=new Set()] - A set of room IDs that have already been visited. Used only in recursion.
+ * @returns {number[]} - An array of room IDs that are at a specified distance from the starting room.
+ *
+ * @example
+ *
+ * const rooms = [
+ *   [1, [2, 3]],
+ *   [2, [1, 4]],
+ *   [3, [1]],
+ *   [4, [2]]
+ * ];
+ *
+ * const roomId = 1;
+ * const distance = 2;
+ *
+ * const roomsAtDistance = getRoomsAtDistance(rooms, 1, 2);
+ *
+ * console.log(roomsAtDistance); // [4]
+ */
+export const getRoomsAtDistance = (
+  rooms: [number, number[]][],
+  roomId: number,
+  distance: number,
+  visited: Set<number> = new Set()
+): number[] => {
+  if (distance === 0) {
+    return [roomId]
+  }
+
+  visited.add(roomId)
+
+  const neighbors = getNeighbors(rooms, roomId).filter((neighbor) => !visited.has(neighbor))
+
+  const roomsAtDistance = neighbors.flatMap((neighbor) =>
+    getRoomsAtDistance(rooms, neighbor, distance - 1, new Set(visited))
+  )
+
+  return Array.from(new Set(roomsAtDistance))
+}
+
+export const getInventory = (enemyClass: EnemyClass): string[] => {
+  const chance = getRandomNumber()
+  const getRandomPeonItem = () =>
+    getRandomElementOf(["a potion of healing", "a potion of healing", aAn(getRandomElementOf([...weapons, ...armors]))])
+  const getRandomMagicArmament = () =>
+    aAn(`${getRandomElementOf(["magic", "eldritch", "glowing"])} ${getRandomElementOf([...weapons, ...armors])}`)
+  const getRandomMonsterItem = () => aAn(getRandomElementOf([...magicItems, ...armors, ...weapons]))
+
+  switch (enemyClass) {
+    case "peon":
+      if (chance < 0.01) return [getRandomPeonItem(), getRandomPeonItem()]
+      if (chance < 0.2) return [getRandomPeonItem()]
+      if (chance < 0.3) return ["some gold"]
+      break
+
+    case "monster":
+      if (chance < 0.01) return [getRandomMonsterItem(), getRandomMonsterItem(), getRandomMonsterItem()]
+      if (chance < 0.1) return [getRandomMonsterItem(), getRandomMonsterItem()]
+      if (chance < 0.5) return [getRandomMonsterItem(), "a potion of healing"]
+      break
+
+    case "elite":
+      if (chance < 0.1) return [getRandomMagicArmament(), getRandomMagicArmament()]
+      if (chance < 0.5) return [getRandomMagicArmament(), "a potion of healing"]
+      break
+
+    case "boss": {
+      return [
+        getRandomMagicArmament(),
+        getRandomMonsterItem(),
+        getRandomMagicArmament(),
+        getRandomMagicArmament(),
+        getRandomMonsterItem(),
+        getRandomMagicArmament(),
+      ]
+    }
+    default:
+      return []
+  }
+  return []
+}

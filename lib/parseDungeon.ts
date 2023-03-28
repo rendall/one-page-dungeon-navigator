@@ -23,6 +23,7 @@ import {
   hasProperty,
   isArmor,
   isMagic,
+  isTreasure,
   isWeapon,
   RandomNumberGenerator,
   sortById,
@@ -403,6 +404,7 @@ const excludedWords = [
 const excludedWordsPattern = excludedWords.join("|")
 /** These are expensive calculations that can be done once and passed around */
 export const analyzeDungeon = (dungeon: Dungeon) => {
+  // type DungeonAnalysis
   const bossPatterns = [
     new RegExp(`[A-Za-z/s]+ of (?<boss>the [A-Za-z-]+ (?!${excludedWordsPattern})[A-Za-z]+)$`),
     new RegExp(`[A-Za-z/s]+ of (?<boss>(?!${excludedWordsPattern})[A-Za-z-]+)$`),
@@ -458,31 +460,6 @@ export const analyzeDungeon = (dungeon: Dungeon) => {
       .reduce((all, regex) => (all[0] ? all : regex.test(story) ? [story.match(regex)] : [undefined]), [undefined])
       .filter((o) => o !== undefined)
       .flatMap((o) => o.groups.artifact)[0]
-
-  const isTreasure = (item: string) =>
-    [
-      "box",
-      "bracelet",
-      "brooch",
-      "chain",
-      "chess piece",
-      "comb",
-      "crown",
-      "dice",
-      "egg",
-      "figurine",
-      "gems",
-      "idol",
-      "mask",
-      "medallion",
-      "mirror",
-      "necklace",
-      "pin",
-      "ring",
-      "some gold",
-      "statuette",
-      "tiara",
-    ].some((treasure) => item.match(new RegExp(`\\b${treasure}\\b`)))
 
   const notes = dungeon.rooms.filter((room) => room.notes).flatMap((room) => room.notes)
   const bossName = getBoss(title)

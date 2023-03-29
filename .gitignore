@@ -6,3 +6,4 @@ lib/*.js
 scripts/*.mjs
 scripts/node.js
 scripts/random.js
+.env

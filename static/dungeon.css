@@ -26,6 +26,14 @@
   src: url("https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Mu4mxP.ttf") format("truetype");
 }
 
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/roboto/v27/KFOlCnqEu92Fr1MmWUlfBBc4AMP6lQ.ttf") format("truetype");
+}
+
 :root {
   --dark: hsl(216, 59%, 13%);
   --light: hsl(216, 59%, 95%);
@@ -132,6 +140,7 @@ p.error {
 
 p.description {
   margin-bottom: 0;
+  font-weight: bold;
 }
 
 ul.controls,
@@ -145,11 +154,6 @@ p.description + ul {
 
 ul:empty {
   display: none;
-}
-
-p.agent-message,
-p.message {
-  font-weight: bold;
 }
 
 p.instructions + ul {
@@ -240,11 +244,20 @@ section#game {
 
 #menu main {
   flex: 1;
+  font-size: 1.1rem;
+  background-color: var(--dark-background-color);
+  color: var(--light-text-color);
+}
+
+#menu main a {
+  color: var(--accent-2);
+  font-weight: bold;
+  text-decoration: underline;
 }
 
 #menu aside#select {
   order: -1;
-  margin-right: 2rem;
+  margin: 0;
   height: calc(100vh - 2rem);
   display: flex;
   flex-direction: column;
@@ -291,6 +304,7 @@ section#game {
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.8);
+  color: var(--dark-text-color);
   display: flex;
   align-items: center;
   justify-content: center;

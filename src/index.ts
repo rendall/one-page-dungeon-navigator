@@ -144,10 +144,7 @@ const printMessage = (message: string, type = "message") => {
   switch (type) {
     case "init":
       messageScroll.innerHTML = message
-      requestAnimationFrame(() => {
-        document.getElementById("message-scroll").scrollTop = 0
-      })
-      return
+      break
     case "html":
       messageScroll.insertAdjacentHTML("beforeend", message)
       break
@@ -160,7 +157,6 @@ const printMessage = (message: string, type = "message") => {
       break
     }
   }
-  requestAnimationFrame(updateMessageScroll)
 }
 
 const addTouchControls = (result: GameOutput) => {
@@ -203,13 +199,12 @@ const addTouchControls = (result: GameOutput) => {
   })
 
   messageScroll.appendChild(ul)
-  updateMessageScroll()
 }
 
 let lastRoomId = -1
 
 const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (result: GameOutput) => {
-  const { action } = result
+  const { action, turn } = result
   switch (action) {
     case "init": {
       const [title, subtitle] = result.message.split("\n")
@@ -253,6 +248,8 @@ const presentResultFunc = (revealRoom: (id: number) => SVGPathElement) => (resul
   const path: SVGPathElement = revealRoom(roomId)
   moveAvatar(path.getAttribute("d"))
   result.exits.forEach((exit) => revealRoom(exit.door.id))
+
+  if (turn > 2) requestAnimationFrame(updateMessageScroll)
 }
 
 const getSvgBounds = (svg: SVGElement) => {

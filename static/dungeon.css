@@ -222,6 +222,8 @@ section#game {
   height: 100vh;
   overflow: hidden;
   flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
 }
 
 #message-scroll {

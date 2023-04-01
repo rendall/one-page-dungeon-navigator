@@ -186,7 +186,7 @@ export type CuriousNote = PlainNote & {
 export const isDoorNote = (note: Note): note is DoorNote => note.type === NoteType.door
 export const isCuriousNote = (note: Note): note is CuriousNote => note.type === NoteType.curious
 export const isItemNote = (note: Note): note is SecretNote | ContainerNote | BodyNote =>
-  hasProperty(note, "items", (value) => value !== undefined)
+  note.type !== "none" && hasProperty(note, "items", (value) => value !== undefined)
 
 export type Note = SecretNote | ContainerNote | PlainNote | BodyNote | DoorNote | CuriousNote
 

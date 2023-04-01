@@ -192,6 +192,8 @@ li.control:hover {
 
 section#game {
   display: flex;
+  position: sticky;
+  bottom: 0;
 }
 
 .hide {

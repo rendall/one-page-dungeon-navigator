@@ -1,5 +1,5 @@
 import fs from "fs"
-import { DoorNote, Note, NoteType, PlainNote, Secret } from "./dungeon"
+import { DoorNote, isItemNote, Note, NoteType, PlainNote, Secret } from "./dungeon"
 import { parseNote, parseItems } from "./parseNote"
 import { toThe } from "./utilties"
 
@@ -28,6 +28,15 @@ describe("parseNote()", () => {
   test("'A large pile of rubble hides a staff and some gold.' should be parsed as Secret", () => {
     const secretNote = parseNote({ ...minNote, text: "A large pile of rubble hides a staff and some gold." }) as Note
     expect(secretNote.type).toBe(NoteType.secret)
+  })
+
+  test("'Here is a bard. Wants to pay you to get rid of an uncanny, slightly humming idol.' should be type None", () => {
+    const noneNote = parseNote({
+      ...minNote,
+      text: "Here is a bard. Wants to pay you to get rid of an uncanny, slightly humming idol.",
+    }) as Note
+    expect(noneNote.type).toBe(NoteType.none)
+    expect(isItemNote(noneNote)).toBe(false)
   })
 
   describe("More type", () => {

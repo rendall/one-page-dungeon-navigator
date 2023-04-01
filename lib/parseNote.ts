@@ -40,7 +40,7 @@ export const notePatterns = [
   /A (?<corpse>[A-Za-z-\s]+), (?<item>[A-Za-z-,\s]+) (nearby|close to it|close by)./,
   /(?<dying>A dying (?<creature>[A-Za-z-\s]+)), (?<item>[A-Za-z-,\s]+) among his belongings./,
   /(?<body>A [A-Za-z-,\s]+)(?: (?<npc_class>[A-Za-z-,\s]+)) with (?<item>[A-Za-z-,\s]+) in their hands./,
-  /(?<hidden>(?<within>A [A-Za-z-,\s] )+) (conceals|hides) (?<item>[A-Za-z-,\s]+)./,
+  /(?<hidden>(?<within>A [A-Za-z-,\s]+)) (?:conceals|hides) (?<item>[A-Za-z-,\s]+)./,
   /(?<feature>A (sign|writing) on the wall( painted in blood)?): (?<writing>[A-Za-z-,\s]+)/,
   /(?<feature>[A-Za-z-,\s]+? (?<object>[a-z]+)(\son a lectern|\son the wall|\son the ground)?), (?<action>[A-Za-z-,\s]+) (when|if) (?<trigger>[A-Za-z-,\s]+)./,
   /(?<feature>The [A-Za-z-,\s]+ is filled with (?<object>[A-Za-z-,\s]+).) It (?<action>[A-Za-z-,\s]+) when (?<trigger>[A-Za-z-,\s]+)./,
@@ -60,7 +60,7 @@ export const notePatterns = [
 ]
 
 export const isSecret = (note: null | RegExpMatchArray) =>
-  note ? arrEqual(Object.keys(note.groups), ["hidden", "item"]) : false
+  note ? containsElementsOf(["hidden", "item"], Object.keys(note.groups)) : false
 export const isContainer = (note: null | RegExpMatchArray) =>
   note ? arrEqual(Object.keys(note.groups), ["container", "item"]) : false
 export const isFeatureItem = (note: null | RegExpMatchArray) =>
@@ -120,7 +120,9 @@ export const parseNote = (note: JsonNote & { id: number }): Note | [Note, Note] 
     }
     case NoteType.secret: {
       const messageSecret = hasProperty(match.groups, "within")
-        ? `Searching the room, you find ${deCapitalize(toList(items))} hidden within ${match.groups.within}`
+        ? `Searching the room, you find ${deCapitalize(toList(items))} hidden within ${deCapitalize(
+            match.groups.within
+          )}`
         : `Searching the room, you find ${deCapitalize(note.text)}`
       return { ...note, type, ...match.groups, items, message: messageSecret }
     }

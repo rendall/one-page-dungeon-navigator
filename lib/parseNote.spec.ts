@@ -18,11 +18,16 @@ const minNote: PlainNote = {
 }
 
 describe("parseNote()", () => {
-  const parsedNotes = notes.map((text) => parseNote({ ...minNote, text })).filter((n) => n)
+  const parsedNotes = notes.flatMap((text) => parseNote({ ...minNote, text })).filter((n) => n)
   const secrets: Secret[] = parsedNotes.filter((note) => note.type === NoteType.secret) as Secret[]
   test.each(secrets)("Should parse secret '$text'", (secret) => {
     expect(Object.keys(secret)).toEqual(expect.arrayContaining(["message", "items", "pos"]))
     expect(secret.message).toMatch(/^Searching the room, you find /)
+  })
+
+  test("'A large pile of rubble hides a staff and some gold.' should be parsed as Secret", () => {
+    const secretNote = parseNote({ ...minNote, text: "A large pile of rubble hides a staff and some gold." }) as Note
+    expect(secretNote.type).toBe(NoteType.secret)
   })
 
   describe("More type", () => {

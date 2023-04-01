@@ -124,9 +124,11 @@ const createBoss = (dungeonAnalysis: DungeonAnalysis): Enemy => {
   // Are there magic weapons in the dungeon? If not, Boss is a 'ghastly revenant'
   // If so, then boss is a 'ghost' with status "spectral"
 
-  const name = deadBoss ? `the ${kindOfDead()} of ${bossName}` : bossName ?? `the ${getRandomBossName()}`
+  const liveBossName = bossName ?? `the ${getRandomBossName()}`
+
+  const name = deadBoss ? `the ${kindOfDead()} of ${bossName}` : liveBossName
   const statuses: EnemyStatus[] = deadBoss && isMagicWeapon() ? ["spectral"] : []
-  const bossArtifact = artifact ?? toTitleCase(`the ${getRandomTreasureItem()} of ${bossName}`)
+  const bossArtifact = artifact ?? toTitleCase(`the ${getRandomTreasureItem()} of ${liveBossName}`)
   const inventory = [bossArtifact, ...getEnemyInventory("boss")]
 
   return { ...enemyTemplate, name, statuses, inventory, health: 5, attack: 4, defense: 4, class: "boss" } as Enemy

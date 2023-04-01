@@ -4,7 +4,7 @@ Dungeon Explorer is an old-school hack-n-slash dungeon-crawler mini-game that yo
 
 Give it a try! [one-map.netlify.app](https://one-map.netlify.app/)
 
-This project is based on the popular [One Page Dungeon](https://watabou.github.io/dungeon.html). One Page Dungeon procedurally generates static maps that you can use in your own projects.
+This project is based on the popular [One Page Dungeon](https://watabou.github.io/dungeon.html). The One Page Dungeon generator procedurally generates static maps that you can use in your own projects.
 
 The Dungeon Explorer project converts One Page Dungeon static, graphic maps into mini-games that you can play.
 

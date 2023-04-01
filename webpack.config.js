@@ -17,7 +17,7 @@ const config = {
   },
   devServer: {
     open: true,
-    watchFiles: ["./RAW/**/*"], // local one-page
+    watchFiles: ["./scripts/**/*"], // local one-page
     static: {
       directory: path.join(__dirname, "dist"),
     },
@@ -28,7 +28,7 @@ const config = {
       template: "./src/index.html",
     }),
     new CopyWebpackPlugin({
-      patterns: [{ from: "static" }, { from: "RAW", to: "RAW", noErrorOnMissing: true }],
+      patterns: [{ from: "static" }],
     }),
     new MiniCssExtractPlugin(),
     new CleanWebpackPlugin(),
@@ -38,7 +38,7 @@ const config = {
       {
         test: /\.(ts|tsx)$/i,
         loader: "ts-loader",
-        exclude: ["/node_modules/"],
+        exclude: ["/node_modules/", "/RAW/"],
       },
       {
         test: /\.s[ac]ss$/i,
